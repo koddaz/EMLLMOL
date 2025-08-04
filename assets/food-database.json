@@ -1,0 +1,80 @@
+{
+  "pasta_potatoes_rice": {
+    "bulgur_cooked": { "portion": "2 dl (100g)", "carbsPer100g": 25, "density": 1.2, "keywords": ["bulgur", "grain"] },
+    "couscous_cooked": { "portion": "1.5 dl (80g)", "carbsPer100g": 25, "density": 1.1, "keywords": ["couscous", "grain"] },
+    "chickpeas_cooked": { "portion": "1 dl", "carbsPer100g": 15, "density": 1.0, "keywords": ["chickpeas", "legumes"] },
+    "lentils_beans_cooked": { "portion": "1 dl", "carbsPer100g": 8, "density": 1.0, "keywords": ["lentils", "beans", "legumes"] },
+    "noodles_raw": { "portion": "1 package (85g)", "carbsPer100g": 53, "density": 0.4, "keywords": ["noodles", "pasta"] },
+    "pasta_raw": { "portion": "100g", "carbsPer100g": 70, "density": 0.6, "keywords": ["pasta", "spaghetti", "macaroni"] },
+    "pasta_cooked": { "portion": "1 dl (55g)", "carbsPer100g": 27, "density": 1.1, "keywords": ["pasta", "spaghetti", "macaroni"] },
+    "potato_small": { "portion": "1 small (60g)", "carbsPer100g": 17, "density": 0.8, "keywords": ["potato"] },
+    "potato_normal": { "portion": "1 normal (80g)", "carbsPer100g": 17, "density": 0.8, "keywords": ["potato"] },
+    "potato_gratin": { "portion": "250g", "carbsPer100g": 12, "density": 0.9, "keywords": ["potato", "gratin"] },
+    "mashed_potato": { "portion": "225g", "carbsPer100g": 13, "density": 0.85, "keywords": ["potato", "mashed"] },
+    "potato_salad": { "portion": "1 dl", "carbsPer100g": 12, "density": 0.9, "keywords": ["potato", "salad"] },
+    "rice_raw": { "portion": "0.75 dl", "carbsPer100g": 60, "density": 1.5, "keywords": ["rice"] },
+    "rice_cooked": { "portion": "1 dl", "carbsPer100g": 25, "density": 1.3, "keywords": ["rice"] },
+    "quinoa_cooked": { "portion": "1.5 dl (70g)", "carbsPer100g": 36, "density": 1.2, "keywords": ["quinoa", "grain"] }
+  },
+  
+  "breakfast_cereals": {
+    "muesli": { "portion": "1 dl", "carbsPer100g": 60, "density": 0.4, "keywords": ["muesli", "cereal"] },
+    "cornflakes": { "portion": "1 dl", "carbsPer100g": 85, "density": 0.3, "keywords": ["cornflakes", "cereal"] },
+    "oat_flakes": { "portion": "1 dl", "carbsPer100g": 67, "density": 0.4, "keywords": ["oats", "cereal"] },
+    "oat_porridge": { "portion": "1 portion", "carbsPer100g": 8, "density": 0.85, "keywords": ["oats", "porridge"] },
+    "rice_porridge": { "portion": "250g", "carbsPer100g": 14, "density": 0.9, "keywords": ["rice", "porridge"] }
+  },
+  
+  "bread": {
+    "baguette": { "portion": "10cm (60g)", "carbsPer100g": 50, "density": 0.4, "keywords": ["baguette", "bread"] },
+    "crispbread": { "portion": "1 piece", "carbsPer100g": 50, "density": 0.3, "keywords": ["crispbread", "bread"] },
+    "wholegrain_bread": { "portion": "1 slice (40g)", "carbsPer100g": 38, "density": 0.5, "keywords": ["bread", "wholegrain"] },
+    "french_bread": { "portion": "1 slice (25g)", "carbsPer100g": 60, "density": 0.4, "keywords": ["bread", "french"] },
+    "burger_bun": { "portion": "55g", "carbsPer100g": 45, "density": 0.4, "keywords": ["bread", "bun", "burger"] },
+    "taco_shell": { "portion": "2 pieces", "carbsPer100g": 50, "density": 0.3, "keywords": ["taco", "shell"] },
+    "tortilla": { "portion": "1 large (70g)", "carbsPer100g": 50, "density": 0.5, "keywords": ["tortilla", "bread"] }
+  },
+  
+  "pastries_cakes": {
+    "berry_pie": { "portion": "1 piece (150g)", "carbsPer100g": 30, "density": 0.6, "keywords": ["pie", "cake"] },
+    "coconut_ball": { "portion": "1 piece (25g)", "carbsPer100g": 60, "density": 0.4, "keywords": ["coconut", "ball"] },
+    "digestive_cookies": { "portion": "1 piece", "carbsPer100g": 65, "density": 0.4, "keywords": ["cookies", "digestive"] },
+    "cake": { "portion": "1 piece (100g)", "carbsPer100g": 30, "density": 0.5, "keywords": ["cake"] },
+    "cinnamon_bun": { "portion": "1 piece (60g)", "carbsPer100g": 45, "density": 0.4, "keywords": ["bun", "cinnamon"] },
+    "marzipan": { "portion": "1 piece (50g)", "carbsPer100g": 60, "density": 0.8, "keywords": ["marzipan"] },
+    "gingerbread": { "portion": "1 piece", "carbsPer100g": 70, "density": 0.4, "keywords": ["gingerbread", "cookies"] },
+    "rice_cake": { "portion": "1 piece (8g)", "carbsPer100g": 63, "density": 0.2, "keywords": ["rice", "cake"] },
+    "semla": { "portion": "1 piece", "carbsPer100g": 40, "density": 0.3, "keywords": ["semla"] }
+  },
+  
+  "fruits_vegetables": {
+    "orange": { "portion": "1 piece (125g)", "carbsPer100g": 12, "density": 0.9, "keywords": ["orange"] },
+    "banana": { "portion": "1 piece (150g)", "carbsPer100g": 20, "density": 0.9, "keywords": ["banana"] },
+    "berries": { "portion": "1 dl", "carbsPer100g": 5, "density": 0.6, "keywords": ["berries", "strawberry", "blueberry"] },
+    "kiwi": { "portion": "1 piece (60g)", "carbsPer100g": 8, "density": 0.9, "keywords": ["kiwi"] },
+    "corn": { "portion": "100g", "carbsPer100g": 20, "density": 0.8, "keywords": ["corn"] },
+    "carrot": { "portion": "1 piece (70g)", "carbsPer100g": 7, "density": 1.0, "keywords": ["carrot"] },
+    "pear": { "portion": "1 piece (125g)", "carbsPer100g": 12, "density": 0.9, "keywords": ["pear"] },
+    "grapes": { "portion": "15 pieces (100g)", "carbsPer100g": 15, "density": 0.8, "keywords": ["grapes"] },
+    "apple": { "portion": "1 piece (175g)", "carbsPer100g": 11, "density": 0.8, "keywords": ["apple"] }
+  },
+  
+  "dishes": {
+    "pizza_frozen": { "portion": "1 piece (220g)", "carbsPer100g": 25, "density": 0.6, "keywords": ["pizza"] },
+    "pizza_restaurant": { "portion": "1 piece (350g)", "carbsPer100g": 26, "density": 0.6, "keywords": ["pizza"] },
+    "hamburger": { "portion": "1 piece", "carbsPer100g": 30, "density": 0.5, "keywords": ["hamburger", "burger"] },
+    "sandwich": { "portion": "1 piece", "carbsPer100g": 40, "density": 0.5, "keywords": ["sandwich"] },
+    "pancake": { "portion": "1 piece (70g)", "carbsPer100g": 21, "density": 0.6, "keywords": ["pancake"] },
+    "french_fries": { "portion": "small/medium/large", "carbsPer100g": 35, "density": 0.4, "keywords": ["fries", "potato"] },
+    "sushi": { "portion": "7 pieces", "carbsPer100g": 50, "density": 0.8, "keywords": ["sushi", "rice"] }
+  },
+  
+  "snacks_sweets": {
+    "chips": { "portion": "1 dl (12g)", "carbsPer100g": 42, "density": 0.3, "keywords": ["chips"] },
+    "chocolate_milk": { "portion": "100g", "carbsPer100g": 55, "density": 0.5, "keywords": ["chocolate"] },
+    "chocolate_dark": { "portion": "100g", "carbsPer100g": 30, "density": 0.5, "keywords": ["chocolate"] },
+    "candy": { "portion": "100g", "carbsPer100g": 80, "density": 0.6, "keywords": ["candy", "sweets"] },
+    "ice_cream": { "portion": "1 dl (50g)", "carbsPer100g": 30, "density": 0.5, "keywords": ["ice cream"] },
+    "popcorn": { "portion": "5 dl (15g)", "carbsPer100g": 67, "density": 0.1, "keywords": ["popcorn"] }
+  }
+}
