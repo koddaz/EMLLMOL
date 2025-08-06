@@ -1,4 +1,5 @@
-{
+// Clarifai food mapping for ingredient detection
+export const CLARIFAI_FOOD_MAPPING: { [key: string]: { name: string, carbsPer100g: number, weight: number, category: string, ignore?: boolean, note?: string } } = {
   "apple": { "name": "Apple", "carbsPer100g": 14, "weight": 180, "category": "fruit" },
   "banana": { "name": "Banana", "carbsPer100g": 23, "weight": 120, "category": "fruit" },
   "orange": { "name": "Orange", "carbsPer100g": 12, "weight": 150, "category": "fruit" },
@@ -90,15 +91,33 @@
   "french fries": { "name": "French Fries", "carbsPer100g": 43, "weight": 100, "category": "snack" },
   "chips": { "name": "Chips", "carbsPer100g": 54, "weight": 30, "category": "snack" },
   "popcorn": { "name": "Popcorn", "carbsPer100g": 78, "weight": 25, "category": "snack" },
-  "crackers": { "name": "Crackers", "carbsPer100g": 71, "weight": 20, "category": "snack" },
-  
-  "_estimates": {
-    "fruit_mixed": { "name": "Mixed Fruits", "carbsPer100g": 12, "weight": 150, "category": "fruit" },
-    "vegetable_mixed": { "name": "Mixed Vegetables", "carbsPer100g": 8, "weight": 150, "category": "vegetable" },
-    "grain_item": { "name": "Grain Product", "carbsPer100g": 35, "weight": 100, "category": "grain" },
-    "protein_item": { "name": "Protein Source", "carbsPer100g": 2, "weight": 120, "category": "protein" },
-    "dairy_item": { "name": "Dairy Product", "carbsPer100g": 4, "weight": 100, "category": "dairy" },
-    "dessert_item": { "name": "Dessert", "carbsPer100g": 45, "weight": 80, "category": "dessert" },
-    "beverage_item": { "name": "Beverage", "carbsPer100g": 6, "weight": 240, "category": "beverage" }
-  }
+  "crackers": { "name": "Crackers", "carbsPer100g": 71, "weight": 20, "category": "snack" }
+};
+
+export const CLARIFAI_ESTIMATES: { [key: string]: { name: string, carbsPer100g: number, weight: number, category: string } } = {
+  "fruit_mixed": { "name": "Mixed Fruits", "carbsPer100g": 12, "weight": 150, "category": "fruit" },
+  "vegetable_mixed": { "name": "Mixed Vegetables", "carbsPer100g": 8, "weight": 150, "category": "vegetable" },
+  "grain_item": { "name": "Grain Product", "carbsPer100g": 35, "weight": 100, "category": "grain" },
+  "protein_item": { "name": "Protein Source", "carbsPer100g": 2, "weight": 120, "category": "protein" },
+  "dairy_item": { "name": "Dairy Product", "carbsPer100g": 4, "weight": 100, "category": "dairy" },
+  "dessert_item": { "name": "Dessert", "carbsPer100g": 45, "weight": 80, "category": "dessert" },
+  "beverage_item": { "name": "Beverage", "carbsPer100g": 6, "weight": 240, "category": "beverage" }
+};
+
+// Clarifai configuration
+export const CLARIFAI_CONFIG = {
+  PAT: '75944bc5ff1c43b8a8945dbeee89cd37', // Ersätt med din Clarifai PAT
+  USER_ID: 'baug1zchlvxx',
+  APP_ID: 'emilieMol',
+  MODEL_ID: 'food-item-recognition',
+  MODEL_VERSION_ID: '1d5fd481e0cf4826aa72ec3ff049e044',
+};
+
+export interface DetectedFood {
+  item: string;
+  confidence: number;
+  estimatedWeight: number;
+  carbContent: number;
+  originalClassName: string;
+  category: string;
 }
