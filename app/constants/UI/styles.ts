@@ -52,6 +52,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         right: 0,
         bottom: 0,
     },
+
+
     centeredWrapper: {
         position: 'absolute',
         top: 0,
@@ -60,7 +62,21 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent overlay
+        backgroundColor: 'rgba(0,0,0,0.5)',
+    },
+    centeredContent: {
+        maxHeight: '70%',
+        maxWidth: '90%',
+        width: '100%',
+        backgroundColor: 'transparent',
+    },
+
+    surface: {
+        backgroundColor: theme.colors.primaryContainer,
+        padding: 16,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: theme.colors.error
     },
 
 

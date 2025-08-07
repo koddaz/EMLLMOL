@@ -3,7 +3,7 @@ import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 import { useState } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 
 /* Diary Data:
@@ -34,7 +34,9 @@ export function DiaryScreen({ appData }: { appData: AppData }) {
   return (
     <View style={styles.background}>
       {toggleEntry == true ? (
+
         <DiaryInput appData={appData} />
+
       ) : (
         <DiaryMain appData={appData} />
       )}
@@ -47,9 +49,6 @@ export function DiaryScreen({ appData }: { appData: AppData }) {
     </View>
   );
 }
-
-
-
 export function DiaryMain(
   { appData }: { appData: AppData }
 ) {
@@ -74,21 +73,6 @@ export function DiaryMain(
   );
 
 }
-
-export function DiaryCamera() {
-  const theme = useTheme();
-  const styles = customStyles(theme);
-
-
-  return (
-    <>
-
-      <CameraView style={styles.camera} />
-
-    </>
-  )
-}
-
 export function DiaryCalendar() {
   const theme = useTheme();
   const styles = customStyles(theme);
@@ -100,7 +84,6 @@ export function DiaryCalendar() {
     </View>
   );
 }
-
 export function DiaryInput(
   {
     appData,
@@ -110,50 +93,47 @@ export function DiaryInput(
     toggleEntry?: (state: boolean) => void
   }
 ) {
-
   const theme = useTheme();
   const styles = customStyles(theme);
-
+  // save to db
   const [glucose, setGlucose] = useState("");
   const [carbs, setCarbs] = useState("");
-
-  // State for camera toggle
-  const [toggleCamera, setToggleCamera] = useState(false);
-
-  // State for note entry
-  const [toggleNote, setToggleNote] = useState(false);
   const [note, setNote] = useState("");
-
-  // Radio button states
   const [activity, setActivity] = useState("none");
   const [foodType, setFoodType] = useState("snack");
+  // toggles and aarrays
+  const [toggleCamera, setToggleCamera] = useState(false);
+  const [toggleNote, setToggleNote] = useState(false);
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
   const renderEdit = () => {
     return (
-      <View style={[styles.plaincontainer, { minHeight: 200 }]}>
-        <TextInput
-          label="Notes"
-          mode="outlined"
-          value={note}
-          onChangeText={text => setNote(text)}
-          left={<TextInput.Icon icon="note-text" />}
-          style={[styles.textInput, { height: 120 }]} // Adjust height for 4 lines
-          placeholder="Add any notes about your meal or how you're feeling..."
-          multiline={true}
-          numberOfLines={4}
-          textAlignVertical="top" // Ensures text starts at the top on Android
-        />
+      <View style={[styles.plaincontainer, { height: 200 }]}>
+        <Surface style={[styles.surface, { flex: 1 }]} elevation={4} >
+
+          <TextInput
+            label="Notes"
+            mode="outlined"
+            value={note}
+            onChangeText={text => setNote(text)}
+            left={<TextInput.Icon icon="note-text" />}
+            style={[styles.textInput, { height: 120 }]} // Adjust height for 4 lines
+            placeholder="Add any notes about your meal or how you're feeling..."
+            multiline={true}
+            numberOfLines={4}
+            textAlignVertical="top" // Ensures text starts at the top on Android
+          />
+
+        </Surface>
       </View>
     );
   };
-
   const renderRadioButtons = () => {
     return (
-      <View style={[styles.plaincontainer, { minHeight: 200 }]}>
+      <View style={[styles.plaincontainer, { height: 200 }]}>
         <View style={styles.row}>
-          <Surface style={{ flex: 1, backgroundColor: theme.colors.primaryContainer, padding: 16, borderRadius: 8 }} elevation={4} >
+          <Surface style={[styles.surface, { flex: 1, marginRight: 4 }]} elevation={4} >
             <RadioButtonGroup
               icon="run"
               title={"Activity"}
@@ -162,7 +142,7 @@ export function DiaryInput(
               options={activityOptions}
             />
           </Surface>
-          <Surface style={{ flex: 1, backgroundColor: theme.colors.primaryContainer, padding: 16, borderRadius: 8 }} elevation={4} >
+          <Surface style={[styles.surface, { flex: 1, marginLeft: 4 }]} elevation={4} >
             <RadioButtonGroup
               icon="food"
               title={"Meal"}
@@ -175,7 +155,6 @@ export function DiaryInput(
       </View>
     );
   }
-
   const renderTextInput = (affix: string, label: string, icon: any, value: string, setValue: (value: string) => void) => {
     return (
       <TextInput
@@ -199,62 +178,69 @@ export function DiaryInput(
       />
     );
   }
+  const renderCamera = () => {
+    return (
+      <CameraView style={{ flex: 1 }} />
+    )
+  }
 
-
-  // This is a component for individual diary entries
   return (
 
-    <View style={styles.centeredWrapper}>
+    <KeyboardAvoidingView
+      style={styles.centeredWrapper}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <View style={styles.centeredContent}>
+        {toggleCamera == true ? (
+          <View style={[styles.container, { flex: 1 }]}>
+            {renderCamera()}
+          </View>
+        ) : (
+          <View style={styles.container}>
+            <View style={[styles.row, { justifyContent: 'space-between' }]}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Diary Entry</Text>
+              <IconButton
+                icon="close"
+                size={24}
+                onPress={() => toggleEntry && toggleEntry(false)}
+              />
+            </View>
+            <Surface style={styles.surface} elevation={4} >
+              {renderTextInput(appData.settings.glucose, "glucose", "blood-bag", glucose, setGlucose)}
+              {renderTextInput("g", "carbs", "food", carbs, setCarbs)}
+            </Surface>
+            {!toggleNote ? (
+              renderRadioButtons()
+            ) : (
+              renderEdit()
+            )
+            }
+          </View>
+        )}
 
-      {toggleCamera == true ? (
+
         <View style={styles.container}>
-        <DiaryCamera />
-        </View>
-      ) : (
-        <View style={styles.container}>
-          <View style={[styles.row, { justifyContent: 'space-between' }]}>
-            <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Diary Entry</Text>
+          <View style={[styles.row, { justifyContent: 'flex-start' }]}>
             <IconButton
-              icon="close"
+              icon="note-text"
               size={24}
-              onPress={() => toggleEntry && toggleEntry(false)}
+              onPress={() => setToggleNote(!toggleNote)}
+              style={{ alignSelf: 'flex-end' }}
+            />
+            <IconButton
+              icon="camera"
+              size={24}
+              onPress={() => setToggleCamera(!toggleCamera)}
+              style={{ alignSelf: 'flex-end' }}
             />
           </View>
-          {renderTextInput(appData.settings.glucose, "glucose", "blood-bag", glucose, setGlucose)}
-          {renderTextInput("g", "carbs", "food", carbs, setCarbs)}
-          {!toggleNote ? (
-            renderRadioButtons()
-          ) : (
-            renderEdit()
-          )
-          }
-        </View>
-      )}
-
-
-      <View style={styles.container}>
-        <View style={[styles.row, { justifyContent: 'flex-start' }]}>
-          <IconButton
-            icon="note-text"
-            size={24}
-            onPress={() => setToggleNote(!toggleNote)}
-            style={{ alignSelf: 'flex-end' }}
-          />
-          <IconButton
-            icon="camera"
-            size={24}
-            onPress={() => setToggleCamera(!toggleCamera)}
-            style={{ alignSelf: 'flex-end' }}
-          />
         </View>
       </View>
-
-
-    </View >
+    </KeyboardAvoidingView >
 
   );
 }
-
 export function RadioButtonGroup(
   { value, setValue, options, title, icon }: { value: string, setValue: (value: string) => void, options: any[], title?: string, icon?: any }
 ) {
@@ -295,7 +281,6 @@ export function RadioButtonGroup(
     </View >
   )
 }
-
 export function useDB() {
   // This function can be used to interact with the database
   // For example, fetching or updating diary entries
