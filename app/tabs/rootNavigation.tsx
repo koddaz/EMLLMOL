@@ -9,12 +9,13 @@ import { Session } from "@supabase/supabase-js";
 import { customStyles } from "../constants/UI/styles";
 import CameraScreen from "./camera/cameraScreen";
 import { AppData } from "../constants/interface/appData";
+import { DiaryScreen } from "./diary/diaryScreen";
 
 
 
 const Tab = createBottomTabNavigator();
 
-export function RootNavigation({ appData }: { appData: AppData}) {
+export function RootNavigation({ appData }: { appData: AppData }) {
     const theme = useTheme();
     const styles = customStyles(theme);
 
@@ -22,7 +23,7 @@ export function RootNavigation({ appData }: { appData: AppData}) {
     return (
         <SafeAreaView style={styles.background}>
             <Tab.Navigator
-                initialRouteName="Settings"
+                initialRouteName="Diary"
                 screenOptions={{
                     animation: "none",
                     headerShown: false,
@@ -73,6 +74,17 @@ export function RootNavigation({ appData }: { appData: AppData}) {
                 )}>
 
                 <Tab.Screen
+                    name="Diary"
+                    options={{
+                        tabBarIcon: ({ color }) => (
+                            <MaterialCommunityIcons name="book-lock" color={color} size={26} />
+                        ),
+                    }}
+                >
+                    {(props) => <DiaryScreen {...props} appData={appData} />}
+                </Tab.Screen>
+
+                <Tab.Screen
                     name="Camera"
                     component={CameraScreen}
                     options={{
@@ -92,6 +104,8 @@ export function RootNavigation({ appData }: { appData: AppData}) {
                 >
                     {(props) => <SettingsScreen {...props} appData={appData} />}
                 </Tab.Screen>
+
+
 
             </Tab.Navigator>
         </SafeAreaView>

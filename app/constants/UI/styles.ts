@@ -33,8 +33,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: theme.colors.errorContainer
     },
     row: {
-        
         flexDirection: 'row',
+        // justifyContent: 'space-between',
         alignItems: 'center'
     },
     textInput: {
@@ -46,7 +46,22 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         paddingHorizontal: 12,
         justifyContent: 'center',
     },
-
+    fab: {
+        position: 'absolute',
+        margin: 16,
+        right: 0,
+        bottom: 0,
+    },
+    centeredWrapper: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.5)', // Semi-transparent overlay
+    },
 
 
 
@@ -72,7 +87,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     iconButton: {
         alignSelf: 'flex-end',
         alignItems: 'center',
-        
+
     },
     button: {
         flex: 1,
