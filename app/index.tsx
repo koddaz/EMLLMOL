@@ -1,5 +1,3 @@
-
-
 import AuthScreen from '@/db/supabase/auth/authScreen';
 import { supabase } from '@/db/supabase/supabase';
 import React, { useEffect, useState } from "react";
@@ -37,6 +35,12 @@ export default function Index() {
         console.log('🚀 Initializing application...');
         setIsLoading(true);
         setError(null);
+
+        // Wait for camera permission to be available (not null)
+        if (cameraPermission === null) {
+          console.log('📷 Waiting for camera permissions...');
+          return; // Exit early, useEffect will run again when cameraPermission changes
+        }
 
         // 1. Get session
         console.log('📱 Checking authentication session...');
@@ -82,8 +86,8 @@ export default function Index() {
         ]);
 
         const settings = {
-          weight: savedWeight || 'kg', // Default to 'kg' if not found
-          glucose: savedGlucose || 'mmol' // Default to 'mmol' if not found
+          weight: savedWeight || 'kg',
+          glucose: savedGlucose || 'mmol'
         };
 
         console.log('✅ Settings loaded:', settings);
@@ -92,7 +96,7 @@ export default function Index() {
         setAppData({
           session,
           permission: cameraPermission,
-          requestCameraPermission, // Add the function
+          requestCameraPermission,
           profile: profileData,
           settings
         });
@@ -112,12 +116,11 @@ export default function Index() {
       console.log('🔄 Auth state changed:', event);
 
       if (event === 'SIGNED_OUT') {
+        // Update appData but keep permission and requestCameraPermission
         setAppData(prev => prev ? {
           ...prev,
           session: null,
-          profile: null,
-          permission: cameraPermission, // Update permission state
-          requestCameraPermission // Keep the function
+          profile: null
         } : null);
       } else if (event === 'SIGNED_IN' && session?.user?.id) {
         initializeApp();
@@ -129,17 +132,7 @@ export default function Index() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [cameraPermission]);
-
-  useEffect(() => {
-    if (appData) {
-      setAppData(prev => prev ? {
-        ...prev,
-        permission: cameraPermission,
-        requestCameraPermission
-      } : null);
-    }
-  }, [cameraPermission, requestCameraPermission]);
+  }, [cameraPermission]); 
 
   if (isLoading) {
     return (

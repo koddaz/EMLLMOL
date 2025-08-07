@@ -16,13 +16,6 @@ const Tab = createBottomTabNavigator();
 export function RootNavigation({ appData }: { appData: AppData }) {
     const theme = useTheme();
     const styles = customStyles(theme);
-    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-
-    useEffect(() => {
-        if (!cameraPermission) {
-            requestCameraPermission();
-        }
-    }, [cameraPermission, requestCameraPermission]);
 
     // Replace this with your actual navigation logic or component tree
     return (

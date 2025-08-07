@@ -2,7 +2,7 @@ import { AppData } from "@/app/constants/interface/appData";
 import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, View } from "react-native";
 import { Button, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { Colors } from "react-native/Libraries/NewAppScreen";
@@ -32,13 +32,7 @@ export function DiaryScreen({
   const [toggleEntry, setToggleEntry] = useState(true);
 
 
-  if (appData.permission === null) {
-    return (
-      <View style={styles.background}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
+
   return (
     <View style={styles.background}>
       {toggleEntry == true ? (
@@ -106,7 +100,14 @@ export function DiaryInput(
 
 
   // camera related
-  const { setFlash, renderCamera, flash } = useCamera(appData);
+  const {
+    renderCamera,
+    cycleFlash,
+    getFlashIcon,
+    getFlashIconColor,
+    capturePhoto 
+  } = useCamera(appData);
+
   // save to db
   const [glucose, setGlucose] = useState("");
   const [carbs, setCarbs] = useState("");
@@ -192,29 +193,6 @@ export function DiaryInput(
   }
   const renderMenu = () => {
 
-    const getFlashIcon = () => {
-      switch (flash) {
-        case "on":
-          return "flash";
-        case "off":
-          return "flash-off";
-        case "auto":
-          return "flash-auto";
-        default:
-          return "flash-off";
-      }
-    };
-
-    const cycleFlash = () => {
-      if (flash === "off") {
-        setFlash("on");
-      } else if (flash === "on") {
-        setFlash("auto");
-      } else {
-        setFlash("off");
-      }
-    };
-
     return (
       <View style={styles.container}>
         <View style={[styles.row, { justifyContent: 'space-between' }]}>
@@ -224,6 +202,7 @@ export function DiaryInput(
               <IconButton
                 mode={"outlined"}
                 icon={getFlashIcon()}
+                iconColor={getFlashIconColor()}
                 size={40}
                 onPress={cycleFlash}
                 style={{ alignSelf: 'flex-end' }}
@@ -232,7 +211,7 @@ export function DiaryInput(
                 mode={"outlined"}
                 icon="camera"
                 size={40}
-                onPress={() => setToggleCamera(!toggleCamera)}
+                onPress={capturePhoto}
                 style={{ alignSelf: 'flex-end' }}
               />
 
@@ -289,6 +268,7 @@ export function DiaryInput(
           <View style={[styles.container, { flex: 1 }]}>
             {renderCamera()}
           </View>
+
         ) : (
           <View style={styles.container}>
             <View style={[styles.row, { justifyContent: 'space-between' }]}>
@@ -374,7 +354,9 @@ export function useDB() {
 
 export function useCamera(appData: AppData) {
 
+  const theme = useTheme();
 
+  const cameraRef = useRef<CameraView>(null);
   const [flash, setFlash] = useState<"on" | "off" | "auto">("off");
   const [zoom, setZoom] = useState(0);
 
@@ -403,15 +385,78 @@ export function useCamera(appData: AppData) {
     }
 
     return (
-      <CameraView style={{ flex: 1 }} flash={flash} />
+      <CameraView style={{ flex: 1 }} flash={flash} ref={cameraRef} />
     );
   }
 
+  const capturePhoto = async () => {
+    try {
+      if (!cameraRef.current) {
+        console.error("Camera reference is not set");
+        return;
+      }
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.5,
+        base64: false,
+        skipProcessing: false,
+      });
+      console.log('✅ Photo captured:', photo.uri);
+      return photo;
+    } catch (error) {
+      console.error('❌ Failed to capture photo:', error);
+      return null;
+    }
+  };
+
+
+  // Get the icon based on the flash state
+  const getFlashIcon = () => {
+    switch (flash) {
+      case "on":
+        return "flash";
+      case "off":
+        return "flash-off";
+      case "auto":
+        return "flash-auto";
+      default:
+        return "flash-off";
+    }
+  };
+  // Get the color for the flash icon based on the flash state
+  const getFlashIconColor = () => {
+    switch (flash) {
+      case "on":
+        return theme.colors.primary;
+      case "off":
+        return theme.colors.onSurfaceVariant;
+      case "auto":
+        return theme.colors.secondary;
+      default:
+        return theme.colors.onSurfaceVariant;
+    }
+  };
+  // Cycle through flash modes
+  const cycleFlash = () => {
+    if (flash === "off") {
+      setFlash("on");
+    } else if (flash === "on") {
+      setFlash("auto");
+    } else {
+      setFlash("off");
+    }
+  };
 
   return {
     renderCamera,
-    setFlash,
-    flash
+
+    // handle photo capture
+    capturePhoto,
+
+    // Functions to toggle flash
+    cycleFlash,
+    flash,
+    getFlashIcon,
+    getFlashIconColor
   };
 
 }
