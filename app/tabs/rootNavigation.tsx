@@ -1,23 +1,28 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { CommonActions } from "@react-navigation/native";
-
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { SettingsScreen } from "./settings/settingsScreen";
 import { BottomNavigation, useTheme } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Session } from "@supabase/supabase-js";
 import { customStyles } from "../constants/UI/styles";
 import CameraScreen from "./camera/cameraScreen";
 import { AppData } from "../constants/interface/appData";
 import { DiaryScreen } from "./diary/diaryScreen";
-
-
+import { useCameraPermissions } from "expo-camera";
+import { useEffect } from "react";
 
 const Tab = createBottomTabNavigator();
 
 export function RootNavigation({ appData }: { appData: AppData }) {
     const theme = useTheme();
     const styles = customStyles(theme);
+    const [cameraPermission, requestCameraPermission] = useCameraPermissions();
+
+    useEffect(() => {
+        if (!cameraPermission) {
+            requestCameraPermission();
+        }
+    }, [cameraPermission, requestCameraPermission]);
 
     // Replace this with your actual navigation logic or component tree
     return (

@@ -3,8 +3,9 @@ import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 import { useState } from "react";
-import { FlatList, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { Button, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Colors } from "react-native/Libraries/NewAppScreen";
 
 /* Diary Data:
 
@@ -24,13 +25,20 @@ glucoseLevel : number; // mg/dL or mmol/L
 
 */
 
-export function DiaryScreen({ appData }: { appData: AppData }) {
+export function DiaryScreen({
+  appData }: { appData: AppData }) {
   const theme = useTheme();
   const styles = customStyles(theme);
-
-  const [camera, setCamera] = useState(false);
   const [toggleEntry, setToggleEntry] = useState(true);
 
+
+  if (appData.permission === null) {
+    return (
+      <View style={styles.background}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
   return (
     <View style={styles.background}>
       {toggleEntry == true ? (
@@ -95,6 +103,10 @@ export function DiaryInput(
 ) {
   const theme = useTheme();
   const styles = customStyles(theme);
+
+
+  // camera related
+  const { setFlash, renderCamera, flash } = useCamera(appData);
   // save to db
   const [glucose, setGlucose] = useState("");
   const [carbs, setCarbs] = useState("");
@@ -178,10 +190,91 @@ export function DiaryInput(
       />
     );
   }
-  const renderCamera = () => {
+  const renderMenu = () => {
+
+    const getFlashIcon = () => {
+      switch (flash) {
+        case "on":
+          return "flash";
+        case "off":
+          return "flash-off";
+        case "auto":
+          return "flash-auto";
+        default:
+          return "flash-off";
+      }
+    };
+
+    const cycleFlash = () => {
+      if (flash === "off") {
+        setFlash("on");
+      } else if (flash === "on") {
+        setFlash("auto");
+      } else {
+        setFlash("off");
+      }
+    };
+
     return (
-      <CameraView style={{ flex: 1 }} />
-    )
+      <View style={styles.container}>
+        <View style={[styles.row, { justifyContent: 'space-between' }]}>
+          {toggleCamera == true ? (
+            <>
+
+              <IconButton
+                mode={"outlined"}
+                icon={getFlashIcon()}
+                size={40}
+                onPress={cycleFlash}
+                style={{ alignSelf: 'flex-end' }}
+              />
+              <IconButton
+                mode={"outlined"}
+                icon="camera"
+                size={40}
+                onPress={() => setToggleCamera(!toggleCamera)}
+                style={{ alignSelf: 'flex-end' }}
+              />
+
+              <IconButton
+                mode={"outlined"}
+                icon="close"
+                size={40}
+                onPress={() => setToggleCamera(!toggleCamera)}
+                style={{ alignSelf: 'flex-end' }}
+              />
+            </>
+          ) : (
+            <>
+              <View style={styles.row}>
+                <IconButton
+                  mode={"outlined"}
+                  icon="pen"
+                  size={40}
+                  onPress={() => setToggleNote(!toggleNote)}
+                  style={{ alignSelf: 'flex-end' }}
+                />
+                <IconButton
+                  mode={"outlined"}
+                  icon="camera"
+                  size={40}
+                  onPress={() => setToggleCamera(!toggleCamera)}
+                  style={{ alignSelf: 'flex-end' }}
+                />
+              </View>
+              <IconButton
+                mode={"outlined"}
+                icon="content-save"
+                size={40}
+                onPress={() => setToggleCamera(!toggleCamera)}
+                style={{ alignSelf: 'flex-end' }}
+              />
+
+            </>
+          )}
+        </View>
+      </View>
+    );
   }
 
   return (
@@ -206,7 +299,7 @@ export function DiaryInput(
                 onPress={() => toggleEntry && toggleEntry(false)}
               />
             </View>
-            <Surface style={styles.surface} elevation={4} >
+            <Surface style={[styles.surface, { marginBottom: 8 }]} elevation={4} >
               {renderTextInput(appData.settings.glucose, "glucose", "blood-bag", glucose, setGlucose)}
               {renderTextInput("g", "carbs", "food", carbs, setCarbs)}
             </Surface>
@@ -219,23 +312,8 @@ export function DiaryInput(
           </View>
         )}
 
+        {renderMenu()}
 
-        <View style={styles.container}>
-          <View style={[styles.row, { justifyContent: 'flex-start' }]}>
-            <IconButton
-              icon="note-text"
-              size={24}
-              onPress={() => setToggleNote(!toggleNote)}
-              style={{ alignSelf: 'flex-end' }}
-            />
-            <IconButton
-              icon="camera"
-              size={24}
-              onPress={() => setToggleCamera(!toggleCamera)}
-              style={{ alignSelf: 'flex-end' }}
-            />
-          </View>
-        </View>
       </View>
     </KeyboardAvoidingView >
 
@@ -292,4 +370,48 @@ export function useDB() {
       // Logic to add a new diary entry to the database
     },
   };
+}
+
+export function useCamera(appData: AppData) {
+
+
+  const [flash, setFlash] = useState<"on" | "off" | "auto">("off");
+  const [zoom, setZoom] = useState(0);
+
+  const renderCamera = () => {
+    // Check if permission is still loading
+    if (appData.permission === null) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading camera permissions...</Text>
+        </View>
+      );
+    }
+
+    if (!appData.permission?.granted) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Camera permission not granted</Text>
+          <Button
+            mode="contained"
+            onPress={appData.requestCameraPermission}
+          >
+            Grant Camera Permission
+          </Button>
+        </View>
+      );
+    }
+
+    return (
+      <CameraView style={{ flex: 1 }} flash={flash} />
+    );
+  }
+
+
+  return {
+    renderCamera,
+    setFlash,
+    flash
+  };
+
 }

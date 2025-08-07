@@ -1,7 +1,10 @@
 import { Session } from "@supabase/supabase-js";
+import { PermissionResponse } from "expo-camera";
 
 export interface AppData {
   session: Session | null;
+  permission: PermissionResponse | null;
+  requestCameraPermission: () => Promise<PermissionResponse>;
   profile: {
     username: string | null;
     fullName: string | null;

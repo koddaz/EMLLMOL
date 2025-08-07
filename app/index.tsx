@@ -2,16 +2,16 @@
 
 import AuthScreen from '@/db/supabase/auth/authScreen';
 import { supabase } from '@/db/supabase/supabase';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Session } from '@supabase/supabase-js';
 import React, { useEffect, useState } from "react";
-import { AppState, SafeAreaView, Text, View } from "react-native";
-import { BottomNavigation, PaperProvider, useTheme } from 'react-native-paper';
+import { AppState, Text, View } from "react-native";
+import { PaperProvider, useTheme } from 'react-native-paper';
 import { RootNavigation } from './tabs/rootNavigation';
 import { customStyles } from './constants/UI/styles';
 import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useCameraPermissions } from 'expo-camera';
+
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -25,6 +25,7 @@ export default function Index() {
 
   const theme = useTheme();
   const styles = customStyles(theme);
+  const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -90,6 +91,8 @@ export default function Index() {
         // 4. Set all app data at once
         setAppData({
           session,
+          permission: cameraPermission,
+          requestCameraPermission, // Add the function
           profile: profileData,
           settings
         });
@@ -109,9 +112,14 @@ export default function Index() {
       console.log('🔄 Auth state changed:', event);
 
       if (event === 'SIGNED_OUT') {
-        setAppData(prev => prev ? { ...prev, session: null, profile: null } : null);
+        setAppData(prev => prev ? {
+          ...prev,
+          session: null,
+          profile: null,
+          permission: cameraPermission, // Update permission state
+          requestCameraPermission // Keep the function
+        } : null);
       } else if (event === 'SIGNED_IN' && session?.user?.id) {
-        // Re-initialize app data when user signs in
         initializeApp();
       }
     });
@@ -121,7 +129,17 @@ export default function Index() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [cameraPermission]);
+
+  useEffect(() => {
+    if (appData) {
+      setAppData(prev => prev ? {
+        ...prev,
+        permission: cameraPermission,
+        requestCameraPermission
+      } : null);
+    }
+  }, [cameraPermission, requestCameraPermission]);
 
   if (isLoading) {
     return (
