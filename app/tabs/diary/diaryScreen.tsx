@@ -1,10 +1,11 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { customStyles } from "@/app/constants/UI/styles";
+import { supabase } from "@/db/supabase/supabase";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 import { useRef, useState } from "react";
-import { Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { Appbar, Avatar, Button, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Dimensions, FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { Appbar, Avatar, Button, Card, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 
 /* Diary Data:
 
@@ -28,7 +29,9 @@ export function DiaryScreen({
   appData }: { appData: AppData }) {
   const theme = useTheme();
   const styles = customStyles(theme);
-  const [toggleEntry, setToggleEntry] = useState(false);
+
+  const [toggleView, setToggleView] = useState(false);
+  const [toggleEntry, setToggleEntry] = useState(true);
 
   const {
     formatDate,
@@ -37,7 +40,10 @@ export function DiaryScreen({
     currentMonth,
     navigateMonth,
     navigateDate,
-    setShowCalendar } = useCalendar();
+    setShowCalendar
+  } = useCalendar();
+
+
   return (
     <>
       <Appbar.Header>
@@ -90,11 +96,12 @@ export function DiaryScreen({
           />
         )}
 
-        {toggleEntry == true ? (
-          <DiaryInput appData={appData} />
-
-        ) : (
+        {toggleEntry == false && toggleView == false ? (
           <DiaryMain appData={appData} />
+        ) : toggleView == true && toggleEntry == false ? (
+          <DiaryEntry appData={appData} />
+        ) : (
+          <DiaryInput appData={appData} toggleEntry={setToggleEntry} />
         )}
         <FAB
           icon={toggleEntry == true ? "close" : "note-plus"}
@@ -113,6 +120,9 @@ export function DiaryMain(
   const styles = customStyles(theme);
 
   const { formatDate, formatTime } = useCalendar();
+
+
+
   const mock = [mockData[0], mockData[1], mockData[2], mockData[3], mockData[4]];
 
 
@@ -161,60 +171,6 @@ export function DiaryMain(
   );
 
 }
-
-const mockData = [
-  {
-    userId: "user123",
-    entryId: "entry001",
-    photo: "https://example.com/breakfast.jpg",
-    date: new Date(),
-    mealType: "breakfast",
-    foodItems: ["eggs", "bacon", "toast"],
-    carbs: 25,
-    glucoseLevel: 120
-  },
-  {
-    userId: "user123",
-    entryId: "entry002",
-    photo: "https://example.com/lunch.jpg",
-    date: new Date(Date.now() - 86400000), // Yesterday
-    mealType: "lunch",
-    foodItems: ["chicken", "rice", "vegetables"],
-    carbs: 45,
-    glucoseLevel: 140
-  },
-  {
-    userId: "user123",
-    entryId: "entry003",
-    photo: "https://example.com/dinner.jpg",
-    date: new Date(Date.now() - 172800000), // 2 days ago
-    mealType: "dinner",
-    foodItems: ["salmon", "quinoa", "broccoli"],
-    carbs: 30,
-    glucoseLevel: 110
-  },
-  {
-    userId: "user123",
-    entryId: "entry004",
-    photo: "https://example.com/snack.jpg",
-    date: new Date(Date.now() - 259200000), // 3 days ago
-    mealType: "snack",
-    foodItems: ["apple", "peanut butter"],
-    carbs: 20,
-    glucoseLevel: 95
-  },
-  {
-    userId: "user123",
-    entryId: "entry005",
-    photo: "https://example.com/breakfast2.jpg",
-    date: new Date(Date.now() - 345600000), // 4 days ago
-    mealType: "breakfast",
-    foodItems: ["oatmeal", "berries", "honey"],
-    carbs: 35,
-    glucoseLevel: 105
-  }
-];
-
 export function DiaryCalendar(
   { visible,
     onClose,
@@ -261,7 +217,6 @@ export function DiaryCalendar(
     </Surface>
   );
 }
-
 export function useCalendar() {
   const theme = useTheme();
   const styles = customStyles(theme);
@@ -471,29 +426,53 @@ export function DiaryInput(
 ) {
   const theme = useTheme();
   const styles = customStyles(theme);
-
-
   // camera related
   const {
     renderCamera,
     cycleFlash,
     getFlashIcon,
     getFlashIconColor,
-    capturePhoto
+    capturePhoto,
+    photoURIs,
+    removePhotoURI,
+    clearPhotoURIs
   } = useCamera(appData);
-
-  // save to db
-  const [glucose, setGlucose] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [note, setNote] = useState("");
-  const [activity, setActivity] = useState("none");
-  const [foodType, setFoodType] = useState("snack");
+  // supabase related
+  const {
+    glucose,
+    setGlucose,
+    carbs,
+    setCarbs,
+    note,
+    setNote,
+    activity,
+    setActivity,
+    foodType,
+    setFoodType,
+    activityOptions,
+    foodOptions,
+    saveDiaryEntry,
+    retrieveEntries,
+    removeEntry,
+    isLoading,
+    error
+  } = useDB(appData);
   // toggles and aarrays
   const [toggleCamera, setToggleCamera] = useState(false);
   const [toggleNote, setToggleNote] = useState(false);
-  const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
-  const activityOptions = ["none", "low", "medium", "high"];
+  // keyboard related
+  const glucoseInputRef = useRef<any>(null);
+  const carbsInputRef = useRef<any>(null);
 
+  const handleSave = async () => {
+    await saveDiaryEntry();
+    setToggleCamera(false);
+    setToggleNote(false);
+    clearPhotoURIs();
+    if (toggleEntry) {
+      toggleEntry(false);
+    }
+  }
   const renderEdit = () => {
     return (
       <View style={[styles.plaincontainer, { height: 200 }]}>
@@ -542,9 +521,10 @@ export function DiaryInput(
       </View>
     );
   }
-  const renderTextInput = (affix: string, label: string, icon: any, value: string, setValue: (value: string) => void) => {
+  const renderTextInput = (affix: string, label: string, icon: any, value: string, setValue: (value: string) => void, ref?: any, onSubmitEditing?: () => void, returnKeyType?: "next" | "done") => {
     return (
       <TextInput
+        ref={ref}
         label={label}
         mode="outlined"
         value={value}
@@ -560,76 +540,114 @@ export function DiaryInput(
           />
         }
         style={styles.textInput}
-        placeholder="5.5"
-        keyboardType="numeric"
+        placeholder={label === "glucose" ? "5.5" : "50"}
+        keyboardType={label === "glucose" ? "decimal-pad" : "numeric"}
+        returnKeyType={returnKeyType || "next"}
+        onSubmitEditing={onSubmitEditing}
+        blurOnSubmit={false}
       />
     );
   }
   const renderMenu = () => {
 
     return (
-      <View style={styles.container}>
-        <View style={[styles.row, { justifyContent: 'space-between' }]}>
-          {toggleCamera == true ? (
-            <>
 
+      <View style={[styles.row, { justifyContent: 'space-between' }]}>
+        {toggleCamera == true ? (
+          <>
+
+            <IconButton
+              mode={"outlined"}
+              icon={getFlashIcon()}
+              iconColor={getFlashIconColor()}
+              size={40}
+              onPress={cycleFlash}
+              style={{ alignSelf: 'flex-end' }}
+            />
+            <IconButton
+              mode={"outlined"}
+              icon="camera"
+              size={40}
+              onPress={capturePhoto}
+              style={{ alignSelf: 'flex-end' }}
+            />
+
+            <IconButton
+              mode={"outlined"}
+              icon="close"
+              size={40}
+              onPress={() => setToggleCamera(!toggleCamera)}
+              style={{ alignSelf: 'flex-end' }}
+            />
+          </>
+        ) : (
+          <>
+            <View style={styles.row}>
               <IconButton
                 mode={"outlined"}
-                icon={getFlashIcon()}
-                iconColor={getFlashIconColor()}
+                icon="pen"
                 size={40}
-                onPress={cycleFlash}
+                onPress={() => setToggleNote(!toggleNote)}
                 style={{ alignSelf: 'flex-end' }}
               />
               <IconButton
                 mode={"outlined"}
                 icon="camera"
                 size={40}
-                onPress={capturePhoto}
-                style={{ alignSelf: 'flex-end' }}
-              />
-
-              <IconButton
-                mode={"outlined"}
-                icon="close"
-                size={40}
                 onPress={() => setToggleCamera(!toggleCamera)}
                 style={{ alignSelf: 'flex-end' }}
               />
-            </>
-          ) : (
-            <>
-              <View style={styles.row}>
-                <IconButton
-                  mode={"outlined"}
-                  icon="pen"
-                  size={40}
-                  onPress={() => setToggleNote(!toggleNote)}
-                  style={{ alignSelf: 'flex-end' }}
-                />
-                <IconButton
-                  mode={"outlined"}
-                  icon="camera"
-                  size={40}
-                  onPress={() => setToggleCamera(!toggleCamera)}
-                  style={{ alignSelf: 'flex-end' }}
-                />
-              </View>
-              <IconButton
-                mode={"outlined"}
-                icon="content-save"
-                size={40}
-                onPress={() => setToggleCamera(!toggleCamera)}
-                style={{ alignSelf: 'flex-end' }}
-              />
+            </View>
+            <IconButton
+              mode={"outlined"}
+              icon="content-save"
+              size={40}
+              onPress={handleSave}
+              style={{ alignSelf: 'flex-end' }}
+            />
 
-            </>
-          )}
-        </View>
+          </>
+        )}
       </View>
+
     );
   }
+  const renderPictures = () => {
+    if (photoURIs.length === 0) {
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ color: theme.colors.onSurfaceVariant }}>
+            No photos captured yet
+          </Text>
+        </View>
+      );
+    }
 
+    return (
+      <FlatList
+        horizontal
+        data={photoURIs}
+        keyExtractor={(item, index) => index.toString()}
+        renderItem={({ item, index }) => (
+          <View style={{ margin: 4 }}>
+            <Avatar.Image
+              size={60}
+              source={{ uri: item }}
+              style={{ backgroundColor: theme.colors.primaryContainer }}
+            />
+            <IconButton
+              icon="close"
+              size={20}
+              onPress={() => removePhotoURI(index)}
+              style={{ position: 'absolute', top: -5, right: -5, backgroundColor: theme.colors.errorContainer }}
+              iconColor={theme.colors.onErrorContainer}
+            />
+          </View>
+        )}
+        contentContainerStyle={{ alignItems: 'center', paddingHorizontal: 10 }}
+      />
+    );
+  }
   return (
 
     <KeyboardAvoidingView
@@ -637,42 +655,85 @@ export function DiaryInput(
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <View style={styles.centeredContent}>
-        {toggleCamera == true ? (
-          <View style={[styles.container, { flex: 1 }]}>
-            {renderCamera()}
-          </View>
+      {(toggleCamera || photoURIs.length > 0) && (
+        <View style={{ width: '100%' }}>
+          <Surface style={[styles.container]} elevation={4}>
+            {renderPictures()}
+          </Surface>
+        </View>
 
+      )}
+      <View style={[styles.container]}>
+        {toggleCamera == true ? (
+          <View style={{ flex: 1 }}>
+
+            {renderCamera()}
+
+          </View>
         ) : (
-          <View style={styles.container}>
-            <View style={[styles.row, { justifyContent: 'space-between' }]}>
-              <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Diary Entry</Text>
-              <IconButton
-                icon="close"
-                size={24}
-                onPress={() => toggleEntry && toggleEntry(false)}
-              />
-            </View>
-            <Surface style={[styles.surface, { marginBottom: 8 }]} elevation={4} >
-              {renderTextInput(appData.settings.glucose, "glucose", "blood-bag", glucose, setGlucose)}
-              {renderTextInput("g", "carbs", "food", carbs, setCarbs)}
+          <View>
+            <Surface style={[styles.surface, { marginBottom: 8 }]} elevation={4}>
+              {renderTextInput(
+                appData.settings.glucose,
+                "glucose",
+                "blood-bag",
+                glucose,
+                setGlucose,
+                glucoseInputRef,
+                () => carbsInputRef.current?.focus(),
+                "next"
+              )}
+              {renderTextInput(
+                "g",
+                "carbs",
+                "food",
+                carbs,
+                setCarbs,
+                carbsInputRef,
+                () => {
+                  Keyboard.dismiss();
+                  carbsInputRef.current?.blur();
+                },
+                "done"
+              )}
             </Surface>
             {!toggleNote ? (
               renderRadioButtons()
             ) : (
               renderEdit()
-            )
-            }
+            )}
           </View>
         )}
 
         {renderMenu()}
-
       </View>
     </KeyboardAvoidingView >
 
   );
 }
+
+export function DiaryEntry({ appData }: { appData: AppData }) {
+  const theme = useTheme();
+  const styles = customStyles(theme);
+
+  const LeftContent = props => <Avatar.Icon {...props} icon="folder" />
+
+  return (
+    <Card>
+      <Card.Title title="Card Title" subtitle="Card Subtitle" left={LeftContent} />
+      <Card.Content>
+        <Text variant="titleLarge">Card title</Text>
+        <Text variant="bodyMedium">Card content</Text>
+      </Card.Content>
+      <Card.Cover source={{ uri: 'https://picsum.photos/700' }} />
+      <Card.Actions>
+        <Button>Cancel</Button>
+        <Button>Ok</Button>
+      </Card.Actions>
+    </Card>
+  );
+}
+
 export function RadioButtonGroup(
   { value, setValue, options, title, icon }: { value: string, setValue: (value: string) => void, options: any[], title?: string, icon?: any }
 ) {
@@ -713,18 +774,148 @@ export function RadioButtonGroup(
     </View >
   )
 }
-export function useDB() {
-  // This function can be used to interact with the database
-  // For example, fetching or updating diary entries
+export function useDB(appData: AppData) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+
+  const [glucose, setGlucose] = useState("");
+  const [carbs, setCarbs] = useState("");
+  const [note, setNote] = useState("");
+  const [activity, setActivity] = useState("none");
+  const [foodType, setFoodType] = useState("snack");
+  const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
+  const activityOptions = ["none", "low", "medium", "high"];
+
+  const { clearPhotoURIs, photoURIs } = useCamera(appData);
+
+  const retrieveEntries = async () => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .eq('user_id', appData.session?.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Failed to retrieve diary entries:', error);
+        setError('Failed to retrieve diary entries');
+        return;
+      }
+
+      console.log('✅ Diary entries retrieved successfully:', data);
+      setDiaryEntries(data || []);
+
+    } catch (err) {
+      console.error('❌ Failed to retrieve diary entries:', err);
+      setError('Failed to retrieve diary entries');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const saveDiaryEntry = async () => {
+    try {
+
+      setIsLoading(true);
+      setError(null); // Clear previous errors
+
+      // Validation
+      if (!glucose.trim()) {
+        setError('Glucose level is required');
+        return;
+      }
+
+      if (!carbs.trim()) {
+        setError('Carbs amount is required');
+        return;
+      }
+
+      const entryData = {
+        userId: appData.session?.user.id,
+        glucose: parseFloat(glucose),
+        carbs: parseFloat(carbs),
+        note: note,
+        activity_level: activity,
+        meal_type: foodType,
+        created_at: new Date().toISOString(),
+        uri_array: photoURIs || []
+      }
+
+      const { data, error } = await supabase.from('entries').insert([entryData]);
+      if (error) {
+        console.error('❌ Failed to save diary entry:', error);
+        return;
+      }
+
+      // Clear form after saving
+      setGlucose("");
+      setCarbs("");
+      setNote("");
+      setActivity("none");
+      setFoodType("snack");
+      clearPhotoURIs();
+
+    } catch (error) {
+      console.error('❌ Failed to save diary entry:', error);
+      setError('Failed to save diary entry');
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const removeEntry = async (entryId: string) => {
+    setIsLoading(true);
+    try {
+      const { error } = await supabase
+        .from('entries')
+        .delete()
+        .eq('id', entryId)
+        .eq('user_id', appData.session?.user.id);
+      if (error) {
+        console.error('❌ Failed to delete diary entry:', error);
+        setError('Failed to delete diary entry');
+        return;
+      }
+      console.log('✅ Diary entry deleted successfully:', entryId);
+      // Optionally, refresh the entries after deletion
+      await retrieveEntries();
+    } catch (err) {
+      console.error('❌ Failed to delete diary entry:', err);
+      setError('Failed to delete diary entry');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return {
-    fetchEntries: async () => {
-      // Logic to fetch diary entries from the database
-    },
-    addEntry: async (entry: any) => {
-      // Logic to add a new diary entry to the database
-    },
+    saveDiaryEntry,
+    retrieveEntries,
+    removeEntry,
+
+    isLoading,
+    error,
+
+    diaryEntries,
+
+    glucose,
+    setGlucose,
+    carbs,
+    setCarbs,
+    note,
+    setNote,
+    activity,
+    setActivity,
+    foodType,
+    setFoodType,
+    foodOptions,
+    activityOptions,
+
   };
 }
+
 export function useCamera(appData: AppData) {
 
   const theme = useTheme();
@@ -732,6 +923,8 @@ export function useCamera(appData: AppData) {
   const cameraRef = useRef<CameraView>(null);
   const [flash, setFlash] = useState<"on" | "off" | "auto">("off");
   const [zoom, setZoom] = useState(0);
+  const [photoURIs, setPhotoURIs] = useState<string[]>([]);
+
 
   const renderCamera = () => {
     // Check if permission is still loading
@@ -768,12 +961,21 @@ export function useCamera(appData: AppData) {
         console.error("Camera reference is not set");
         return;
       }
+      if (photoURIs.length >= 3) {
+        console.warn("Maximum of 3 photos reached. Please remove a photo before capturing a new one.");
+        return;
+      }
+
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.5,
         base64: false,
         skipProcessing: false,
       });
       console.log('✅ Photo captured:', photo.uri);
+
+      if (photo && photo.uri) {
+        setPhotoURIs(prevURIs => [...prevURIs, photo.uri]);
+      }
       return photo;
     } catch (error) {
       console.error('❌ Failed to capture photo:', error);
@@ -781,6 +983,13 @@ export function useCamera(appData: AppData) {
     }
   };
 
+  const removePhotoURI = (indexToRemove: number) => {
+    setPhotoURIs(prevURIs => prevURIs.filter((_, index) => index !== indexToRemove));
+  };
+
+  const clearPhotoURIs = () => {
+    setPhotoURIs([]);
+  };
 
   // Get the icon based on the flash state
   const getFlashIcon = () => {
@@ -824,6 +1033,9 @@ export function useCamera(appData: AppData) {
 
     // handle photo capture
     capturePhoto,
+    removePhotoURI,
+    clearPhotoURIs,
+    photoURIs,
 
     // Functions to toggle flash
     cycleFlash,
@@ -833,3 +1045,56 @@ export function useCamera(appData: AppData) {
   };
 
 }
+
+const mockData = [
+  {
+    userId: "user123",
+    entryId: "entry001",
+    photo: { uri: require('@/assets/images/demoImage.jpg') }, // URI object format
+    date: new Date(),
+    mealType: "breakfast",
+    foodItems: ["eggs", "bacon", "toast"],
+    carbs: 25,
+    glucoseLevel: 120
+  },
+  {
+    userId: "user123",
+    entryId: "entry002",
+    photo: "https://example.com/lunch.jpg",
+    date: new Date(Date.now() - 86400000), // Yesterday
+    mealType: "lunch",
+    foodItems: ["chicken", "rice", "vegetables"],
+    carbs: 45,
+    glucoseLevel: 140
+  },
+  {
+    userId: "user123",
+    entryId: "entry003",
+    photo: "https://example.com/dinner.jpg",
+    date: new Date(Date.now() - 172800000), // 2 days ago
+    mealType: "dinner",
+    foodItems: ["salmon", "quinoa", "broccoli"],
+    carbs: 30,
+    glucoseLevel: 110
+  },
+  {
+    userId: "user123",
+    entryId: "entry004",
+    photo: "https://example.com/snack.jpg",
+    date: new Date(Date.now() - 259200000), // 3 days ago
+    mealType: "snack",
+    foodItems: ["apple", "peanut butter"],
+    carbs: 20,
+    glucoseLevel: 95
+  },
+  {
+    userId: "user123",
+    entryId: "entry005",
+    photo: "https://example.com/breakfast2.jpg",
+    date: new Date(Date.now() - 345600000), // 4 days ago
+    mealType: "breakfast",
+    foodItems: ["oatmeal", "berries", "honey"],
+    carbs: 35,
+    glucoseLevel: 105
+  }
+];
