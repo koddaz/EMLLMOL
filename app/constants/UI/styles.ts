@@ -12,14 +12,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
     },
     container: {
-        width: '100%',
-        marginTop: 8,
-        paddingHorizontal: 8,
-        paddingVertical: 16,
-        backgroundColor: theme.colors.primaryContainer,
-        borderColor: theme.colors.primary,
-        borderWidth: 1,
-        borderRadius: 10,
+        flex: 1,
+        backgroundColor: theme.colors.surface
     },
     plaincontainer: {
         width: '100%',
@@ -53,17 +47,19 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
     centeredWrapper: {
         position: 'absolute',
-        top: -100,
+        top: 0,
         left: 0,
         right: 0,
         bottom: 0,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.5)',
+        zIndex: 100
     },
     centeredContent: {
         maxHeight: '70%',
-        maxWidth: '90%',
+        minHeight: '70%',
+        maxWidth: '95%',
         width: '100%',
         backgroundColor: 'transparent',
     },
@@ -75,13 +71,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderColor: theme.colors.error
     },
 
-    // DIARY
-    diaryListItem: {
-        flex: 1,
-        padding: 8,
-        borderRadius: 8,
-        marginTop: 8,
-    },
     // CALENDAR
     calendarSheet: {
         backgroundColor: theme.colors.surface,
@@ -93,7 +82,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         left: 0,
         right: 0,
         zIndex: 1000,
-        
+
     },
     calendarHeader: {
         flexDirection: 'row',
@@ -178,4 +167,158 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         fontWeight: 'bold',
         color: 'white',
     },
+
+    // INPUT STYLES:
+    inputWrapper: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        backgroundColor: theme.colors.surface,
+        zIndex: 100
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.outlineVariant,
+        backgroundColor: theme.colors.surface,
+    },
+    headerContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    closeButton: {
+        margin: 0,
+    },
+    content: {
+        padding: 16,
+        gap: 16,
+    },
+    card: {
+        padding: 16,
+        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    cardTitle: {
+        marginLeft: 8,
+        color: theme.colors.onSurface,
+        flex: 1,
+    },
+    input: {
+        backgroundColor: 'transparent',
+    },
+    selectorRow: {
+        marginBottom: 16,
+    },
+    selectorGroup: {
+        flex: 1,
+    },
+    selectorLabel: {
+        color: theme.colors.onSurfaceVariant,
+        marginBottom: 8,
+    },
+    chipContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    chip: {
+        borderRadius: 20,
+        minWidth: 70,
+    },
+    photoButton: {
+        marginLeft: 'auto',
+    },
+    cameraContainer: {
+        borderRadius: 8,
+        overflow: 'hidden',
+        height: 200,
+    },
+    cameraControls: {
+        position: 'absolute',
+        bottom: 16,
+        left: 0,
+        right: 0,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 16,
+    },
+    photoScroll: {
+        marginTop: 8,
+    },
+    photoItem: {
+        marginRight: 12,
+        position: 'relative',
+    },
+    photoDelete: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: theme.colors.errorContainer,
+        width: 24,
+        height: 24,
+    },
+    emptyPhotos: {
+        alignItems: 'center',
+        paddingVertical: 24,
+    },
+    actionContainer: {
+        flexDirection: 'row',
+        padding: 20,
+        gap: 12,
+        backgroundColor: theme.colors.surface,
+        borderTopWidth: 1,
+        borderTopColor: theme.colors.outlineVariant,
+    },
+    cancelButton: {
+        flex: 1,
+    },
+    saveButton: {
+        flex: 2,
+    },
+
+    // DIARY LIST ITEM:
+    diaryListRow: {
+        marginHorizontal: 8,
+        marginVertical: 4,
+    },
+    diaryListItem: {
+        borderRadius: 8,
+        backgroundColor: theme.colors.surface,
+        borderLeftWidth: 3,
+        borderLeftColor: theme.colors.primary,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 2,
+        elevation: 2,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+    },
+    itemContent: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    leftContent: {
+        flex: 1,
+    },
+    glucoseBadge: {
+        backgroundColor: theme.colors.primaryContainer,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+        minWidth: 50,
+        alignItems: 'center',
+    }
 });
