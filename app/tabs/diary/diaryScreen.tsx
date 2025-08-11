@@ -91,6 +91,7 @@ export function DiaryScreen({
             appData={appData}
             toggleEntry={setToggleEntry}
             setSelectedDiaryData={setSelectedDiaryData}
+            key={selectedDate.toISOString()} // Add key to force re-render when date changes
           />
         )}
 
@@ -203,21 +204,31 @@ export function DiaryList(
   const theme = useTheme();
   const styles = customStyles(theme);
 
+  const { selectedDate } = useCalendar();
   const { isLoading, diaryEntries, retrieveEntries } = useDB(appData);
 
   useEffect(() => {
     retrieveEntries();
   }, []);
 
+  const filteredEntries = diaryEntries.filter(item => {
+    const itemDate = new Date(item.created_at);
+    const selectedDateObj = new Date(selectedDate);
+
+    // Compare dates (year, month, day) without time
+    return itemDate.getFullYear() === selectedDateObj.getFullYear() &&
+      itemDate.getMonth() === selectedDateObj.getMonth() &&
+      itemDate.getDate() === selectedDateObj.getDate();
+  });
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  if (diaryEntries.length === 0) {
+  if (filteredEntries.length === 0) {
     return (
       <View style={[styles.background, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
         <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-          No diary entries found
+          No entries for {new Date(selectedDate).toLocaleDateString()}
         </Text>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
           Add your first entry by tapping the + button
@@ -229,7 +240,7 @@ export function DiaryList(
   return (
     <View style={styles.background}>
       <FlatList
-        data={diaryEntries}
+        data={filteredEntries} // Use filtered entries instead of all entries
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const itemDate = new Date(item.created_at);
@@ -249,8 +260,8 @@ export function DiaryList(
             <DiaryListItem
               diaryData={diaryData}
               onPress={() => {
-                setSelectedDiaryData && setSelectedDiaryData(diaryData); // Set the selected data
-                toggleEntry && toggleEntry(true); // Then toggle the entry view
+                setSelectedDiaryData && setSelectedDiaryData(diaryData);
+                toggleEntry && toggleEntry(true);
               }}
             />
           );
