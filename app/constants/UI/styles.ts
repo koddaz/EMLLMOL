@@ -5,11 +5,10 @@ import { Colors } from "react-native/Libraries/NewAppScreen";
 
 export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
-
     background: {
         flex: 1,
         width: '100%',
-        backgroundColor: theme.colors.background,
+        backgroundColor: theme.colors.backdrop,
 
     },
     container: {
@@ -52,8 +51,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         right: 0,
         bottom: 0,
     },
-
-
     centeredWrapper: {
         position: 'absolute',
         top: -100,
@@ -70,7 +67,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         width: '100%',
         backgroundColor: 'transparent',
     },
-
     surface: {
         backgroundColor: theme.colors.primaryContainer,
         padding: 16,
@@ -79,8 +75,75 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderColor: theme.colors.error
     },
 
+    // DIARY
+    diaryListItem: {
+        flex: 1,
+        padding: 8,
+        borderRadius: 8,
+        marginTop: 8,
+    },
+    // CALENDAR
+    calendarSheet: {
+        backgroundColor: theme.colors.surface,
+        borderBottomLeftRadius: 16,
+        borderBottomRightRadius: 16,
+        padding: 8,
+        position: 'absolute',
+        top: 0, // Adjusted to match the smaller app bar height
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        
+    },
+    calendarHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 8,
+    },
+    calendarHeaderText: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: theme.colors.onSurface,
+    },
+    calendarWeekHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginBottom: 8,
+    },
+    calendarWeekDay: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: theme.colors.onSurfaceVariant,
+        textAlign: 'center',
+        flex: 1,
+    },
+    calendarGrid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'space-around',
+    },
+    calendarDay: {
+        width: '14.28%', // 100% / 7 days
+        aspectRatio: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 2,
+    },
+    selectedDateInfo: {
+        marginTop: 16,
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    selectedDateText: {
+        fontSize: 14,
+        color: theme.colors.onSurface,
+        textAlign: 'center',
+    },
 
 
+    // CRAP FOR THE AI CAM
 
     message: {
         textAlign: 'center',

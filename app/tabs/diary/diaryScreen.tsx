@@ -3,9 +3,8 @@ import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { CameraView } from "expo-camera";
 import { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, View } from "react-native";
-import { Button, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+import { Dimensions, FlatList, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { Appbar, Avatar, Button, FAB, IconButton, RadioButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 
 /* Diary Data:
 
@@ -29,26 +28,82 @@ export function DiaryScreen({
   appData }: { appData: AppData }) {
   const theme = useTheme();
   const styles = customStyles(theme);
-  const [toggleEntry, setToggleEntry] = useState(true);
+  const [toggleEntry, setToggleEntry] = useState(false);
 
-
-
+  const {
+    formatDate,
+    selectedDate,
+    showCalendar,
+    currentMonth,
+    navigateMonth,
+    navigateDate,
+    setShowCalendar } = useCalendar();
   return (
-    <View style={styles.background}>
-      {toggleEntry == true ? (
+    <>
+      <Appbar.Header>
+        {showCalendar ? (
+          <>
+            <Appbar.Action
+              icon="chevron-left"
+              onPress={() => navigateMonth('prev')}
+            />
+            <Appbar.Content
+              title={currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            />
+            <Appbar.Action
+              icon="chevron-right"
+              onPress={() => navigateMonth('next')}
+            />
+            <Appbar.Action
+              icon="close"
+              onPress={() => setShowCalendar(false)}
+            />
+          </>
+        ) : (
+          <>
+            <Appbar.Action
+              icon='chevron-left'
+              onPress={() => { navigateDate('prev') }}
+            />
 
-        <DiaryInput appData={appData} />
+            <Appbar.Content title={formatDate(selectedDate)} />
 
-      ) : (
-        <DiaryMain appData={appData} />
-      )}
-      <FAB
-        icon={toggleEntry == true ? "close" : "note-plus"}
-        style={styles.fab}
-        onPress={() => setToggleEntry(!toggleEntry)}
-      />
+            <Appbar.Action
+              icon="chevron-right"
+              onPress={() => navigateDate('next')}
+            />
+            <Appbar.Action
+              icon="calendar"
+              onPress={() => setShowCalendar(!showCalendar)}
+            />
 
-    </View>
+          </>
+        )}
+      </Appbar.Header>
+
+      <View style={styles.background}>
+        {showCalendar && (
+          <DiaryCalendar
+            visible={showCalendar}
+            onClose={() => setShowCalendar(false)}
+            appData={appData}
+          />
+        )}
+
+        {toggleEntry == true ? (
+          <DiaryInput appData={appData} />
+
+        ) : (
+          <DiaryMain appData={appData} />
+        )}
+        <FAB
+          icon={toggleEntry == true ? "close" : "note-plus"}
+          style={styles.fab}
+          onPress={() => setToggleEntry(!toggleEntry)}
+        />
+
+      </View>
+    </>
   );
 }
 export function DiaryMain(
@@ -57,35 +112,354 @@ export function DiaryMain(
   const theme = useTheme();
   const styles = customStyles(theme);
 
+  const { formatDate, formatTime } = useCalendar();
+  const mock = [mockData[0], mockData[1], mockData[2], mockData[3], mockData[4]];
 
 
-
-  return (
-    <>
-
-
-
-      <Text style={styles.text}>Main</Text>
-
-
-
-
-
-    </>
-  );
-
-}
-export function DiaryCalendar() {
-  const theme = useTheme();
-  const styles = customStyles(theme);
 
   return (
     <View style={styles.background}>
-      <Text style={styles.text}>Diary Calendar</Text>
-      {/* Calendar component can be added here */}
+
+      <FlatList
+        data={mock}
+        keyExtractor={(item) => item.entryId}
+        renderItem={({ item }) => {
+          return (
+            <View style={styles.row}>
+
+              <Avatar.Text
+                size={60}
+                label={item.glucoseLevel.toString()}
+                style={{ backgroundColor: theme.colors.primaryContainer }}
+                labelStyle={{ color: theme.colors.onPrimaryContainer }}
+              />
+
+              <Surface style={styles.diaryListItem} elevation={4}>
+                <View style={styles.row}>
+                  <Text variant="bodyMedium">{formatTime(item.date)}</Text>
+                  <View style={{ flex: 1, alignItems: 'flex-start' }}>
+                    <Text variant="titleMedium">{item.mealType}</Text>
+                    <Text variant="bodySmall">Food Items: {item.foodItems.join(', ')}</Text>
+                    <Text variant="bodySmall">Carbs: {item.carbs}g</Text>
+                  </View>
+
+                </View>
+
+
+              </Surface>
+            </View>
+          );
+        }}
+      />
+
+
+
+
+
+
     </View>
   );
+
 }
+
+const mockData = [
+  {
+    userId: "user123",
+    entryId: "entry001",
+    photo: "https://example.com/breakfast.jpg",
+    date: new Date(),
+    mealType: "breakfast",
+    foodItems: ["eggs", "bacon", "toast"],
+    carbs: 25,
+    glucoseLevel: 120
+  },
+  {
+    userId: "user123",
+    entryId: "entry002",
+    photo: "https://example.com/lunch.jpg",
+    date: new Date(Date.now() - 86400000), // Yesterday
+    mealType: "lunch",
+    foodItems: ["chicken", "rice", "vegetables"],
+    carbs: 45,
+    glucoseLevel: 140
+  },
+  {
+    userId: "user123",
+    entryId: "entry003",
+    photo: "https://example.com/dinner.jpg",
+    date: new Date(Date.now() - 172800000), // 2 days ago
+    mealType: "dinner",
+    foodItems: ["salmon", "quinoa", "broccoli"],
+    carbs: 30,
+    glucoseLevel: 110
+  },
+  {
+    userId: "user123",
+    entryId: "entry004",
+    photo: "https://example.com/snack.jpg",
+    date: new Date(Date.now() - 259200000), // 3 days ago
+    mealType: "snack",
+    foodItems: ["apple", "peanut butter"],
+    carbs: 20,
+    glucoseLevel: 95
+  },
+  {
+    userId: "user123",
+    entryId: "entry005",
+    photo: "https://example.com/breakfast2.jpg",
+    date: new Date(Date.now() - 345600000), // 4 days ago
+    mealType: "breakfast",
+    foodItems: ["oatmeal", "berries", "honey"],
+    carbs: 35,
+    glucoseLevel: 105
+  }
+];
+
+export function DiaryCalendar(
+  { visible,
+    onClose,
+    appData,
+  }: {
+    visible: boolean,
+    onClose: () => void,
+    appData: AppData,
+
+  }
+) {
+  const theme = useTheme();
+  const styles = customStyles(theme);
+
+  const {
+    renderCalendarGrid
+  } = useCalendar();
+
+  return (
+    <Surface
+      style={[styles.calendarSheet, {
+        position: 'absolute',
+        top: 0, // Adjusted to match the smaller app bar height
+        left: 0,
+        right: 0,
+
+        zIndex: 1000,
+      }]}
+      elevation={4}
+    >
+      <ScrollView>
+        <View style={styles.calendarWeekHeader}>
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+            <Text key={day} style={styles.calendarWeekDay}>
+              {day}
+            </Text>
+          ))}
+        </View>
+
+        <View style={styles.calendarGrid}>
+          {renderCalendarGrid()}
+        </View>
+      </ScrollView>
+    </Surface>
+  );
+}
+
+export function useCalendar() {
+  const theme = useTheme();
+  const styles = customStyles(theme);
+
+  const onClose = () => {
+    setShowCalendar(false);
+  };
+
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  const toggleCalendar = () => {
+    setShowCalendar(!showCalendar);
+  };
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  }
+
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false
+    });
+  }
+
+  const getDaysInMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date: Date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const navigateMonth = (direction: 'prev' | 'next') => {
+    const newMonth = new Date(currentMonth);
+    if (direction === 'prev') {
+      newMonth.setMonth(newMonth.getMonth() - 1);
+    } else {
+      newMonth.setMonth(newMonth.getMonth() + 1);
+    }
+    setCurrentMonth(newMonth);
+  };
+
+  const navigateDate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    if (direction === 'prev') {
+      newDate.setDate(newDate.getDate() - 1);
+    } else {
+      newDate.setDate(newDate.getDate() + 1);
+    }
+    setSelectedDate(newDate);
+  }
+
+  const renderCalendarGrid = () => {
+    const daysInMonth = getDaysInMonth(currentMonth);
+    const firstDay = getFirstDayOfMonth(currentMonth);
+    const days = [];
+
+    const prevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    const daysInPrevMonth = getDaysInMonth(prevMonth);
+
+    // Add days from the previous month
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const day = daysInPrevMonth - i;
+      const date = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
+
+      days.push(
+        <Surface
+          key={`prev-${day}`}
+          style={[styles.calendarDay, { opacity: 0.5 }]}
+          elevation={0}
+        >
+          <Button
+            mode="text"
+            onPress={() => {
+              setSelectedDate(date);
+              setCurrentMonth(prevMonth);
+              onClose();
+            }}
+            style={{ minWidth: 40, height: 40 }}
+            contentStyle={{ height: 40 }}
+            labelStyle={{
+              fontSize: 14,
+              color: theme.colors.onSurfaceVariant
+            }}
+          >
+            {day}
+          </Button>
+        </Surface>
+      );
+    }
+
+    // Add days of current month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      const isSelected = selectedDate.toDateString() === date.toDateString();
+      const isToday = new Date().toDateString() === date.toDateString();
+
+      days.push(
+        <Surface
+          key={day}
+          style={[
+            styles.calendarDay,
+            isSelected && { backgroundColor: theme.colors.primary },
+            isToday && !isSelected && { backgroundColor: theme.colors.primaryContainer }
+          ]}
+          elevation={isSelected ? 2 : 0}
+        >
+          <Button
+            mode={isSelected ? "contained" : "text"}
+            onPress={() => {
+              setSelectedDate(date);
+              onClose();
+            }}
+            style={{ minWidth: 40, height: 40 }}
+            contentStyle={{ height: 40 }}
+            labelStyle={{
+              fontSize: 14,
+              color: isSelected ? theme.colors.onPrimary :
+                isToday ? theme.colors.primary : theme.colors.onSurface
+            }}
+          >
+            {day}
+          </Button>
+        </Surface>
+      );
+    }
+
+    // Add days from next month to complete the grid
+    const totalCells = days.length;
+    const remainingCells = 42 - totalCells; // 6 rows × 7 days = 42 cells
+    const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+
+    for (let day = 1; day <= remainingCells; day++) {
+      const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
+
+      days.push(
+        <Surface
+          key={`next-${day}`}
+          style={[styles.calendarDay, { opacity: 0.5 }]}
+          elevation={0}
+        >
+          <Button
+            mode="text"
+            onPress={() => {
+              setSelectedDate(date);
+              setCurrentMonth(nextMonth);
+              onClose();
+            }}
+            style={{ minWidth: 40, height: 40 }}
+            contentStyle={{ height: 40 }}
+            labelStyle={{
+              fontSize: 14,
+              color: theme.colors.onSurfaceVariant
+            }}
+          >
+            {day}
+          </Button>
+        </Surface>
+      );
+    }
+
+    return days;
+  };
+
+  return {
+    selectedDate,
+    setSelectedDate,
+    setShowCalendar,
+    setCurrentMonth,
+    showCalendar,
+
+    toggleCalendar,
+
+    formatDate,
+    formatTime,
+
+
+    currentMonth,
+
+    getDaysInMonth,
+    getFirstDayOfMonth,
+
+    navigateMonth,
+    navigateDate,
+
+    renderCalendarGrid
+  }
+}
+
+// Main entry point for the app
 export function DiaryInput(
   {
     appData,
@@ -105,7 +479,7 @@ export function DiaryInput(
     cycleFlash,
     getFlashIcon,
     getFlashIconColor,
-    capturePhoto 
+    capturePhoto
   } = useCamera(appData);
 
   // save to db
@@ -351,7 +725,6 @@ export function useDB() {
     },
   };
 }
-
 export function useCamera(appData: AppData) {
 
   const theme = useTheme();
