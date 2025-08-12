@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { View } from "react-native";
 import { Appbar, BottomNavigation, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,15 +15,16 @@ export function RootNavigation({ appData }: { appData: AppData }) {
     const styles = customStyles(theme);
     const insets = useSafeAreaInsets();
 
-    const { navigateDate, formatDate, selectedDate, showCalendar, setShowCalendar } = useCalendar();
+    const { selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar();
+
+    // Settings state management
+    const [settingsEditMode, setSettingsEditMode] = useState(false);
+    const [settingsSection, setSettingsSection] = useState<'profile' | 'preferences' | 'account'>('profile');
 
     // Move the DB hook to root level
-    const { isLoading, diaryEntries, retrieveEntries } = useDB(appData);
-
-    // Load entries once when app starts
-    useEffect(() => {
-        retrieveEntries();
-    }, []);
+    const { retrieveEntries } = useDB(appData);
+    const diaryEntries = appData.diaryEntries || [];
+    const isLoading = !appData.isEntriesLoaded;
 
     const DiaryRoute = () => (
         <DiaryScreen
@@ -31,14 +32,24 @@ export function RootNavigation({ appData }: { appData: AppData }) {
             setShowCalendar={setShowCalendar}
             showCalendar={showCalendar}
             selectedDate={selectedDate}
-            // Pass the data and loading state down
+            setSelectedDate={setSelectedDate} // Pass the setter
             diaryEntries={diaryEntries}
             isLoading={isLoading}
-            refreshEntries={retrieveEntries}
+            refreshEntries={async () => {
+                const updatedEntries = await retrieveEntries();
+            }}
         />
     );
     const CameraRoute = () => <CameraScreen />;
-    const SettingsRoute = () => <SettingsScreen appData={appData} />;
+    const SettingsRoute = () => (
+        <SettingsScreen
+            appData={appData}
+            editMode={settingsEditMode}
+            setEditMode={setSettingsEditMode}
+            currentSection={settingsSection}
+            setCurrentSection={setSettingsSection}
+        />
+    );
 
     const [index, setIndex] = useState(0);
     const [routes] = useState([
@@ -55,33 +66,62 @@ export function RootNavigation({ appData }: { appData: AppData }) {
 
     const getCurrentRoute = () => routes[index].key;
 
+    // Settings helper functions
+    const getSettingsTitle = () => {
+        switch (settingsSection) {
+            case 'profile': return 'Profile';
+            case 'preferences': return 'Preferences';
+            case 'account': return 'Account';
+            default: return 'Settings';
+        }
+    };
+
+    const getSettingsIcon = () => {
+        switch (settingsSection) {
+            case 'profile': return 'account-circle';
+            case 'preferences': return 'tune';
+            case 'account': return 'account-cog';
+            default: return 'cog';
+        }
+    };
+
+    // Format diary date for AppBar
+    const formatDiaryDate = () => {
+        return selectedDate.toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     return (
         <View style={styles.container}>
             <Appbar.Header
-                style={[styles.appBar, { paddingTop: insets.top }]}
+                mode="small"
+                style={styles.appBar}
                 statusBarHeight={insets.top}
-                elevated={false}
+                elevated={
+                    showCalendar ? false : true
+                }
+                   
             >
                 {getCurrentRoute() === 'diary' && (
                     <>
                         <Appbar.Action
-                            icon='chevron-left'
-                            onPress={() => { navigateDate('prev') }}
-                            iconColor={theme.colors.onSurfaceVariant}
+                            mode="outlined"
+                            icon="book"
+                            // onPress={() => { navigateDate('prev') }}
+                            iconColor={theme.colors.primary}
                             style={styles.appBarAction}
-                            size={22}
+                            size={30}
                         />
+
                         <Appbar.Content
-                            title={formatDate(selectedDate)}
-                            titleStyle={styles.appBarTitle}
+                            title={"Diary"}
+                            titleStyle={[styles.appBarTitle, { fontSize: 18 }]} // Slightly smaller for longer text
                         />
-                        <Appbar.Action
-                            icon="chevron-right"
-                            onPress={() => navigateDate('next')}
-                            iconColor={theme.colors.onSurfaceVariant}
-                            style={styles.appBarAction}
-                            size={22}
-                        />
+                        
+
                         <Appbar.Action
                             icon="calendar"
                             onPress={() => setShowCalendar(!showCalendar)}
@@ -124,10 +164,28 @@ export function RootNavigation({ appData }: { appData: AppData }) {
 
                 {getCurrentRoute() === 'settings' && (
                     <>
+                        <Appbar.Action
+                            icon={getSettingsIcon()}
+                            iconColor={theme.colors.primary}
+                            style={styles.appBarAction}
+                            size={22}
+                        />
                         <Appbar.Content
-                            title="Settings"
+                            title={getSettingsTitle()}
                             titleStyle={styles.appBarTitle}
                         />
+                        {settingsSection === 'profile' && (
+                            <Appbar.Action
+                                icon={settingsEditMode ? "check" : "pencil"}
+                                onPress={() => setSettingsEditMode(!settingsEditMode)}
+                                iconColor={theme.colors.primary}
+                                style={[
+                                    styles.appBarAction,
+                                    settingsEditMode && { backgroundColor: theme.colors.primaryContainer }
+                                ]}
+                                size={22}
+                            />
+                        )}
                         <Appbar.Action
                             icon="information-outline"
                             onPress={() => {
@@ -143,11 +201,17 @@ export function RootNavigation({ appData }: { appData: AppData }) {
 
             <BottomNavigation
                 activeColor={theme.colors.primary}
-                inactiveColor={theme.colors.onPrimaryContainer}
+                inactiveColor={theme.colors.onSurfaceVariant}
                 barStyle={styles.bottomAppBar}
                 navigationState={{ index, routes }}
                 onIndexChange={setIndex}
                 renderScene={renderScene}
+                compact={true}
+                shifting={false}
+                sceneAnimationEnabled={true}
+                sceneAnimationType="opacity"
+                keyboardHidesNavigationBar={true}
+                safeAreaInsets={{ bottom: insets.bottom }}
             />
         </View>
     );

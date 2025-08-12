@@ -3,21 +3,51 @@ import { customStyles } from "@/app/constants/UI/styles";
 import { useAuth } from "@/db/supabase/auth/authScreen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, IconButton, SegmentedButtons, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, SegmentedButtons, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
 
-export function SettingsScreen({ appData }: { appData: AppData }) {
+export function SettingsScreen({ 
+    appData, 
+    editMode, 
+    setEditMode, 
+    currentSection, 
+    setCurrentSection 
+}: { 
+    appData: AppData;
+    editMode: boolean;
+    setEditMode: (mode: boolean) => void;
+    currentSection: 'profile' | 'preferences' | 'account';
+    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+}) {
     const theme = useTheme();
     const styles = customStyles(theme);
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+    // Auto-scroll to sections based on currentSection
+    useEffect(() => {
+        // You can implement auto-scrolling here if needed
+        console.log('Current section:', currentSection);
+    }, [currentSection]);
+
     return (
         <View style={styles.background}>
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-                <ProfileSettings appData={appData} setShowSuccessMessage={setShowSuccessMessage} />
-                <AppSettings appData={appData} />
-                <AccountActions appData={appData} />
+                <ProfileSettings 
+                    appData={appData} 
+                    setShowSuccessMessage={setShowSuccessMessage}
+                    editMode={editMode}
+                    setEditMode={setEditMode}
+                    setCurrentSection={setCurrentSection}
+                />
+                <AppSettings 
+                    appData={appData} 
+                    setCurrentSection={setCurrentSection}
+                />
+                <AccountActions 
+                    appData={appData} 
+                    setCurrentSection={setCurrentSection}
+                />
             </ScrollView>
             
             <Snackbar
@@ -34,14 +64,19 @@ export function SettingsScreen({ appData }: { appData: AppData }) {
 
 export function ProfileSettings({
     appData,
-    setShowSuccessMessage
+    setShowSuccessMessage,
+    editMode,
+    setEditMode,
+    setCurrentSection
 }: {
     appData: AppData;
     setShowSuccessMessage: (value: boolean) => void;
+    editMode: boolean;
+    setEditMode: (mode: boolean) => void;
+    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
     const theme = useTheme();
     const styles = customStyles(theme);
-    const [edit, setEdit] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -51,6 +86,11 @@ export function ProfileSettings({
     const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
     const [avatarUrl, setAvatarUrl] = useState(appData?.profile?.avatarUrl || '');
 
+    // Set current section when this component comes into view
+    useEffect(() => {
+        setCurrentSection('profile');
+    }, []);
+
     const handleUpdateProfile = async () => {
         if (!username || !fullName) return;
 
@@ -58,7 +98,7 @@ export function ProfileSettings({
             setIsLoading(true);
             setError(null);
             await updateProfile(username, fullName, avatarUrl);
-            setEdit(false);
+            setEditMode(false);
             setShowSuccessMessage(true);
             console.log('Profile updated successfully');
 
@@ -70,29 +110,12 @@ export function ProfileSettings({
         }
     };
 
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <View style={styles.headerContent}>
-                <MaterialCommunityIcons name="account-circle" size={24} color={theme.colors.primary} />
-                <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, marginLeft: 12 }}>
-                    Profile
-                </Text>
-            </View>
-            <IconButton
-                icon={edit ? "check" : "pencil"}
-                size={20}
-                onPress={() => {
-                    if (edit) {
-                        handleUpdateProfile();
-                    }
-                    setEdit(!edit);
-                }}
-                iconColor={theme.colors.primary}
-                style={styles.closeButton}
-                disabled={isLoading}
-            />
-        </View>
-    );
+    // Watch for edit mode changes from AppBar
+    useEffect(() => {
+        if (editMode && isLoading) {
+            handleUpdateProfile();
+        }
+    }, [editMode]);
 
     const renderProfileCard = () => (
         <Surface style={styles.card} elevation={2}>
@@ -118,7 +141,7 @@ export function ProfileSettings({
                 value={username}
                 onChangeText={setUsername}
                 label="Username"
-                editable={edit}
+                editable={editMode}
                 left={<TextInput.Icon icon="account" />}
                 style={[styles.input, { marginBottom: 12 }]}
                 dense
@@ -129,7 +152,7 @@ export function ProfileSettings({
                 value={fullName}
                 onChangeText={setFullName}
                 label="Full Name"
-                editable={edit}
+                editable={editMode}
                 left={<TextInput.Icon icon="account-details" />}
                 style={styles.input}
                 dense
@@ -139,8 +162,6 @@ export function ProfileSettings({
 
     return (
         <View style={styles.content}>
-            {renderHeader()}
-            
             {error && (
                 <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
                     <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
@@ -151,11 +172,11 @@ export function ProfileSettings({
 
             {renderProfileCard()}
 
-            {edit && (
+            {editMode && (
                 <View style={styles.actionContainer}>
                     <Button
                         mode="outlined"
-                        onPress={() => setEdit(false)}
+                        onPress={() => setEditMode(false)}
                         style={styles.cancelButton}
                         icon="close"
                     >
@@ -177,12 +198,23 @@ export function ProfileSettings({
     );
 }
 
-export function AppSettings({ appData }: { appData: AppData }) {
+export function AppSettings({ 
+    appData, 
+    setCurrentSection 
+}: { 
+    appData: AppData;
+    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+}) {
     const theme = useTheme();
     const styles = customStyles(theme);
 
     const [weight, setWeight] = useState(appData.settings.weight);
     const [glucose, setGlucose] = useState(appData.settings.glucose);
+
+    // Set current section when this component comes into view
+    useEffect(() => {
+        setCurrentSection('preferences');
+    }, []);
 
     const saveSetting = async (key: string, value: string) => {
         try {
@@ -202,17 +234,6 @@ export function AppSettings({ appData }: { appData: AppData }) {
         setGlucose(newGlucose);
         saveSetting('glucose', newGlucose);
     };
-
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <View style={styles.headerContent}>
-                <MaterialCommunityIcons name="tune" size={24} color={theme.colors.primary} />
-                <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, marginLeft: 12 }}>
-                    Preferences
-                </Text>
-            </View>
-        </View>
-    );
 
     const renderUnitsCard = () => (
         <Surface style={styles.card} elevation={2}>
@@ -276,16 +297,26 @@ export function AppSettings({ appData }: { appData: AppData }) {
 
     return (
         <View style={styles.content}>
-            {renderHeader()}
             {renderUnitsCard()}
         </View>
     );
 }
 
-export function AccountActions({ appData }: { appData: AppData }) {
+export function AccountActions({ 
+    appData, 
+    setCurrentSection 
+}: { 
+    appData: AppData;
+    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+}) {
     const theme = useTheme();
     const styles = customStyles(theme);
     const { signOut } = useAuth(appData.session);
+
+    // Set current section when this component comes into view
+    useEffect(() => {
+        setCurrentSection('account');
+    }, []);
 
     const handleSignOut = async () => {
         try {
@@ -294,17 +325,6 @@ export function AccountActions({ appData }: { appData: AppData }) {
             console.error('Error signing out:', error);
         }
     };
-
-    const renderHeader = () => (
-        <View style={styles.header}>
-            <View style={styles.headerContent}>
-                <MaterialCommunityIcons name="account-cog" size={24} color={theme.colors.primary} />
-                <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, marginLeft: 12 }}>
-                    Account
-                </Text>
-            </View>
-        </View>
-    );
 
     const renderActionsCard = () => (
         <Surface style={styles.card} elevation={2}>
@@ -367,22 +387,8 @@ export function AccountActions({ appData }: { appData: AppData }) {
 
     return (
         <View style={styles.content}>
-            {renderHeader()}
             {renderActionsCard()}
         </View>
     );
 }
 
-/* 
-Supabase user settings 
-  id uuid references auth.users on delete cascade not null primary key,
-  updated_at timestamp with time zone,
-  username text unique,
-  full_name text,
-  avatar_url text,
-
-Async settings:
-    weight unit kg/lbs
-    glucose unit mg/dL or mmol/L
-    
-*/

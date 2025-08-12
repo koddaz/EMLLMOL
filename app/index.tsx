@@ -21,7 +21,6 @@ AppState.addEventListener('change', (state) => {
 })
 
 export default function Index() {
-
   const theme = useTheme();
   const styles = customStyles(theme);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
@@ -29,6 +28,7 @@ export default function Index() {
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -36,12 +36,6 @@ export default function Index() {
         console.log('🚀 Initializing application...');
         setIsLoading(true);
         setError(null);
-
-        // Wait for camera permission to be available (not null)
-        if (cameraPermission === null) {
-          console.log('📷 Waiting for camera permissions...');
-          return; // Exit early, useEffect will run again when cameraPermission changes
-        }
 
         // 1. Get session
         console.log('📱 Checking authentication session...');
@@ -53,11 +47,14 @@ export default function Index() {
         }
 
         let profileData = null;
+        let diaryEntries = [];
 
-        // 2. If user is logged in, fetch their profile
+        // 2. If user is logged in, fetch their profile AND diary entries
         if (session?.user?.id) {
-          console.log('👤 Fetching user profile...');
+          console.log('👤 Fetching user profile and diary entries...');
+
           try {
+            // Fetch profile
             const { data, error: profileError } = await supabase
               .from('profiles')
               .select(`username, full_name, avatar_url`)
@@ -74,8 +71,24 @@ export default function Index() {
               };
               console.log('✅ Profile loaded');
             }
-          } catch (profileError) {
-            console.warn('Profile fetch failed:', profileError);
+
+            // Fetch diary entries
+            console.log('📔 Loading diary entries...');
+            const { data: entriesData, error: entriesError } = await supabase
+              .from('entries')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .order('created_at', { ascending: false });
+
+            if (entriesError) {
+              console.error('❌ Failed to load diary entries:', entriesError);
+            } else {
+              diaryEntries = entriesData || [];
+              console.log(`✅ Loaded ${diaryEntries.length} diary entries`);
+            }
+
+          } catch (error) {
+            console.warn('Profile/entries fetch failed:', error);
           }
         }
 
@@ -93,15 +106,18 @@ export default function Index() {
 
         console.log('✅ Settings loaded:', settings);
 
-        // 4. Set all app data at once
+        // 4. Set all app data at once - including diary entries
         setAppData({
           session,
           permission: cameraPermission,
           requestCameraPermission,
           profile: profileData,
-          settings
+          settings,
+          diaryEntries, // Add diary entries to initial app data
+          isEntriesLoaded: true // Flag to indicate entries are loaded
         });
 
+        setIsInitialized(true);
         console.log('✅ Application initialized successfully');
 
       } catch (error) {
@@ -121,60 +137,78 @@ export default function Index() {
         setAppData(prev => prev ? {
           ...prev,
           session: null,
-          profile: null
+          profile: null,
+          diaryEntries: [],
+          isEntriesLoaded: false
         } : null);
+        setIsInitialized(false);
       } else if (event === 'SIGNED_IN' && session?.user?.id) {
+        setIsInitialized(false);
         initializeApp();
       }
     });
 
-    initializeApp();
+    // Only initialize if not already done
+    if (!isInitialized) {
+      initializeApp();
+    }
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [cameraPermission]);
+  }, [cameraPermission, isInitialized]);
 
-  if (isLoading) {
+  useEffect(() => {
+    if (appData) {
+      setAppData(prev => prev ? {
+        ...prev,
+        permission: cameraPermission,
+        requestCameraPermission
+      } : null);
+    }
+  }, [cameraPermission, requestCameraPermission]);
+
+  // Show loading screen until everything is ready
+  if (isLoading || !isInitialized) {
     return (
-      <View style={styles.background}>
+      <SafeAreaProvider>
         <PaperProvider>
-          <LoadingScreen />
+          <View style={styles.background}>
+            <LoadingScreen />
+          </View>
         </PaperProvider>
-      </View>
+      </SafeAreaProvider>
     );
   }
 
   if (error) {
     return (
-      <View style={styles.background}>
+      <SafeAreaProvider>
         <PaperProvider>
-          <View style={styles.container}>
-            <Text style={{ color: 'red', textAlign: 'center' }}>
-              Failed to initialize app: {error}
-            </Text>
+          <View style={styles.background}>
+            <View style={styles.container}>
+              <Text style={{ color: 'red', textAlign: 'center' }}>
+                Failed to initialize app: {error}
+              </Text>
+            </View>
           </View>
         </PaperProvider>
-      </View>
+      </SafeAreaProvider>
     );
   }
 
   return (
-  <SafeAreaProvider>
-    <PaperProvider>
-      
+    <SafeAreaProvider>
+      <PaperProvider>
         <View style={styles.background}>
-
           {appData?.session && appData.session.user ? (
             <RootNavigation appData={appData} />
           ) : (
             <AuthScreen />
           )}
-
         </View>
-        </PaperProvider>
-      </SafeAreaProvider>
-    
+      </PaperProvider>
+    </SafeAreaProvider>
   );
 }
 

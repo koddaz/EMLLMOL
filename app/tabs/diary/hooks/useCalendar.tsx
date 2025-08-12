@@ -7,17 +7,26 @@ export function useCalendar() {
   const theme = useTheme();
   const styles = customStyles(theme);
 
-  const onClose = () => {
-    setShowCalendar(false);
-  };
-
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [internalSelectedDate, setInternalSelectedDate] = useState(new Date());
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
   const toggleCalendar = () => {
     setShowCalendar(!showCalendar);
   };
+
+  const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const weekdayHeaders = weekdays.map(day => (
+    <View key={day} style={styles.weekdayHeader}>
+      <Text
+        variant="labelMedium"
+        style={styles.calendarWeekDay}
+      >
+        {day}
+      </Text>
+    </View>
+  ));
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -55,42 +64,64 @@ export function useCalendar() {
   };
 
   const navigateDate = (direction: 'prev' | 'next') => {
-    const newDate = new Date(selectedDate);
+    const newDate = new Date(internalSelectedDate);
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
     } else {
       newDate.setDate(newDate.getDate() + 1);
     }
-    setSelectedDate(newDate);
+    setInternalSelectedDate(newDate);
   }
 
   const renderCalendarNavigation = () => {
-    return (
-      <View style={[styles.row, { justifyContent: 'space-between', width: '100%' }]}>
-        <IconButton
-          iconColor={theme.colors.primary}
-          size={24}
-          icon="chevron-left"
-          mode="outlined"
-          onPress={() => navigateMonth('prev')}
-          style={{ borderColor: theme.colors.primary, borderWidth: 2 }}
-        />
-        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
-          {currentMonth.toLocaleDateString('en-US', { month: 'long' })}
+  return (
+    <View style={styles.calendarNavigationContainer}>
+      <IconButton
+        iconColor={theme.colors.primary}
+        size={28}
+        icon="chevron-left"
+        mode="contained-tonal"
+        onPress={() => navigateMonth('prev')}
+        style={{
+          backgroundColor: theme.colors.primaryContainer,
+          borderRadius: 12,
+        }}
+      />
+      <View style={{ 
+        flex: 1, 
+        alignItems: 'center',
+        paddingVertical: 8
+      }}>
+        <Text variant="titleLarge" style={{ 
+          color: theme.colors.onSurface,
+          fontWeight: '600',
+          letterSpacing: 0.25
+        }}>
+          {currentMonth.toLocaleDateString('en-US', { 
+            month: 'long', 
+            year: 'numeric' 
+          })}
         </Text>
-        <IconButton
-          iconColor={theme.colors.primary}
-          size={24}
-          icon="chevron-right"
-          mode="outlined"
-          onPress={() => navigateMonth('next')}
-          style={{ borderColor: theme.colors.primary, borderWidth: 2 }}
-        />
       </View>
-    );
-  };
+      <IconButton
+        iconColor={theme.colors.primary}
+        size={28}
+        icon="chevron-right"
+        mode="contained-tonal"
+        onPress={() => navigateMonth('next')}
+        style={{
+          backgroundColor: theme.colors.primaryContainer,
+          borderRadius: 12,
+        }}
+      />
+    </View>
+  );
+};
 
-  const renderCalendarGrid = () => {
+  const renderCalendarGrid = (externalSelectedDate?: Date, externalSetSelectedDate?: (date: Date) => void) => {
+    const selectedDate = externalSelectedDate || internalSelectedDate;
+    const setSelectedDate = externalSetSelectedDate || setInternalSelectedDate;
+
     const daysInMonth = getDaysInMonth(currentMonth);
     const firstDay = getFirstDayOfMonth(currentMonth);
     const days = [];
@@ -104,28 +135,27 @@ export function useCalendar() {
       const date = new Date(prevMonth.getFullYear(), prevMonth.getMonth(), day);
 
       days.push(
-        <Surface
-          key={`prev-${day}`}
-          style={[styles.calendarDay, { opacity: 0.5 }]}
-          elevation={0}
-        >
+        <View key={`prev-${day}`} style={styles.calendarDay}>
           <Button
             mode="text"
             onPress={() => {
               setSelectedDate(date);
               setCurrentMonth(prevMonth);
-              onClose();
             }}
-            style={{ minWidth: 40, height: 40 }}
-            contentStyle={{ height: 40 }}
-            labelStyle={{
-              fontSize: 14,
-              color: theme.colors.onSurfaceVariant
-            }}
+            style={styles.calendarDayButton}
+            contentStyle={styles.calendarDayContent}
+            labelStyle={[
+              styles.calendarDayLabel,
+              {
+                color: theme.colors.onSurfaceVariant,
+                opacity: 0.4
+              }
+            ]}
+            compact
           >
             {day}
           </Button>
-        </Surface>
+        </View>
       );
     }
 
@@ -136,75 +166,100 @@ export function useCalendar() {
       const isToday = new Date().toDateString() === date.toDateString();
 
       days.push(
-        <Surface
-          key={day}
-          style={[
-            styles.calendarDay,
-            isSelected && { backgroundColor: theme.colors.primary },
-            isToday && !isSelected && { backgroundColor: theme.colors.primaryContainer }
-          ]}
-          elevation={isSelected ? 2 : 0}
-        >
+        <View key={day} style={styles.calendarDay}>
           <Button
-            mode={isSelected ? "contained" : "text"}
+            mode="text"
             onPress={() => {
               setSelectedDate(date);
-              onClose();
             }}
-            style={{ minWidth: 40, height: 40 }}
-            contentStyle={{ height: 40 }}
-            labelStyle={{
-              fontSize: 14,
-              color: isSelected ? theme.colors.onPrimary :
-                isToday ? theme.colors.primary : theme.colors.onSurface
-            }}
+            style={[
+              styles.calendarDayButton,
+              isSelected && {
+                backgroundColor: theme.colors.primary,
+                elevation: 2,
+                shadowColor: theme.colors.primary,
+                shadowOffset: { width: 0, height: 2 },
+                shadowOpacity: 0.3,
+                shadowRadius: 4,
+              },
+              isToday && !isSelected && {
+                backgroundColor: theme.colors.primaryContainer,
+                borderWidth: 1,
+                borderColor: theme.colors.primary,
+              }
+            ]}
+            contentStyle={[
+              styles.calendarDayContent,
+              isSelected && { backgroundColor: 'transparent' },
+              isToday && !isSelected && { backgroundColor: 'transparent' }
+            ]}
+            labelStyle={[
+              styles.calendarDayLabel,
+              {
+                color: isSelected
+                  ? theme.colors.onPrimary
+                  : isToday
+                    ? theme.colors.primary
+                    : theme.colors.onSurface,
+                fontWeight: isSelected || isToday ? '600' : '500'
+              }
+            ]}
+            compact
           >
             {day}
           </Button>
-        </Surface>
+        </View>
       );
     }
 
     // Add days from next month to complete the grid
     const totalCells = days.length;
-    const remainingCells = 42 - totalCells; // 6 rows × 7 days = 42 cells
+    const remainingCells = 42 - totalCells;
     const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
 
     for (let day = 1; day <= remainingCells; day++) {
       const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
 
       days.push(
-        <Surface
-          key={`next-${day}`}
-          style={[styles.calendarDay, { opacity: 0.5 }]}
-          elevation={0}
-        >
+        <View key={`next-${day}`} style={styles.calendarDay}>
           <Button
             mode="text"
             onPress={() => {
               setSelectedDate(date);
               setCurrentMonth(nextMonth);
-              onClose();
             }}
-            style={{ minWidth: 40, height: 40 }}
-            contentStyle={{ height: 40 }}
-            labelStyle={{
-              fontSize: 14,
-              color: theme.colors.onSurfaceVariant
-            }}
+            style={styles.calendarDayButton}
+            contentStyle={styles.calendarDayContent}
+            labelStyle={[
+              styles.calendarDayLabel,
+              {
+                color: theme.colors.onSurfaceVariant,
+                opacity: 0.4
+              }
+            ]}
+            compact
           >
             {day}
           </Button>
-        </Surface>
+        </View>
       );
     }
 
-    return days;
+    return (
+      <View style={styles.calendarContainer}>
+        <View style={styles.weekdayRow}>
+          {weekdayHeaders}
+        </View>
+        <View style={styles.calendarGrid}>
+          {days}
+        </View>
+      </View>
+    );
   };
 
   return {
-    selectedDate,
-    setSelectedDate,
+    selectedDate: internalSelectedDate,
+    setSelectedDate: setInternalSelectedDate,
     setShowCalendar,
     setCurrentMonth,
     showCalendar,

@@ -3,9 +3,9 @@ import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { Appbar, Avatar, Button, FAB, IconButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Avatar, Button, FAB, IconButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { DiaryEntry } from "./entry/diaryEntry";
 import { useCalendar } from "./hooks/useCalendar";
 import { useCamera } from "./hooks/useCamera";
@@ -14,16 +14,18 @@ import { useDB } from "./hooks/useDB";
 
 export function DiaryScreen({
   appData,
-  showCalendar, 
-  setShowCalendar, 
+  showCalendar,
+  setSelectedDate,
+  setShowCalendar,
   selectedDate,
   diaryEntries,
   isLoading,
   refreshEntries
-}: { 
-  appData: AppData, 
-  showCalendar?: boolean, 
-  setShowCalendar?: (state: boolean) => void, 
+}: {
+  appData: AppData,
+  showCalendar?: boolean,
+  setSelectedDate?: (date: Date) => void,
+  setShowCalendar?: (state: boolean) => void,
   selectedDate: Date,
   diaryEntries: DiaryData[],
   isLoading: boolean,
@@ -36,71 +38,62 @@ export function DiaryScreen({
   const [toggleInput, setToggleInput] = useState(false);
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 
-  // Remove the useDB hook from here since data is now passed as props
-  // const { isLoading, diaryEntries, retrieveEntries } = useDB(appData);
-
-  // Add debug logging for date changes
-  console.log('🗓️ DiaryScreen selectedDate:', selectedDate.toDateString());
-
   return (
     <View style={styles.background}>
-      <View style={styles.background}>
-        {showCalendar && (
-          <DiaryCalendar
-            visible={showCalendar}
-            onClose={() => setShowCalendar && setShowCalendar(false)}
-            appData={appData}
-          />
-        )}
+      {showCalendar && (
+        <DiaryCalendar 
+          selectedDate={selectedDate} 
+          setSelectedDate={setSelectedDate}
+        />
+      )}
 
-        {!toggleEntry && (
-          <DiaryList
-            appData={appData}
-            toggleEntry={setToggleEntry}
-            setSelectedDiaryData={setSelectedDiaryData}
-            selectedDate={selectedDate}
-            diaryEntries={diaryEntries}
-            isLoading={isLoading}
-            refreshEntries={refreshEntries}
-            key={`diary-list-${selectedDate.toDateString()}`}
-          />
-        )}
+      {!toggleEntry && (
+        <DiaryList
+          toggleEntry={setToggleEntry}
+          setSelectedDiaryData={setSelectedDiaryData}
+          selectedDate={selectedDate}
+          diaryEntries={diaryEntries}
+          isLoading={isLoading}
+          refreshEntries={refreshEntries}
+          key={`diary-list-${selectedDate.toDateString()}`}
+        />
+      )}
 
-        {toggleEntry && selectedDiaryData && (
-          <View style={styles.centeredWrapper}>
-            <View style={styles.centeredContent}>
-              <DiaryEntry
-                appData={appData}
-                setToggleEntry={setToggleEntry}
-                diaryData={selectedDiaryData}
-                refreshEntries={refreshEntries}
-              />
-            </View>
-          </View>
-        )}
-
-        {toggleInput && (
-          <KeyboardAvoidingView
-            style={styles.inputWrapper}
-            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-          >
-            <DiaryInput 
-              appData={appData} 
-              toggleInput={setToggleInput}
+      {toggleEntry && selectedDiaryData && (
+        <View style={styles.centeredWrapper}>
+          <View style={styles.centeredContent}>
+            <DiaryEntry
+              appData={appData}
+              setToggleEntry={setToggleEntry}
+              diaryData={selectedDiaryData}
               refreshEntries={refreshEntries}
             />
-          </KeyboardAvoidingView>
-        )}
+          </View>
+        </View>
+      )}
 
-        <FAB
-          icon={toggleInput == true ? "close" : "note-plus"}
-          style={styles.fab}
-          onPress={() => setToggleInput(!toggleInput)}
-        />
+      {toggleInput && (
+        <KeyboardAvoidingView
+          style={styles.inputWrapper}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+        >
+          <DiaryInput
+            appData={appData}
+            toggleInput={setToggleInput}
+            refreshEntries={refreshEntries}
+          />
+        </KeyboardAvoidingView>
+      )}
 
-      </View>
+      <FAB
+        icon={toggleInput == true ? "close" : "note-plus"}
+        style={styles.fab}
+        onPress={() => setToggleInput(!toggleInput)}
+      />
+
     </View>
+
   );
 }
 
@@ -171,10 +164,9 @@ export function DiaryListItem(
 }
 
 export function DiaryList(
-  { appData, toggleEntry, setSelectedDiaryData, selectedDate, isLoading, diaryEntries, refreshEntries }: {
+  { toggleEntry, setSelectedDiaryData, selectedDate, isLoading, diaryEntries, refreshEntries }: {
     isLoading: boolean,
     diaryEntries: DiaryData[],
-    appData: AppData,
     toggleEntry?: (state: boolean) => void,
     setSelectedDiaryData?: (data: DiaryData) => void,
     selectedDate: Date,
@@ -199,79 +191,189 @@ export function DiaryList(
     return itemDateString === selectedDateString;
   });
 
-  // Add debug logging to see what's happening
-  console.log('📅 Selected date:', selectedDate.toDateString());
-  console.log('📊 Total entries:', diaryEntries.length);
-  console.log('🔍 Filtered entries:', filteredEntries.length);
-
   if (isLoading) {
     return <LoadingScreen />;
   }
 
+  const renderStats = () => {
+  const totalCarbs = filteredEntries.reduce((sum, entry) => sum + (entry.carbs || 0), 0);
+  const avgGlucose = filteredEntries.length > 0
+    ? (filteredEntries.reduce((sum, entry) => sum + (entry.glucose || 0), 0) / filteredEntries.length).toFixed(1)
+    : '0';
+
+  return (
+    <Surface style={[
+      styles.card, 
+      { 
+        marginHorizontal: 16, 
+        marginBottom: 16,
+        marginRight: 50,
+        maxWidth: '70%',
+      }
+    ]} elevation={4}>
+      <View style={[styles.cardHeader, { marginBottom: 6 }]}>
+        <MaterialCommunityIcons name="chart-line" size={16} color={theme.colors.primary} />
+        <Text variant="labelLarge" style={[styles.cardTitle, { fontSize: 12 }]}>
+          Daily Summary
+        </Text>
+      </View>
+
+      <View style={[styles.chipContainer, { gap: 4, flexWrap: 'wrap' }]}>
+        <Surface style={[
+          styles.chip,
+          {
+            backgroundColor: theme.colors.primaryContainer,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            minWidth: 60
+          }
+        ]}>
+          <Text variant="labelSmall" style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}>
+            Entries
+          </Text>
+          <Text variant="labelMedium" style={{
+            color: theme.colors.onPrimaryContainer,
+            fontWeight: '600',
+            fontSize: 11
+          }}>
+            {filteredEntries.length}
+          </Text>
+        </Surface>
+
+        <Surface style={[
+          styles.chip,
+          {
+            backgroundColor: theme.colors.secondaryContainer,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            minWidth: 60
+          }
+        ]}>
+          <Text variant="labelSmall" style={{ color: theme.colors.onSecondaryContainer, fontSize: 9 }}>
+            Carbs
+          </Text>
+          <Text variant="labelMedium" style={{
+            color: theme.colors.onSecondaryContainer,
+            fontWeight: '600',
+            fontSize: 11
+          }}>
+            {totalCarbs}g
+          </Text>
+        </Surface>
+
+        <Surface style={[
+          styles.chip,
+          {
+            backgroundColor: theme.colors.tertiaryContainer,
+            paddingHorizontal: 8,
+            paddingVertical: 4,
+            minWidth: 60
+          }
+        ]}>
+          <Text variant="labelSmall" style={{ color: theme.colors.onTertiaryContainer, fontSize: 9 }}>
+            Avg BG
+          </Text>
+          <Text variant="labelMedium" style={{
+            color: theme.colors.onTertiaryContainer,
+            fontWeight: '600',
+            fontSize: 11
+          }}>
+            {avgGlucose}
+          </Text>
+        </Surface>
+      </View>
+    </Surface>
+  );
+};
+
+  const renderEmptyState = () => (
+    <View style={[styles.content, { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 }]}>
+      <Surface style={[styles.card, { alignItems: 'center', marginHorizontal: 32 }]} elevation={2}>
+        <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+          <MaterialCommunityIcons
+            name="clipboard-plus"
+            size={64}
+            color={theme.colors.onSurfaceVariant}
+            style={{ marginBottom: 16 }}
+          />
+          <Text variant="titleMedium" style={{
+            color: theme.colors.onSurface,
+            marginBottom: 8,
+            textAlign: 'center'
+          }}>
+            No entries yet
+          </Text>
+          <Text variant="bodyMedium" style={{
+            color: theme.colors.onSurfaceVariant,
+            textAlign: 'center',
+            lineHeight: 20
+          }}>
+            Start tracking your glucose and meals by tapping the + button below
+          </Text>
+        </View>
+      </Surface>
+    </View>
+  );
+
   if (filteredEntries.length === 0) {
     return (
-      <View style={[styles.background, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
-        <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-          No entries for {selectedDate.toLocaleDateString()}
-        </Text>
-        <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
-          Add your first entry by tapping the + button
-        </Text>
+      <View style={styles.background}>
+        <View style={styles.container}>
+
+          {renderStats()}
+          {renderEmptyState()}
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.background}>
-      <Text variant="titleLarge" style={{ margin: 16, color: theme.colors.onSurface }}>{selectedDate.toLocaleDateString()}</Text>
-      <FlatList
-        data={filteredEntries}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => {
-          const itemDate = new Date(item.created_at);
-          const diaryData = {
-            id: item.id,
-            created_at: itemDate,
-            glucose: item.glucose,
-            carbs: item.carbs,
-            insulin: item.insulin,
-            meal_type: item.meal_type,
-            activity_level: item.activity_level,
-            note: item.note || '',
-            uri_array: item.uri_array || []
-          };
+      <View style={styles.container}>
 
-          return (
-            <DiaryListItem
-              diaryData={diaryData}
-              onPress={() => {
-                setSelectedDiaryData && setSelectedDiaryData(diaryData);
-                toggleEntry && toggleEntry(true);
-              }}
-            />
-          );
-        }}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        // Add pull-to-refresh functionality
-        refreshing={isLoading}
-        onRefresh={refreshEntries}
-        extraData={selectedDate.toISOString()}
-      />
+
+
+        <FlatList
+          data={filteredEntries}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => {
+            const itemDate = new Date(item.created_at);
+            const diaryData = {
+              id: item.id,
+              created_at: itemDate,
+              glucose: item.glucose,
+              carbs: item.carbs,
+              insulin: item.insulin,
+              meal_type: item.meal_type,
+              activity_level: item.activity_level,
+              note: item.note || '',
+              uri_array: item.uri_array || []
+            };
+
+            return (
+              <DiaryListItem
+                diaryData={diaryData}
+                onPress={() => {
+                  setSelectedDiaryData && setSelectedDiaryData(diaryData);
+                  toggleEntry && toggleEntry(true);
+                }}
+              />
+            );
+          }}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          refreshing={isLoading}
+          onRefresh={refreshEntries}
+          extraData={selectedDate.toISOString()}
+        />
+        {renderStats()}
+      </View>
     </View>
   );
-
 }
-export function DiaryCalendar(
-  { visible,
-    onClose,
-    appData,
-  }: {
-    visible: boolean,
-    onClose: () => void,
-    appData: AppData,
 
-  }
+export function DiaryCalendar(
+  { selectedDate, setSelectedDate }: { selectedDate?: Date, setSelectedDate?: (date: Date) => void }
 ) {
   const theme = useTheme();
   const styles = customStyles(theme);
@@ -285,27 +387,16 @@ export function DiaryCalendar(
     <Surface
       style={[styles.calendarSheet, {
         position: 'absolute',
-        top: 0, // Adjusted to match the smaller app bar height
+        top: 0,
         left: 0,
         right: 0,
-
         zIndex: 1000,
       }]}
       elevation={4}
     >
       <ScrollView>
-        <View style={styles.calendarWeekHeader}>
-          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-            <Text key={day} style={styles.calendarWeekDay}>
-              {day}
-            </Text>
-          ))}
-        </View>
-
-        <View style={styles.calendarGrid}>
-          {renderCalendarGrid()}
-          {renderCalendarNavigation()}
-        </View>
+        {renderCalendarNavigation()}
+        {renderCalendarGrid(selectedDate, setSelectedDate)}
       </ScrollView>
     </Surface>
   );
@@ -375,7 +466,7 @@ export function DiaryInput({
       permanentURIs.push(permanentUri);
     }
     // Then save diary entry with permanent URIs
-    await saveDiaryEntry(permanentURIs);    
+    await saveDiaryEntry(permanentURIs);
     // Refresh the entries after saving
     await refreshEntries();
 
@@ -387,22 +478,7 @@ export function DiaryInput({
     }
   }
 
-  const renderHeader = () => (
-    <View style={styles.header}>
-      <View style={styles.headerContent}>
-        <MaterialCommunityIcons name="plus-circle" size={24} color={theme.colors.primary} />
-        <Text variant="headlineSmall" style={{ color: theme.colors.onSurface, marginLeft: 12 }}>
-          New Entry
-        </Text>
-      </View>
-      <IconButton
-        icon="close"
-        size={24}
-        onPress={() => toggleInput && toggleInput(false)}
-        style={styles.closeButton}
-      />
-    </View>
-  );
+
 
   const renderGlucoseCard = () => (
     <Surface style={styles.card} elevation={2}>
@@ -632,7 +708,6 @@ export function DiaryInput({
       minHeight: 400 // Add minimum height for debugging
     }}>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {renderHeader()}
 
         <View style={styles.content}>
           {renderGlucoseCard()}

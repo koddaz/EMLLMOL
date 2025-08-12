@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
 import { MD3Theme } from "react-native-paper";
-import { transparent } from "react-native-paper/lib/typescript/styles/themes/v2/colors";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
 export const customStyles = (theme: MD3Theme) => StyleSheet.create({
@@ -8,12 +7,14 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     background: {
         flex: 1,
         width: '100%',
-        backgroundColor: theme.colors.backdrop,
+        backgroundColor: theme.colors.background,
 
     },
     container: {
+
         flex: 1,
-        backgroundColor: theme.colors.surface
+        backgroundColor: theme.colors.surface,
+
     },
     plaincontainer: {
         width: '100%',
@@ -73,12 +74,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
     // APP BAR STYLES
     appBar: {
-        backgroundColor: theme.colors.surface,
-        elevation: 0,
-        shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.08,
-        shadowRadius: 4,
+        backgroundColor: theme.colors.primaryContainer,
+
         borderBottomWidth: 0.5,
         borderBottomColor: theme.colors.outline + '20', // 20% opacity
     },
@@ -86,7 +83,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         color: theme.colors.onSurface,
         fontSize: 20,
         fontWeight: '600',
-        textAlign: 'center',
+        marginLeft: 16,
+        // textAlign: 'center',
         letterSpacing: 0.15,
     },
     appBarAction: {
@@ -98,77 +96,111 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         alignItems: 'center',
     },
     bottomAppBar: {
-        backgroundColor: theme.colors.surface,
-        elevation: 8,
-        shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.12,
-        shadowRadius: 8,
+        backgroundColor: theme.colors.primaryContainer,
         borderTopWidth: 0.5,
-        borderTopColor: theme.colors.outline + '20', // 20% opacity
-        paddingBottom: 4,
-        paddingTop: 8,
+        borderTopColor: theme.colors.outline + '20',
+
     },
 
-    // CALENDAR
-    calendarSheet: {
+    // CALENDAR STYLES - Smaller and more compact
+
+    calendarNavigationContainer: {
         backgroundColor: theme.colors.surface,
-        borderBottomLeftRadius: 16,
-        borderBottomRightRadius: 16,
+        flexDirection: 'row',
         padding: 8,
-        position: 'absolute',
-        top: 0, // Adjusted to match the smaller app bar height
-        left: 0,
-        right: 0,
-        zIndex: 1000,
+        alignItems: 'center',
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.primary,
+        marginTop: 8,
+        marginHorizontal: 8,
 
     },
-    calendarHeader: {
+
+    calendarContainer: {
+        backgroundColor: theme.colors.surface,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.primary,
+        padding: 8,
+        marginVertical: 8,
+        marginHorizontal: 8,
+    },
+    weekdayRow: {
         flexDirection: 'row',
-        justifyContent: 'space-between',
+        marginBottom: 12,
+        paddingHorizontal: 0, // Remove padding to align with grid
+    },
+    weekdayHeader: {
+        width: '14.28571%', // Exact 1/7 of width to match calendar days
         alignItems: 'center',
-        marginBottom: 8,
-    },
-    calendarHeaderText: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: theme.colors.onSurface,
-    },
-    calendarWeekHeader: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        marginBottom: 8,
-    },
-    calendarWeekDay: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: theme.colors.onSurfaceVariant,
-        textAlign: 'center',
-        flex: 1,
+        paddingVertical: 8,
     },
     calendarGrid: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        justifyContent: 'space-around',
+        gap: 0,
     },
     calendarDay: {
-        width: '14.28%', // 100% / 7 days
-        aspectRatio: 1,
+        width: '14.28571%', // Exact 1/7 of width (100% / 7 days)
+        //aspectRatio: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 2,
+        backgroundColor: 'transparent',
+        paddingVertical: 2, // Small padding for spacing
     },
-    selectedDateInfo: {
-        marginTop: 16,
-        padding: 12,
-        borderRadius: 8,
+    calendarSheet: {
+        backgroundColor: theme.colors.surface,
+        borderBottomLeftRadius: 20,
+        borderBottomRightRadius: 20,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 16,
+        elevation: 8,
+    },
+
+    calendarWeekDay: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: theme.colors.onSurfaceVariant,
+        textAlign: 'center',
+        letterSpacing: 0.5,
+    },
+    calendarDayButton: {
+        width: 36,
+        height: 36,
+        borderRadius: 18, // Perfect circle
+        margin: 0,
+        minWidth: 36,
+        padding: 0,
+        justifyContent: 'center',
         alignItems: 'center',
     },
-    selectedDateText: {
+    calendarDayContent: {
+        width: 36,
+        height: 36,
+        margin: 0,
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderRadius: 18,
+    },
+    calendarDayLabel: {
         fontSize: 14,
-        color: theme.colors.onSurface,
+        fontWeight: '500',
+        margin: 0,
+        lineHeight: 16,
         textAlign: 'center',
     },
+
+
 
 
     // CRAP FOR THE AI CAM
@@ -329,7 +361,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     // DIARY LIST ITEM:
     diaryListRow: {
         marginHorizontal: 8,
-        marginVertical: 4,
+        marginTop: 16,
     },
     diaryListItem: {
         borderRadius: 8,

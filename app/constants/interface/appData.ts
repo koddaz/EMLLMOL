@@ -14,4 +14,6 @@ export interface AppData {
     weight: string;
     glucose: string;
   };
+  diaryEntries: any[];
+  isEntriesLoaded: boolean;
 }
