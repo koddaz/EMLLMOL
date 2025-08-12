@@ -1,7 +1,8 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { CameraView } from "expo-camera";
+import * as FileSystem from 'expo-file-system';
 import { useRef, useState } from "react";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
 export function useCamera(appData: AppData) {
@@ -13,6 +14,42 @@ export function useCamera(appData: AppData) {
   const [zoom, setZoom] = useState(0);
   const [photoURIs, setPhotoURIs] = useState<string[]>([]);
 
+
+  const createDiaryPhotosDirectory = async () => {
+    const diaryPhotosDir = `${FileSystem.documentDirectory}diary-photos/`;
+    const dirInfo = await FileSystem.getInfoAsync(diaryPhotosDir);
+
+    if (!dirInfo.exists) {
+      await FileSystem.makeDirectoryAsync(diaryPhotosDir, { intermediates: true });
+    }
+
+    return diaryPhotosDir;
+  };
+
+  const savePhotoLocally = async (tempUri: string) => {
+    try {
+      // Create directory if it doesn't exist
+      const diaryPhotosDir = await createDiaryPhotosDirectory();
+
+      // Generate unique filename with timestamp
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `diary-photo-${timestamp}.jpg`;
+      const localUri = `${diaryPhotosDir}${filename}`;
+
+      // Copy the temporary photo to permanent storage
+      await FileSystem.copyAsync({
+        from: tempUri,
+        to: localUri
+      });
+
+      console.log('✅ Photo saved locally:', localUri);
+      return localUri;
+    } catch (error) {
+      console.error('❌ Failed to save photo locally:', error);
+      Alert.alert('Error', 'Failed to save photo locally');
+      return tempUri; // Return original URI as fallback
+    }
+  };
 
   const renderCamera = () => {
     // Check if permission is still loading
@@ -129,7 +166,11 @@ export function useCamera(appData: AppData) {
     cycleFlash,
     flash,
     getFlashIcon,
-    getFlashIconColor
+    getFlashIconColor,
+
+    // Local storage functions
+    savePhotoLocally,
+    createDiaryPhotosDirectory,
   };
 
 }

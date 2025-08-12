@@ -46,10 +46,8 @@ export function useDB(appData: AppData) {
 
   const saveDiaryEntry = async (photoURIs: string[] = []) => {
     try {
-
       setIsLoading(true);
       setError(null); // Clear previous errors
-
 
       // Validation
       if (!glucose.trim()) {
@@ -87,6 +85,9 @@ export function useDB(appData: AppData) {
       setActivity("none");
       setFoodType("snack");
 
+      // Automatically refetch entries after successful save
+      await retrieveEntries();
+
     } catch (error) {
       console.error('❌ Failed to save diary entry:', error);
       setError('Failed to save diary entry');
@@ -109,7 +110,7 @@ export function useDB(appData: AppData) {
         return;
       }
       console.log('✅ Diary entry deleted successfully:', entryId);
-      // Optionally, refresh the entries after deletion
+      // Automatically refetch entries after deletion
       await retrieveEntries();
     } catch (err) {
       console.error('❌ Failed to delete diary entry:', err);

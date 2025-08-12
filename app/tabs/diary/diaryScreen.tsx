@@ -3,7 +3,7 @@ import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { Appbar, Avatar, Button, FAB, IconButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { DiaryEntry } from "./entry/diaryEntry";
@@ -13,7 +13,22 @@ import { useDB } from "./hooks/useDB";
 
 
 export function DiaryScreen({
-  appData }: { appData: AppData }) {
+  appData,
+  showCalendar, 
+  setShowCalendar, 
+  selectedDate,
+  diaryEntries,
+  isLoading,
+  refreshEntries
+}: { 
+  appData: AppData, 
+  showCalendar?: boolean, 
+  setShowCalendar?: (state: boolean) => void, 
+  selectedDate: Date,
+  diaryEntries: DiaryData[],
+  isLoading: boolean,
+  refreshEntries: () => Promise<void>
+}) {
   const theme = useTheme();
   const styles = customStyles(theme);
 
@@ -21,67 +36,19 @@ export function DiaryScreen({
   const [toggleInput, setToggleInput] = useState(false);
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 
-  const {
-    formatDate,
-    selectedDate,
-    showCalendar,
-    currentMonth,
-    navigateMonth,
-    navigateDate,
-    setShowCalendar
-  } = useCalendar();
+  // Remove the useDB hook from here since data is now passed as props
+  // const { isLoading, diaryEntries, retrieveEntries } = useDB(appData);
+
+  // Add debug logging for date changes
+  console.log('🗓️ DiaryScreen selectedDate:', selectedDate.toDateString());
 
   return (
     <View style={styles.background}>
-
-      {!toggleInput && (
-        <Appbar.Header>
-          {showCalendar ? (
-            <>
-              <Appbar.Action
-                icon="chevron-left"
-                onPress={() => navigateMonth('prev')}
-              />
-              <Appbar.Content
-                title={currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
-              />
-              <Appbar.Action
-                icon="chevron-right"
-                onPress={() => navigateMonth('next')}
-              />
-              <Appbar.Action
-                icon="close"
-                onPress={() => setShowCalendar(false)}
-              />
-            </>
-          ) : (
-            <>
-              <Appbar.Action
-                icon='chevron-left'
-                onPress={() => { navigateDate('prev') }}
-              />
-
-              <Appbar.Content title={formatDate(selectedDate)} />
-
-              <Appbar.Action
-                icon="chevron-right"
-                onPress={() => navigateDate('next')}
-              />
-              <Appbar.Action
-                icon="calendar"
-                onPress={() => setShowCalendar(!showCalendar)}
-              />
-
-            </>
-          )}
-        </Appbar.Header>
-      )}
-
       <View style={styles.background}>
         {showCalendar && (
           <DiaryCalendar
             visible={showCalendar}
-            onClose={() => setShowCalendar(false)}
+            onClose={() => setShowCalendar && setShowCalendar(false)}
             appData={appData}
           />
         )}
@@ -91,7 +58,11 @@ export function DiaryScreen({
             appData={appData}
             toggleEntry={setToggleEntry}
             setSelectedDiaryData={setSelectedDiaryData}
-            key={selectedDate.toISOString()} // Add key to force re-render when date changes
+            selectedDate={selectedDate}
+            diaryEntries={diaryEntries}
+            isLoading={isLoading}
+            refreshEntries={refreshEntries}
+            key={`diary-list-${selectedDate.toDateString()}`}
           />
         )}
 
@@ -102,6 +73,7 @@ export function DiaryScreen({
                 appData={appData}
                 setToggleEntry={setToggleEntry}
                 diaryData={selectedDiaryData}
+                refreshEntries={refreshEntries}
               />
             </View>
           </View>
@@ -113,7 +85,11 @@ export function DiaryScreen({
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
           >
-            <DiaryInput appData={appData} toggleInput={setToggleInput} />
+            <DiaryInput 
+              appData={appData} 
+              toggleInput={setToggleInput}
+              refreshEntries={refreshEntries}
+            />
           </KeyboardAvoidingView>
         )}
 
@@ -195,31 +171,39 @@ export function DiaryListItem(
 }
 
 export function DiaryList(
-  { appData, toggleEntry, setSelectedDiaryData }: {
+  { appData, toggleEntry, setSelectedDiaryData, selectedDate, isLoading, diaryEntries, refreshEntries }: {
+    isLoading: boolean,
+    diaryEntries: DiaryData[],
     appData: AppData,
     toggleEntry?: (state: boolean) => void,
-    setSelectedDiaryData?: (data: DiaryData) => void // Add this prop
+    setSelectedDiaryData?: (data: DiaryData) => void,
+    selectedDate: Date,
+    refreshEntries: () => Promise<void>
   }
 ) {
   const theme = useTheme();
   const styles = customStyles(theme);
 
-  const { selectedDate } = useCalendar();
-  const { isLoading, diaryEntries, retrieveEntries } = useDB(appData);
-
-  useEffect(() => {
-    retrieveEntries();
-  }, []);
-
   const filteredEntries = diaryEntries.filter(item => {
     const itemDate = new Date(item.created_at);
     const selectedDateObj = new Date(selectedDate);
 
-    // Compare dates (year, month, day) without time
-    return itemDate.getFullYear() === selectedDateObj.getFullYear() &&
-      itemDate.getMonth() === selectedDateObj.getMonth() &&
-      itemDate.getDate() === selectedDateObj.getDate();
+    const itemDateString = itemDate.getFullYear() + '-' +
+      String(itemDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(itemDate.getDate()).padStart(2, '0');
+
+    const selectedDateString = selectedDateObj.getFullYear() + '-' +
+      String(selectedDateObj.getMonth() + 1).padStart(2, '0') + '-' +
+      String(selectedDateObj.getDate()).padStart(2, '0');
+
+    return itemDateString === selectedDateString;
   });
+
+  // Add debug logging to see what's happening
+  console.log('📅 Selected date:', selectedDate.toDateString());
+  console.log('📊 Total entries:', diaryEntries.length);
+  console.log('🔍 Filtered entries:', filteredEntries.length);
+
   if (isLoading) {
     return <LoadingScreen />;
   }
@@ -228,7 +212,7 @@ export function DiaryList(
     return (
       <View style={[styles.background, { flex: 1, justifyContent: 'center', alignItems: 'center' }]}>
         <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-          No entries for {new Date(selectedDate).toLocaleDateString()}
+          No entries for {selectedDate.toLocaleDateString()}
         </Text>
         <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
           Add your first entry by tapping the + button
@@ -239,8 +223,9 @@ export function DiaryList(
 
   return (
     <View style={styles.background}>
+      <Text variant="titleLarge" style={{ margin: 16, color: theme.colors.onSurface }}>{selectedDate.toLocaleDateString()}</Text>
       <FlatList
-        data={filteredEntries} // Use filtered entries instead of all entries
+        data={filteredEntries}
         keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const itemDate = new Date(item.created_at);
@@ -268,6 +253,10 @@ export function DiaryList(
         }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
+        // Add pull-to-refresh functionality
+        refreshing={isLoading}
+        onRefresh={refreshEntries}
+        extraData={selectedDate.toISOString()}
       />
     </View>
   );
@@ -288,7 +277,8 @@ export function DiaryCalendar(
   const styles = customStyles(theme);
 
   const {
-    renderCalendarGrid
+    renderCalendarGrid,
+    renderCalendarNavigation
   } = useCalendar();
 
   return (
@@ -314,6 +304,7 @@ export function DiaryCalendar(
 
         <View style={styles.calendarGrid}>
           {renderCalendarGrid()}
+          {renderCalendarNavigation()}
         </View>
       </ScrollView>
     </Surface>
@@ -322,10 +313,12 @@ export function DiaryCalendar(
 // Main entry point for the app
 export function DiaryInput({
   appData,
-  toggleInput
+  toggleInput,
+  refreshEntries
 }: {
   appData: AppData,
-  toggleInput?: (state: boolean) => void
+  toggleInput?: (state: boolean) => void,
+  refreshEntries: () => Promise<void>
 }) {
   const theme = useTheme();
   const styles = customStyles(theme);
@@ -342,7 +335,8 @@ export function DiaryInput({
     capturePhoto,
     photoURIs,
     removePhotoURI,
-    clearPhotoURIs
+    clearPhotoURIs,
+    savePhotoLocally,
   } = useCamera(appData);
 
   // supabase related
@@ -374,7 +368,17 @@ export function DiaryInput({
   const carbsInputRef = useRef<any>(null);
 
   const handleSave = async () => {
-    await saveDiaryEntry(photoURIs);
+    // First, save all photos locally and get permanent URIs
+    const permanentURIs: string[] = [];
+    for (const tempUri of photoURIs) {
+      const permanentUri = await savePhotoLocally(tempUri);
+      permanentURIs.push(permanentUri);
+    }
+    // Then save diary entry with permanent URIs
+    await saveDiaryEntry(permanentURIs);    
+    // Refresh the entries after saving
+    await refreshEntries();
+
     setToggleCamera(false);
     setToggleNote(false);
     clearPhotoURIs();

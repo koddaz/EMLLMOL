@@ -1,6 +1,7 @@
 import { customStyles } from "@/app/constants/UI/styles";
 import { useState } from "react";
-import { Button, Surface, useTheme } from "react-native-paper";
+import { View } from "react-native";
+import { Button, IconButton, Surface, Text, useTheme } from "react-native-paper";
 
 export function useCalendar() {
   const theme = useTheme();
@@ -17,6 +18,7 @@ export function useCalendar() {
   const toggleCalendar = () => {
     setShowCalendar(!showCalendar);
   };
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
       weekday: 'long',
@@ -61,6 +63,32 @@ export function useCalendar() {
     }
     setSelectedDate(newDate);
   }
+
+  const renderCalendarNavigation = () => {
+    return (
+      <View style={[styles.row, { justifyContent: 'space-between', width: '100%' }]}>
+        <IconButton
+          iconColor={theme.colors.primary}
+          size={24}
+          icon="chevron-left"
+          mode="outlined"
+          onPress={() => navigateMonth('prev')}
+          style={{ borderColor: theme.colors.primary, borderWidth: 2 }}
+        />
+        <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+          {currentMonth.toLocaleDateString('en-US', { month: 'long' })}
+        </Text>
+        <IconButton
+          iconColor={theme.colors.primary}
+          size={24}
+          icon="chevron-right"
+          mode="outlined"
+          onPress={() => navigateMonth('next')}
+          style={{ borderColor: theme.colors.primary, borderWidth: 2 }}
+        />
+      </View>
+    );
+  };
 
   const renderCalendarGrid = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
@@ -195,6 +223,7 @@ export function useCalendar() {
     navigateMonth,
     navigateDate,
 
-    renderCalendarGrid
+    renderCalendarGrid,
+    renderCalendarNavigation
   }
 }

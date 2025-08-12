@@ -71,6 +71,45 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderColor: theme.colors.error
     },
 
+    // APP BAR STYLES
+    appBar: {
+        backgroundColor: theme.colors.surface,
+        elevation: 0,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.08,
+        shadowRadius: 4,
+        borderBottomWidth: 0.5,
+        borderBottomColor: theme.colors.outline + '20', // 20% opacity
+    },
+    appBarTitle: {
+        color: theme.colors.onSurface,
+        fontSize: 20,
+        fontWeight: '600',
+        textAlign: 'center',
+        letterSpacing: 0.15,
+    },
+    appBarAction: {
+        backgroundColor: 'transparent',
+        borderRadius: 12,
+        marginHorizontal: 4,
+    },
+    appBarContent: {
+        alignItems: 'center',
+    },
+    bottomAppBar: {
+        backgroundColor: theme.colors.surface,
+        elevation: 8,
+        shadowColor: theme.colors.shadow,
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 8,
+        borderTopWidth: 0.5,
+        borderTopColor: theme.colors.outline + '20', // 20% opacity
+        paddingBottom: 4,
+        paddingTop: 8,
+    },
+
     // CALENDAR
     calendarSheet: {
         backgroundColor: theme.colors.surface,

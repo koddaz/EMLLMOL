@@ -9,6 +9,7 @@ import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCameraPermissions } from 'expo-camera';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 
 AppState.addEventListener('change', (state) => {
@@ -132,7 +133,7 @@ export default function Index() {
     return () => {
       subscription.unsubscribe();
     };
-  }, [cameraPermission]); 
+  }, [cameraPermission]);
 
   if (isLoading) {
     return (
@@ -159,15 +160,21 @@ export default function Index() {
   }
 
   return (
-    <View style={styles.background}>
-      <PaperProvider>
-        {appData?.session && appData.session.user ? (
-          <RootNavigation appData={appData} />
-        ) : (
-          <AuthScreen />
-        )}
-      </PaperProvider>
-    </View>
+  <SafeAreaProvider>
+    <PaperProvider>
+      
+        <View style={styles.background}>
+
+          {appData?.session && appData.session.user ? (
+            <RootNavigation appData={appData} />
+          ) : (
+            <AuthScreen />
+          )}
+
+        </View>
+        </PaperProvider>
+      </SafeAreaProvider>
+    
   );
 }
 
