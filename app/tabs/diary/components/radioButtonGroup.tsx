@@ -1,4 +1,5 @@
 import { customStyles } from "@/app/constants/UI/styles";
+import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { View } from "react-native";
 import { RadioButton, Text, useTheme } from "react-native-paper";
@@ -6,8 +7,7 @@ import { RadioButton, Text, useTheme } from "react-native-paper";
 export function RadioButtonGroup(
   { value, setValue, options, title, icon }: { value: string, setValue: (value: string) => void, options: any[], title?: string, icon?: any }
 ) {
-  const theme = useTheme();
-  const styles = customStyles(theme);
+  const { theme, styles } = useAppTheme();
 
   const groupedOptions = [];
   for (let i = 0; i < options.length; i += 2) {

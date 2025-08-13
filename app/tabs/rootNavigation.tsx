@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { Appbar, BottomNavigation, useTheme } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,13 +9,13 @@ import { DiaryScreen } from "./diary/diaryScreen";
 import { useCalendar } from "./diary/hooks/useCalendar";
 import { useDB } from "./diary/hooks/useDB";
 import { SettingsScreen } from "./settings/settingsScreen";
+import { useAppTheme } from "../constants/UI/theme";
 
 export function RootNavigation({ appData }: { appData: AppData }) {
-    const theme = useTheme();
-    const styles = customStyles(theme);
+    const { theme, styles } = useAppTheme();
     const insets = useSafeAreaInsets();
 
-    const { selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar();
+    const { navigateMonth, currentMonth, setCurrentMonth, selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar();
 
     // Settings state management
     const [settingsEditMode, setSettingsEditMode] = useState(false);
@@ -29,15 +29,17 @@ export function RootNavigation({ appData }: { appData: AppData }) {
     const DiaryRoute = () => (
         <DiaryScreen
             appData={appData}
-            setShowCalendar={setShowCalendar}
             showCalendar={showCalendar}
             selectedDate={selectedDate}
+            currentMonth={currentMonth}
+            setCurrentMonth={setCurrentMonth}
             setSelectedDate={setSelectedDate} // Pass the setter
             diaryEntries={diaryEntries}
             isLoading={isLoading}
             refreshEntries={async () => {
                 const updatedEntries = await retrieveEntries();
             }}
+            navigateMonth={navigateMonth}
         />
     );
     const CameraRoute = () => <CameraScreen />;
@@ -103,7 +105,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
                 elevated={
                     showCalendar ? false : true
                 }
-                   
+
             >
                 {getCurrentRoute() === 'diary' && (
                     <>
@@ -120,7 +122,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
                             title={"Diary"}
                             titleStyle={[styles.appBarTitle, { fontSize: 18 }]} // Slightly smaller for longer text
                         />
-                        
+
 
                         <Appbar.Action
                             icon="calendar"

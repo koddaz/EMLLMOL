@@ -1,5 +1,6 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { customStyles } from "@/app/constants/UI/styles";
+import { useAppTheme } from "@/app/constants/UI/theme";
 import { useAuth } from "@/db/supabase/auth/authScreen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -20,8 +21,7 @@ export function SettingsScreen({
     currentSection: 'profile' | 'preferences' | 'account';
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
-    const theme = useTheme();
-    const styles = customStyles(theme);
+    const { theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     // Auto-scroll to sections based on currentSection
@@ -75,8 +75,8 @@ export function ProfileSettings({
     setEditMode: (mode: boolean) => void;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
-    const theme = useTheme();
-    const styles = customStyles(theme);
+    const { theme, styles } = useAppTheme();
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -205,8 +205,7 @@ export function AppSettings({
     appData: AppData;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
-    const theme = useTheme();
-    const styles = customStyles(theme);
+    const { theme, styles } = useAppTheme();
 
     const [weight, setWeight] = useState(appData.settings.weight);
     const [glucose, setGlucose] = useState(appData.settings.glucose);
@@ -309,8 +308,8 @@ export function AccountActions({
     appData: AppData;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
-    const theme = useTheme();
-    const styles = customStyles(theme);
+    const { theme, styles } = useAppTheme();
+
     const { signOut } = useAuth(appData.session);
 
     // Set current section when this component comes into view

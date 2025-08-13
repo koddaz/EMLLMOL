@@ -10,6 +10,8 @@ import { AppData } from './constants/interface/appData';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCameraPermissions } from 'expo-camera';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useAppTheme } from './constants/UI/theme';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
 AppState.addEventListener('change', (state) => {
@@ -21,8 +23,8 @@ AppState.addEventListener('change', (state) => {
 })
 
 export default function Index() {
-  const theme = useTheme();
-  const styles = customStyles(theme);
+  const { theme, styles } = useAppTheme();
+
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
 
   const [appData, setAppData] = useState<AppData | null>(null);
@@ -199,15 +201,17 @@ export default function Index() {
 
   return (
     <SafeAreaProvider>
-      <PaperProvider>
-        <View style={styles.background}>
-          {appData?.session && appData.session.user ? (
-            <RootNavigation appData={appData} />
-          ) : (
-            <AuthScreen />
-          )}
-        </View>
-      </PaperProvider>
+      <GestureHandlerRootView>
+        <PaperProvider>
+          <View style={styles.background}>
+            {appData?.session && appData.session.user ? (
+              <RootNavigation appData={appData} />
+            ) : (
+              <AuthScreen />
+            )}
+          </View>
+        </PaperProvider>
+      </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }

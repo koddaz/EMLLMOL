@@ -9,6 +9,7 @@ import { Alert, ScrollView, View } from "react-native";
 import { Avatar, Button, IconButton, Surface, Text, useTheme } from "react-native-paper";
 import { useCalendar } from "../hooks/useCalendar";
 import { useDB } from "../hooks/useDB";
+import { useAppTheme } from "@/app/constants/UI/theme";
 
 export function DiaryEntry({ 
   appData, 
@@ -21,8 +22,8 @@ export function DiaryEntry({
   diaryData: DiaryData,
   refreshEntries: () => Promise<void>
 }) {
-  const theme = useTheme();
-  const styles = customStyles(theme);
+  const { theme, styles } = useAppTheme();
+  
   const { formatTime } = useCalendar();
   const { removeEntry, isLoading } = useDB(appData);
   const [savingPhotos, setSavingPhotos] = useState(false);
