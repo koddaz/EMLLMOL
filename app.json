@@ -8,9 +8,15 @@
     "scheme": "com.koddaz.emllmol",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "linking": {
+      "scheme": "com.koddaz.emllmol",
+      "prefixes": [
+        "com.koddaz.emllmol://"
+      ]
+    },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.knoddaz.EMLLMOL"
+      "bundleIdentifier": "com.knoddaz.emllmol"
     },
     "android": {
       "adaptiveIcon": {
@@ -22,7 +28,7 @@
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
-      "package": "com.knoddaz.EMLLMOL"
+      "package": "com.knoddaz.emllmol"
     },
     "web": {
       "bundler": "metro",
@@ -51,6 +57,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d93f3387-9f2b-4063-bab8-4f9688e0508d"
+      }
     }
   }
 }

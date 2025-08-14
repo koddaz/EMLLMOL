@@ -15,16 +15,20 @@ export function RootNavigation({ appData }: { appData: AppData }) {
     const { theme, styles } = useAppTheme();
     const insets = useSafeAreaInsets();
 
-    const { navigateMonth, currentMonth, setCurrentMonth, selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar();
+    const { navigateMonth, currentMonth, setCurrentMonth, selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar(appData);
 
     // Settings state management
     const [settingsEditMode, setSettingsEditMode] = useState(false);
     const [settingsSection, setSettingsSection] = useState<'profile' | 'preferences' | 'account'>('profile');
 
+    const dbHook = useDB(appData);
+    const calendarHook = useCalendar(appData);
     // Move the DB hook to root level
-    const { retrieveEntries } = useDB(appData);
-    const diaryEntries = appData.diaryEntries || [];
-    const isLoading = !appData.isEntriesLoaded;
+    const { retrieveEntries, diaryEntries: dbDiaryEntries, isLoading: dbIsLoading } = useDB(appData);
+
+    // Use the entries from useDB instead of appData
+    const diaryEntries = dbDiaryEntries;
+    const isLoading = dbIsLoading;
 
     const DiaryRoute = () => (
         <DiaryScreen
@@ -36,10 +40,9 @@ export function RootNavigation({ appData }: { appData: AppData }) {
             setSelectedDate={setSelectedDate} // Pass the setter
             diaryEntries={diaryEntries}
             isLoading={isLoading}
-            refreshEntries={async () => {
-                const updatedEntries = await retrieveEntries();
-            }}
+            refreshEntries={retrieveEntries} 
             navigateMonth={navigateMonth}
+            dbHook={dbHook} 
         />
     );
     const CameraRoute = () => <CameraScreen />;

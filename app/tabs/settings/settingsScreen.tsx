@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, SegmentedButtons, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
 
-export function SettingsScreen({ 
-    appData, 
-    editMode, 
-    setEditMode, 
-    currentSection, 
-    setCurrentSection 
-}: { 
+export function SettingsScreen({
+    appData,
+    editMode,
+    setEditMode,
+    currentSection,
+    setCurrentSection
+}: {
     appData: AppData;
     editMode: boolean;
     setEditMode: (mode: boolean) => void;
@@ -33,23 +33,23 @@ export function SettingsScreen({
     return (
         <View style={styles.background}>
             <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-                <ProfileSettings 
-                    appData={appData} 
+                <ProfileSettings
+                    appData={appData}
                     setShowSuccessMessage={setShowSuccessMessage}
                     editMode={editMode}
                     setEditMode={setEditMode}
                     setCurrentSection={setCurrentSection}
                 />
-                <AppSettings 
-                    appData={appData} 
+                <AppSettings
+                    appData={appData}
                     setCurrentSection={setCurrentSection}
                 />
-                <AccountActions 
-                    appData={appData} 
+                <AccountActions
+                    appData={appData}
                     setCurrentSection={setCurrentSection}
                 />
             </ScrollView>
-            
+
             <Snackbar
                 visible={showSuccessMessage}
                 onDismiss={() => setShowSuccessMessage(false)}
@@ -198,10 +198,10 @@ export function ProfileSettings({
     );
 }
 
-export function AppSettings({ 
-    appData, 
-    setCurrentSection 
-}: { 
+export function AppSettings({
+    appData,
+    setCurrentSection
+}: {
     appData: AppData;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
@@ -209,6 +209,8 @@ export function AppSettings({
 
     const [weight, setWeight] = useState(appData.settings.weight);
     const [glucose, setGlucose] = useState(appData.settings.glucose);
+    const [clockformat, setClockformat] = useState(appData.settings.clockformat || '24');
+    const [dateformat, setDateformat] = useState(appData.settings.dateformat || 'DD/MM/YYYY');
 
     // Set current section when this component comes into view
     useEffect(() => {
@@ -232,6 +234,16 @@ export function AppSettings({
     const handleGlucoseChange = (newGlucose: string) => {
         setGlucose(newGlucose);
         saveSetting('glucose', newGlucose);
+    };
+
+    const handleClockformatChange = (newclockformat: string) => {
+        setClockformat(newclockformat);
+        saveSetting('clockformat', newclockformat);
+    };
+    
+    const handleDateformatChange = (newdateformat: string) => {
+        setDateformat(newdateformat);
+        saveSetting('dateformat', newdateformat);
     };
 
     const renderUnitsCard = () => (
@@ -291,6 +303,52 @@ export function AppSettings({
                     />
                 </View>
             </View>
+            <View style={styles.selectorRow}>
+                <View style={styles.selectorGroup}>
+                    <Text variant="labelMedium" style={styles.selectorLabel}>
+                        Clock Format
+                    </Text>
+                    <SegmentedButtons
+                        value={clockformat}
+                        onValueChange={handleClockformatChange}
+                        buttons={[
+                            {
+                                value: '12',
+                                label: '12-hour',
+                                icon: 'clock'
+                            },
+                            {
+                                value: '24',
+                                label: '24-hour',
+                                icon: 'clock'
+                            },
+                        ]}
+                    />
+                </View>
+            </View>
+            <View style={styles.selectorRow}>
+                <View style={styles.selectorGroup}>
+                    <Text variant="labelMedium" style={styles.selectorLabel}>
+                        Date Format
+                    </Text>
+                    <SegmentedButtons
+                        value={dateformat}
+                        onValueChange={handleDateformatChange}
+                        buttons={[
+                            {
+                                value: 'EU',
+                                label: 'DD/MM/YYYY',
+                                icon: 'calendar'
+                            },
+                            {
+                                value: 'US',
+                                label: 'MM/DD/YYYY',
+                                icon: 'calendar',
+                            },
+                        ]}
+                    />
+                </View>
+            </View>
         </Surface>
     );
 
@@ -301,16 +359,16 @@ export function AppSettings({
     );
 }
 
-export function AccountActions({ 
-    appData, 
-    setCurrentSection 
-}: { 
+export function AccountActions({
+    appData,
+    setCurrentSection
+}: {
     appData: AppData;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
 }) {
     const { theme, styles } = useAppTheme();
 
-    const { signOut } = useAuth(appData.session);
+    const { signOut, removeProfile } = useAuth(appData.session);
 
     // Set current section when this component comes into view
     useEffect(() => {
@@ -324,6 +382,16 @@ export function AccountActions({
             console.error('Error signing out:', error);
         }
     };
+
+    const handleRemoveAccount = async () => {
+        try {
+            await removeProfile();
+            console.log('Profile removed successfully');
+        } catch (error) {
+            console.error('Error removing profile:', error);
+        }
+
+    }
 
     const renderActionsCard = () => (
         <Surface style={styles.card} elevation={2}>
@@ -377,6 +445,16 @@ export function AccountActions({
                             compact
                         >
                             Sign Out
+                        </Button>
+                        <Button
+                            mode="contained"
+                            onPress={handleRemoveAccount}
+                            style={[styles.chip, { backgroundColor: theme.colors.error }]}
+                            labelStyle={{ color: theme.colors.onError }}
+                            icon="logout"
+                            compact
+                        >
+                            Delete Account
                         </Button>
                     </View>
                 </View>

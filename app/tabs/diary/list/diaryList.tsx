@@ -11,29 +11,7 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { useSwipeGesture } from "../hooks/useGestures";
 import { GestureDetector } from "react-native-gesture-handler";
 
-function DiaryListContainer({
-  children,
-  selectedDate,
-  onDateNavigation,
-  styles,
-  theme
-}: {
-  children: React.ReactNode;
-  selectedDate: Date;
-  onDateNavigation: (direction: 'prev' | 'next') => void;
-  styles: any;
-  theme: any;
-}) {
 
-
-  return (
-    <View style={styles.background}>
-      <Animated.View style={[styles.container]}>
-        {children}
-      </Animated.View>
-    </View>
-  );
-}
 
 export function DiaryList(
   { toggleEntry,

@@ -25,7 +25,8 @@ export function DiaryScreen({
   refreshEntries,
   currentMonth,
   setCurrentMonth,
-  navigateMonth
+  navigateMonth,
+  dbHook
 }: {
   appData: AppData,
   showCalendar?: boolean,
@@ -36,7 +37,8 @@ export function DiaryScreen({
   refreshEntries: () => Promise<void>
   currentMonth: Date,
   setCurrentMonth: (date: Date) => void,
-  navigateMonth: (direction: 'prev' | 'next') => void
+  navigateMonth: (direction: 'prev' | 'next') => void,
+  dbHook: any
 }) {
   const { theme, styles } = useAppTheme();
 
@@ -92,7 +94,8 @@ export function DiaryScreen({
           <DiaryInput
             appData={appData}
             toggleInput={setToggleInput}
-            refreshEntries={refreshEntries}
+            // refreshEntries={refreshEntries}
+            dbHook={dbHook} // Pass the dbHook to DiaryInput
           />
         </KeyboardAvoidingView>
       )}
@@ -111,11 +114,13 @@ export function DiaryScreen({
 export function DiaryInput({
   appData,
   toggleInput,
-  refreshEntries
+  //refreshEntries,
+  dbHook
 }: {
   appData: AppData,
   toggleInput?: (state: boolean) => void,
-  refreshEntries: () => Promise<void>
+  // refreshEntries: () => Promise<void>
+  dbHook: any
 }) {
   const { theme, styles } = useAppTheme();
 
@@ -135,46 +140,27 @@ export function DiaryInput({
     savePhotoLocally,
   } = useCamera(appData);
 
-  // supabase related
-  const {
-    glucose,
-    setGlucose,
-    carbs,
-    setCarbs,
-    note,
-    setNote,
-    activity,
-    setActivity,
-    foodType,
-    setFoodType,
-    activityOptions,
-    foodOptions,
-    saveDiaryEntry,
-    isLoading,
-    error
-  } = useDB(appData);
+
 
   // toggles and arrays
   const [toggleCamera, setToggleCamera] = useState(false);
   const [toggleNote, setToggleNote] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // keyboard related
   const glucoseInputRef = useRef<any>(null);
   const carbsInputRef = useRef<any>(null);
 
-  const handleSave = async () => {
+    const handleSave = async () => {
     // First, save all photos locally and get permanent URIs
     const permanentURIs: string[] = [];
     for (const tempUri of photoURIs) {
       const permanentUri = await savePhotoLocally(tempUri);
       permanentURIs.push(permanentUri);
     }
-    // Then save diary entry with permanent URIs
-    await saveDiaryEntry(permanentURIs);
-    // Refresh the entries after saving
-    await refreshEntries();
-
+    
+    // Use dbHook directly
+    await dbHook.saveDiaryEntry(permanentURIs);
+    
     setToggleCamera(false);
     setToggleNote(false);
     clearPhotoURIs();
@@ -196,8 +182,8 @@ export function DiaryInput({
       <TextInput
         ref={glucoseInputRef}
         mode="outlined"
-        value={glucose}
-        onChangeText={setGlucose}
+        value={dbHook.glucose}
+        onChangeText={dbHook.setGlucose}
         placeholder="Enter glucose level"
         keyboardType="decimal-pad"
         returnKeyType="next"
@@ -220,8 +206,8 @@ export function DiaryInput({
       <TextInput
         ref={carbsInputRef}
         mode="outlined"
-        value={carbs}
-        onChangeText={setCarbs}
+        value={dbHook.carbs}
+        onChangeText={dbHook.setCarbs}
         placeholder="Enter carbs amount"
         keyboardType="numeric"
         returnKeyType="done"
@@ -245,18 +231,18 @@ export function DiaryInput({
             Meal Type
           </Text>
           <View style={styles.chipContainer}>
-            {foodOptions.map((option) => (
+            {dbHook.foodOptions.map((option) => (
               <Button
                 key={option}
-                mode={foodType === option ? "contained" : "outlined"}
-                onPress={() => setFoodType(option)}
+                mode={dbHook.foodType === option ? "contained" : "outlined"}
+                onPress={() => dbHook.setFoodType(option)}
                 style={[
                   styles.chip,
-                  foodType === option && { backgroundColor: theme.colors.primary }
+                  dbHook.foodType === option && { backgroundColor: theme.colors.primary }
                 ]}
                 labelStyle={{
                   fontSize: 12,
-                  color: foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
+                  color: dbHook.foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
                 }}
                 compact
               >
@@ -273,18 +259,18 @@ export function DiaryInput({
             Activity Level
           </Text>
           <View style={styles.chipContainer}>
-            {activityOptions.map((option) => (
+            {dbHook.activityOptions.map((option) => (
               <Button
                 key={option}
-                mode={activity === option ? "contained" : "outlined"}
-                onPress={() => setActivity(option)}
+                mode={dbHook.activity === option ? "contained" : "outlined"}
+                onPress={() => dbHook.setActivity(option)}
                 style={[
                   styles.chip,
-                  activity === option && { backgroundColor: theme.colors.secondary }
+                  dbHook.activity === option && { backgroundColor: theme.colors.secondary }
                 ]}
                 labelStyle={{
                   fontSize: 12,
-                  color: activity === option ? theme.colors.onSecondary : theme.colors.onSurface
+                  color: dbHook.activity === option ? theme.colors.onSecondary : theme.colors.onSurface
                 }}
                 compact
               >
@@ -307,8 +293,8 @@ export function DiaryInput({
       </View>
       <TextInput
         mode="outlined"
-        value={note}
-        onChangeText={setNote}
+        value={dbHook.note}
+        onChangeText={dbHook.setNote}
         placeholder="Add any notes about your meal or how you're feeling..."
         multiline
         numberOfLines={3}
@@ -398,8 +384,8 @@ export function DiaryInput({
         onPress={handleSave}
         style={styles.saveButton}
         icon="content-save"
-        loading={isLoading}
-        disabled={!glucose || !carbs}
+        loading={dbHook.isLoading}
+        disabled={!dbHook.glucose || !dbHook.carbs}
       >
         Save Entry
       </Button>
@@ -421,10 +407,10 @@ export function DiaryInput({
           {renderNotesCard()}
           {renderPhotosCard()}
 
-          {error && (
+          {dbHook.error && (
             <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
               <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
-                {error}
+                {dbHook.error}
               </Text>
             </Surface>
           )}

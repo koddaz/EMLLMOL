@@ -392,7 +392,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: theme.colors.primaryContainer,
         paddingHorizontal: 8,
         paddingVertical: 4,
-        borderRadius: 12,
+        borderRadius: 25,
         minWidth: 50,
         alignItems: 'center',
     }

@@ -1,24 +1,40 @@
+import { AppData } from "@/app/constants/interface/appData";
 import { useState } from "react";
 
-export function useCalendar() {
+export function useCalendar(appData: AppData) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
+
 
   const toggleCalendar = () => {
     setShowCalendar(!showCalendar);
   };
 
   const formatDate = (date: Date) => {
-    return date.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+    if (appData.settings.dateformat === 'EU') {
+      return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      });
+    } else if (appData.settings.dateformat === 'US') {
+      return date.toLocaleDateString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+      });
+    }
   }
 
   const formatTime = (date: Date) => {
+    if (appData.settings.clockformat === '12') {
+      return date.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+    }
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
