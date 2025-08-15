@@ -1,9 +1,7 @@
 import { DiaryData } from "@/app/constants/interface/diaryData";
-import { customStyles } from "@/app/constants/UI/styles";
-import { Surface, Text, useTheme } from "react-native-paper";
-
+import { Surface, Text } from "react-native-paper";
 import { LoadingScreen } from "@/app/components/loadingScreen";
-import { Animated, FlatList, View } from "react-native";
+import { FlatList, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { DiaryListItem } from "./diaryListItem";
 import { useCallback, useMemo } from "react";
@@ -15,50 +13,44 @@ import { GestureDetector } from "react-native-gesture-handler";
 
 export function DiaryList(
   { toggleEntry,
-    setSelectedDiaryData,
-    selectedDate,
-    setSelectedDate,
-    isLoading,
-    diaryEntries,
-    refreshEntries
+    dbHook,
+    calendarHook,
+    setSelectedDiaryData
   }: {
-    isLoading: boolean,
-    diaryEntries: DiaryData[],
     toggleEntry: (state: boolean) => void,
-    setSelectedDiaryData?: (data: DiaryData) => void,
-    selectedDate: Date,
-    refreshEntries: () => Promise<void>,
-    setSelectedDate: (date: Date) => void
+    dbHook: any,
+    calendarHook: any
+    setSelectedDiaryData?: (data: DiaryData) => void
   }
 ) {
   const { theme, styles } = useAppTheme();
 
-  const filteredEntries = useMemo(() => diaryEntries.filter(item => {
+  const filteredEntries = useMemo(() => dbHook.diaryEntries.filter((item : DiaryData) => {
     const itemDate = new Date(item.created_at);
-    return itemDate.toDateString() === selectedDate.toDateString();
-  }), [diaryEntries, selectedDate]);
+    return itemDate.toDateString() === calendarHook.selectedDate.toDateString();
+  }), [dbHook.diaryEntries, calendarHook.selectedDate]);
 
   const handleDateNavigation = useCallback((direction: 'prev' | 'next') => {
-    const newDate = new Date(selectedDate);
+    const newDate = new Date(calendarHook.selectedDate);
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
     } else {
       newDate.setDate(newDate.getDate() + 1);
     }
-    setSelectedDate(newDate);
-  }, [selectedDate, setSelectedDate]);
+    calendarHook.setSelectedDate(newDate);
+  }, [calendarHook.selectedDate, calendarHook.setSelectedDate]);
 
   const panGesture = useSwipeGesture(handleDateNavigation);
 
 
-  if (isLoading) {
+  if (dbHook.isLoading) {
     return <LoadingScreen />;
   }
 
   const renderStats = () => {
-    const totalCarbs = filteredEntries.reduce((sum, entry) => sum + (entry.carbs || 0), 0);
+    const totalCarbs = filteredEntries.reduce((sum: number, entry: any) => sum + (entry.carbs || 0), 0);
     const avgGlucose = filteredEntries.length > 0
-      ? (filteredEntries.reduce((sum, entry) => sum + (entry.glucose || 0), 0) / filteredEntries.length).toFixed(1)
+      ? (filteredEntries.reduce((sum: number, entry: any) => sum + (entry.glucose || 0), 0) / filteredEntries.length).toFixed(1)
       : '0';
 
     return (
@@ -71,7 +63,7 @@ export function DiaryList(
         <View style={[styles.cardHeader, { marginBottom: 6 }]}>
           <MaterialCommunityIcons name="chart-line" size={16} color={theme.colors.primary} />
           <Text variant="labelLarge" style={[styles.cardTitle, { fontSize: 12 }]}>
-            Daily Summary: {selectedDate.toLocaleDateString('en-EU', {
+            Daily Summary: {calendarHook.selectedDate.toLocaleDateString('en-EU', {
               month: 'numeric',
               day: 'numeric',
               year: 'numeric'
@@ -223,9 +215,9 @@ export function DiaryList(
             }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}
-            refreshing={isLoading}
-            onRefresh={refreshEntries}
-            extraData={selectedDate.toISOString()}
+            refreshing={dbHook.isLoading}
+            onRefresh={dbHook.refreshEntries}
+            extraData={calendarHook.selectedDate.toISOString()}
           />
         </View>
       </View>

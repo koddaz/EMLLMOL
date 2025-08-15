@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.knoddaz.EMLLMOL'
+    namespace 'com.knoddaz.emiliemol'
     defaultConfig {
-        applicationId 'com.knoddaz.EMLLMOL'
+        applicationId 'com.knoddaz.emiliemol'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

@@ -1,20 +1,16 @@
 import { Surface, useTheme } from "react-native-paper";
-import { useCalendar } from "../hooks/useCalendar";
-import { customStyles } from "@/app/constants/UI/styles";
 import { ScrollView } from "react-native";
 import { CalendarNavigation } from "./calendarNavigation";
 import { CalendarGrid } from "./calendarGrid";
-import { useMemo } from "react";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { DiaryData } from "@/app/constants/interface/diaryData";
+
 
 export default function DiaryCalendar(
-    { diaryEntries, selectedDate, setSelectedDate, currentMonth, setCurrentMonth, navigateMonth
+    { calendarHook, dbHook
     }: {
-        diaryEntries: DiaryData[],
-        selectedDate: Date, setSelectedDate: (date: Date) => void,
-        currentMonth: Date, setCurrentMonth: (date: Date) => void,
-        navigateMonth: (direction: 'prev' | 'next') => void
+        
+        calendarHook: any,
+        dbHook: any
     }
 ) {
     const { theme, styles } = useAppTheme();
@@ -33,8 +29,8 @@ export default function DiaryCalendar(
             elevation={4}
         >
             <ScrollView>
-                <CalendarNavigation currentMonth={currentMonth} navigateMonth={navigateMonth} />
-                <CalendarGrid diaryEntries={diaryEntries} selectedDate={selectedDate} setSelectedDate={setSelectedDate} currentMonth={currentMonth} setCurrentMonth={setCurrentMonth} />
+                <CalendarNavigation currentMonth={calendarHook.currentMonth} navigateMonth={calendarHook.navigateMonth} />
+                <CalendarGrid diaryEntries={dbHook.diaryEntries} selectedDate={calendarHook.selectedDate} setSelectedDate={calendarHook.setSelectedDate} currentMonth={calendarHook.currentMonth} setCurrentMonth={calendarHook.setCurrentMonth} />
             </ScrollView>
         </Surface>
     );

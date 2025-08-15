@@ -1,4 +1,4 @@
-package com.knoddaz.EMLLMOL
+package com.knoddaz.emllmol
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

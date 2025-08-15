@@ -1,48 +1,37 @@
 import { useMemo, useState } from "react";
 import { View } from "react-native";
-import { Appbar, BottomNavigation, useTheme } from "react-native-paper";
+import { Appbar, BottomNavigation } from "react-native-paper";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppData } from "../constants/interface/appData";
-import { customStyles } from "../constants/UI/styles";
+import { useAppTheme } from "../constants/UI/theme";
 import CameraScreen from "./camera/cameraScreen";
 import { DiaryScreen } from "./diary/diaryScreen";
 import { useCalendar } from "./diary/hooks/useCalendar";
 import { useDB } from "./diary/hooks/useDB";
 import { SettingsScreen } from "./settings/settingsScreen";
-import { useAppTheme } from "../constants/UI/theme";
+import { DiaryData } from "../constants/interface/diaryData";
 
 export function RootNavigation({ appData }: { appData: AppData }) {
     const { theme, styles } = useAppTheme();
     const insets = useSafeAreaInsets();
 
-    const { navigateMonth, currentMonth, setCurrentMonth, selectedDate, setSelectedDate, showCalendar, setShowCalendar } = useCalendar(appData);
-
+    const diaryData: DiaryData[] = useMemo(() => appData.diaryEntries || [], [appData.diaryEntries]);
     // Settings state management
     const [settingsEditMode, setSettingsEditMode] = useState(false);
     const [settingsSection, setSettingsSection] = useState<'profile' | 'preferences' | 'account'>('profile');
 
+    // SINGLE SOURCE OF TRUTH - Only create dbHook here
     const dbHook = useDB(appData);
     const calendarHook = useCalendar(appData);
-    // Move the DB hook to root level
-    const { retrieveEntries, diaryEntries: dbDiaryEntries, isLoading: dbIsLoading } = useDB(appData);
 
-    // Use the entries from useDB instead of appData
-    const diaryEntries = dbDiaryEntries;
-    const isLoading = dbIsLoading;
+
+
 
     const DiaryRoute = () => (
         <DiaryScreen
             appData={appData}
-            showCalendar={showCalendar}
-            selectedDate={selectedDate}
-            currentMonth={currentMonth}
-            setCurrentMonth={setCurrentMonth}
-            setSelectedDate={setSelectedDate} // Pass the setter
-            diaryEntries={diaryEntries}
-            isLoading={isLoading}
-            refreshEntries={retrieveEntries} 
-            navigateMonth={navigateMonth}
-            dbHook={dbHook} 
+            calendarHook={calendarHook}
+            dbHook={dbHook} // Use the stabilized hook
         />
     );
     const CameraRoute = () => <CameraScreen />;
@@ -92,7 +81,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
 
     // Format diary date for AppBar
     const formatDiaryDate = () => {
-        return selectedDate.toLocaleDateString('en-US', {
+        return calendarHook.selectedDate.toLocaleDateString('en-US', {
             weekday: 'long',
             month: 'long',
             day: 'numeric'
@@ -106,7 +95,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
                 style={styles.appBar}
                 statusBarHeight={insets.top}
                 elevated={
-                    showCalendar ? false : true
+                    calendarHook.showCalendar ? false : true
                 }
 
             >
@@ -129,11 +118,11 @@ export function RootNavigation({ appData }: { appData: AppData }) {
 
                         <Appbar.Action
                             icon="calendar"
-                            onPress={() => setShowCalendar(!showCalendar)}
-                            iconColor={showCalendar ? theme.colors.primary : theme.colors.onSurfaceVariant}
+                            onPress={() => calendarHook.toggleCalendar()}
+                            iconColor={calendarHook.showCalendar ? theme.colors.primary : theme.colors.onSurfaceVariant}
                             style={[
                                 styles.appBarAction,
-                                showCalendar && { backgroundColor: theme.colors.primaryContainer }
+                                calendarHook.showCalendar && { backgroundColor: theme.colors.primaryContainer }
                             ]}
                             size={22}
                         />

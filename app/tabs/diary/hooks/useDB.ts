@@ -1,17 +1,13 @@
 import { AppData } from "@/app/constants/interface/appData";
+import { DiaryData } from "@/app/constants/interface/diaryData";
 import { supabase } from "@/db/supabase/supabase";
-import { useCallback, useEffect, useState } from "react"; // Add useCallback
+import { useCallback, useEffect, useState } from "react";
 
 export function useDB(appData: AppData) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [diaryEntries, setDiaryEntries] = useState<any[]>([]);
+  const [diaryEntries, setDiaryEntries] = useState<DiaryData[]>([]);
 
-  const [glucose, setGlucose] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [note, setNote] = useState("");
-  const [activity, setActivity] = useState("none");
-  const [foodType, setFoodType] = useState("snack");
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
@@ -32,7 +28,21 @@ export function useDB(appData: AppData) {
       }
 
       console.log('✅ Diary entries retrieved successfully:', data);
-      setDiaryEntries(data || []);
+
+      // Transform the data to match DiaryData interface
+      const transformedData: DiaryData[] = (data || []).map(item => ({
+        id: item.id.toString(),
+        created_at: new Date(item.created_at),
+        glucose: item.glucose || 0,
+        carbs: item.carbs || 0,
+        insulin: item.insulin || 0,
+        meal_type: item.meal_type || '',
+        activity_level: item.activity_level || '',
+        note: item.note || '',
+        uri_array: item.uri_array || []
+      }));
+
+      setDiaryEntries(transformedData);
 
     } catch (err) {
       console.error('❌ Failed to retrieve diary entries:', err);
@@ -42,37 +52,35 @@ export function useDB(appData: AppData) {
     }
   }, [appData.session?.user.id]);
 
-  // Add useEffect to load entries when the hook initializes
-  useEffect(() => {
-    if (appData.session?.user?.id) {
-      console.log('🔄 Initial load of diary entries...');
-      retrieveEntries();
-    }
-  }, [appData.session?.user?.id, retrieveEntries]); // Include retrieveEntries in dependencies
-
-  const saveDiaryEntry = async (photoURIs: string[] = []) => {
+  const saveDiaryEntry = async (formData: {
+    glucose: string;
+    carbs: string;
+    note: string;
+    activity: string;
+    foodType: string;
+  }, photoURIs: string[] = []) => {
     try {
       setIsLoading(true);
       setError(null);
 
       // Validation
-      if (!glucose.trim()) {
+      if (!formData.glucose.trim()) {
         setError('Glucose level is required');
         return;
       }
 
-      if (!carbs.trim()) {
+      if (!formData.carbs.trim()) {
         setError('Carbs amount is required');
         return;
       }
 
       const entryData = {
         user_id: appData.session?.user.id,
-        glucose: parseFloat(glucose),
-        carbs: parseFloat(carbs),
-        note: note || null,
-        activity_level: activity,
-        meal_type: foodType,
+        glucose: parseFloat(formData.glucose),
+        carbs: parseFloat(formData.carbs),
+        note: formData.note || null,
+        activity_level: formData.activity,
+        meal_type: formData.foodType,
         created_at: new Date().toISOString(),
         uri_array: photoURIs.length > 0 ? photoURIs : null,
       };
@@ -85,16 +93,7 @@ export function useDB(appData: AppData) {
         return;
       }
 
-      console.log('✅ Entry saved successfully, clearing form...');
-      // Clear form after saving
-      setGlucose("");
-      setCarbs("");
-      setNote("");
-      setActivity("none");
-      setFoodType("snack");
-
-      console.log('🔄 Refreshing entries after save...');
-      // Automatically refetch entries after successful save
+      console.log('✅ Entry saved successfully');
       await retrieveEntries();
       console.log('✅ Entries refreshed successfully');
 
@@ -134,22 +133,10 @@ export function useDB(appData: AppData) {
     saveDiaryEntry,
     retrieveEntries,
     removeEntry,
-
     isLoading,
     error,
-
+    setError,
     diaryEntries,
-
-    glucose,
-    setGlucose,
-    carbs,
-    setCarbs,
-    note,
-    setNote,
-    activity,
-    setActivity,
-    foodType,
-    setFoodType,
     foodOptions,
     activityOptions,
   };
