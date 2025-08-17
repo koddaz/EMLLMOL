@@ -2,7 +2,7 @@ import { AppData } from "@/app/constants/interface/appData";
 import { useState } from "react";
 
 export function useCalendar(appData: AppData) {
-  const [showCalendar, setShowCalendar] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 

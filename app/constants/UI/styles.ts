@@ -153,20 +153,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         paddingBottom: 16,
         borderBottomLeftRadius: 20,
         borderBottomRightRadius: 20,
-
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-
-        // Use shadow to simulate border
-        shadowColor: theme.colors.primary,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 1,
-        shadowRadius: 0,
-        elevation: 2,
-        
     },
 
     calendarWeekDay: {

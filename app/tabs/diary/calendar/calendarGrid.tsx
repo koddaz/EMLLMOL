@@ -6,12 +6,9 @@ import { View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
 export function CalendarGrid(
-    { diaryEntries, selectedDate, setSelectedDate, currentMonth, setCurrentMonth }: {
+    { diaryEntries, calendarHook }: {
         diaryEntries: DiaryData[],
-        selectedDate: Date;
-        setSelectedDate: (date: Date) => void;
-        currentMonth: Date;
-        setCurrentMonth: (date: Date) => void;
+        calendarHook: any
     }
 ) {
     const { theme, styles } = useAppTheme();
@@ -64,11 +61,11 @@ export function CalendarGrid(
         </View>
     ));
 
-    const daysInMonth = getDaysInMonth(currentMonth);
-    const firstDay = getFirstDayOfMonth(currentMonth);
+    const daysInMonth = getDaysInMonth(calendarHook.currentMonth);
+    const firstDay = getFirstDayOfMonth(calendarHook.currentMonth);
     const days = [];
 
-    const prevMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+    const prevMonth = new Date(calendarHook.currentMonth.getFullYear(), calendarHook.currentMonth.getMonth() - 1, 1);
     const daysInPrevMonth = getDaysInMonth(prevMonth);
 
     // Add days from the previous month
@@ -81,8 +78,8 @@ export function CalendarGrid(
                 <Button
                     mode="text"
                     onPress={() => {
-                        setSelectedDate(date);
-                        setCurrentMonth(prevMonth);
+                        calendarHook.setSelectedDate(date);
+                        calendarHook.setCurrentMonth(prevMonth);
                     }}
                     style={styles.calendarDayButton}
                     contentStyle={styles.calendarDayContent}
@@ -103,8 +100,8 @@ export function CalendarGrid(
 
     // Add days of current month
     for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
-        const isSelected = selectedDate.toDateString() === date.toDateString();
+        const date = new Date(calendarHook.currentMonth.getFullYear(), calendarHook.currentMonth.getMonth(), day);
+        const isSelected = calendarHook.selectedDate.toDateString() === date.toDateString();
         const isToday = new Date().toDateString() === date.toDateString();
         const hasDiaryEntry = hasEntry(date);
 
@@ -114,7 +111,8 @@ export function CalendarGrid(
                 <Button
                     mode="text"
                     onPress={() => {
-                        setSelectedDate(date);
+                        calendarHook.setSelectedDate(date);
+                        calendarHook.toggleCalendar();
                     }}
                     style={[
                         styles.calendarDayButton,
@@ -170,7 +168,7 @@ export function CalendarGrid(
     // Add days from next month to complete the grid
     const totalCells = days.length;
     const remainingCells = 42 - totalCells;
-    const nextMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+    const nextMonth = new Date(calendarHook.currentMonth.getFullYear(), calendarHook.currentMonth.getMonth() + 1, 1);
 
     for (let day = 1; day <= remainingCells; day++) {
         const date = new Date(nextMonth.getFullYear(), nextMonth.getMonth(), day);
@@ -180,8 +178,8 @@ export function CalendarGrid(
                 <Button
                     mode="text"
                     onPress={() => {
-                        setSelectedDate(date);
-                        setCurrentMonth(nextMonth);
+                        calendarHook.setSelectedDate(date);
+                        calendarHook.setCurrentMonth(nextMonth);
                     }}
                     style={styles.calendarDayButton}
                     contentStyle={styles.calendarDayContent}
