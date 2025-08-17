@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { View } from "react-native";
 import { Appbar, BottomNavigation } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppData } from "../constants/interface/appData";
 import { useAppTheme } from "../constants/UI/theme";
 import CameraScreen from "./camera/cameraScreen";
@@ -10,6 +10,7 @@ import { useCalendar } from "./diary/hooks/useCalendar";
 import { useDB } from "./diary/hooks/useDB";
 import { SettingsScreen } from "./settings/settingsScreen";
 import { DiaryData } from "../constants/interface/diaryData";
+import { useCamera } from "./diary/hooks/useCamera";
 
 export function RootNavigation({ appData }: { appData: AppData }) {
     const { theme, styles } = useAppTheme();
@@ -23,6 +24,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
     // SINGLE SOURCE OF TRUTH - Only create dbHook here
     const dbHook = useDB(appData);
     const calendarHook = useCalendar(appData);
+    const cameraHook = useCamera(appData);
 
 
 
@@ -31,7 +33,8 @@ export function RootNavigation({ appData }: { appData: AppData }) {
         <DiaryScreen
             appData={appData}
             calendarHook={calendarHook}
-            dbHook={dbHook} // Use the stabilized hook
+            dbHook={dbHook}
+            cameraHook={cameraHook}
         />
     );
     const CameraRoute = () => <CameraScreen />;
@@ -79,18 +82,10 @@ export function RootNavigation({ appData }: { appData: AppData }) {
         }
     };
 
-    // Format diary date for AppBar
-    const formatDiaryDate = () => {
-        return calendarHook.selectedDate.toLocaleDateString('en-US', {
-            weekday: 'long',
-            month: 'long',
-            day: 'numeric'
-        });
-    };
 
     return (
-        <View style={styles.container}>
-            <Appbar.Header
+        <SafeAreaView style={styles.container}>
+            {/*<Appbar.Header
                 mode="small"
                 style={styles.appBar}
                 statusBarHeight={insets.top}
@@ -192,8 +187,9 @@ export function RootNavigation({ appData }: { appData: AppData }) {
                     </>
                 )}
             </Appbar.Header>
-
-            <BottomNavigation
+            */}
+                {DiaryRoute()}
+            {/* <BottomNavigation
                 activeColor={theme.colors.primary}
                 inactiveColor={theme.colors.onSurfaceVariant}
                 barStyle={styles.bottomAppBar}
@@ -206,7 +202,7 @@ export function RootNavigation({ appData }: { appData: AppData }) {
                 sceneAnimationType="opacity"
                 keyboardHidesNavigationBar={true}
                 safeAreaInsets={{ bottom: insets.bottom }}
-            />
-        </View>
+            /> */}
+        </SafeAreaView>
     );
 }

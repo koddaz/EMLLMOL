@@ -11,6 +11,12 @@ export function useDB(appData: AppData) {
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
+  useEffect(() => {
+    if (appData?.session?.user?.id) {
+      retrieveEntries()
+    }
+  }, [appData.session?.user?.id]);
+  
   // Wrap retrieveEntries in useCallback to prevent infinite loops
   const retrieveEntries = useCallback(async () => {
     setIsLoading(true);

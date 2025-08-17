@@ -1,5 +1,5 @@
 import { AppData } from "@/app/constants/interface/appData";
-import { CameraView } from "expo-camera";
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as FileSystem from 'expo-file-system';
 import { useRef, useState } from "react";
 import { Alert, View } from "react-native";
@@ -14,7 +14,7 @@ export function useCamera(appData: AppData) {
   const [zoom, setZoom] = useState(0);
   const [photoURIs, setPhotoURIs] = useState<string[]>([]);
 
-
+  const [permission, requestPermission] = useCameraPermissions();
   const createDiaryPhotosDirectory = async () => {
     const diaryPhotosDir = `${FileSystem.documentDirectory}diary-photos/`;
     const dirInfo = await FileSystem.getInfoAsync(diaryPhotosDir);
@@ -53,7 +53,7 @@ export function useCamera(appData: AppData) {
 
   const renderCamera = () => {
     // Check if permission is still loading
-    if (appData.permission === null) {
+    if (permission === null) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text>Loading camera permissions...</Text>
@@ -61,13 +61,13 @@ export function useCamera(appData: AppData) {
       );
     }
 
-    if (!appData.permission?.granted) {
+    if (!permission?.granted) {
       return (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <Text>Camera permission not granted</Text>
           <Button
             mode="contained"
-            onPress={appData.requestCameraPermission}
+            onPress={requestPermission}
           >
             Grant Camera Permission
           </Button>

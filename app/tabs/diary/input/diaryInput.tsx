@@ -1,10 +1,9 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { memo, useCallback, useRef, useState } from "react";
-import { Keyboard, ScrollView, View } from "react-native";
-import { Avatar, Button, IconButton, Surface, Text, TextInput } from "react-native-paper";
-import { useCamera } from "../hooks/useCamera";
+import { useCallback, useRef, useState } from "react";
+import { ScrollView, View } from "react-native";
+import { Avatar, Button, Divider, Icon, IconButton, Surface, Text, TextInput } from "react-native-paper";
 
 // Remove the complex memo comparison and just use basic memo
 export function DiaryInput({
@@ -12,12 +11,14 @@ export function DiaryInput({
     toggleInput,
     calendarHook,
     dbHook,
+    cameraHook,
     diaryState
 }: {
     appData: AppData,
     toggleInput?: (state: boolean) => void,
     calendarHook: any,
     dbHook: any,
+    cameraHook: any,
     diaryState: {
         glucose: string,
         setGlucose: (value: string) => void,
@@ -35,26 +36,16 @@ export function DiaryInput({
 
     console.log('🔄 DiaryInput rendered');
 
-    // camera related
-    const {
-        renderCamera,
-        cycleFlash,
-        getFlashIcon,
-        getFlashIconColor,
-        capturePhoto,
-        photoURIs,
-        removePhotoURI,
-        clearPhotoURIs,
-        savePhotoLocally,
-    } = useCamera(appData);
+
 
     // toggles and arrays
     const [toggleCamera, setToggleCamera] = useState(false);
-    const [toggleNote, setToggleNote] = useState(false);
+    // const [toggleNote, setToggleNote] = useState(false);
 
     // keyboard related
     const glucoseInputRef = useRef<any>(null);
     const carbsInputRef = useRef<any>(null);
+    const noteInputRef = useRef<any>(null);
 
     // Stabilize the save function
     const handleSave = useCallback(async () => {
@@ -63,20 +54,38 @@ export function DiaryInput({
         try {
             // First, save all photos locally and get permanent URIs
             const permanentURIs: string[] = [];
-            for (const tempUri of photoURIs) {
-                const permanentUri = await savePhotoLocally(tempUri);
+            for (const tempUri of cameraHook.photoURIs) {
+                console.log('📷 Processing photo:', tempUri);
+                const permanentUri = await cameraHook.savePhotoLocally(tempUri);
+                console.log('📷 Saved as:', permanentUri);
                 permanentURIs.push(permanentUri);
             }
 
-            // Use dbHook directly
-            await dbHook.saveDiaryEntry(permanentURIs);
+            console.log('📷 All permanent URIs:', permanentURIs);
+            // Create the diary entry data object
+            const entryData = {
+                glucose: diaryState.glucose,
+                carbs: diaryState.carbs,
+                note: diaryState.note,
+                activity: diaryState.activity,
+                foodType: diaryState.foodType,
+            };
+            await dbHook.saveDiaryEntry(entryData, permanentURIs);
+
 
             console.log('✅ Entry saved, closing input...');
 
             // Clear camera and note states
             setToggleCamera(false);
-            setToggleNote(false);
-            clearPhotoURIs();
+            // setToggleNote(false);
+            cameraHook.clearPhotoURIs();
+
+            // Clear the diary state
+            diaryState.setGlucose('');
+            diaryState.setCarbs('');
+            diaryState.setNote('');
+            diaryState.setActivity('');
+            diaryState.setFoodType('');
 
             // Close the input after successful save
             if (toggleInput) {
@@ -85,7 +94,7 @@ export function DiaryInput({
         } catch (error) {
             console.error('❌ Error saving entry:', error);
         }
-    }, [photoURIs, savePhotoLocally, dbHook, clearPhotoURIs, toggleInput]);
+    }, [cameraHook.photoURIs, cameraHook.savePhotoLocally, dbHook, cameraHook.clearPhotoURIs, toggleInput, diaryState]);
 
     // Stabilize the cancel function
     const handleCancel = useCallback(() => {
@@ -95,187 +104,175 @@ export function DiaryInput({
         }
     }, [toggleInput]);
 
-    const renderGlucoseCard = () => (
-        <Surface style={styles.card} elevation={2}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="blood-bag" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Blood Glucose
-                </Text>
-            </View>
-            <TextInput
-                ref={glucoseInputRef}
-                mode="outlined"
-                value={diaryState.glucose}
-                onChangeText={diaryState.setGlucose}
-                placeholder="Enter glucose level"
-                keyboardType="decimal-pad"
-                returnKeyType="next"
-                onSubmitEditing={() => carbsInputRef.current?.focus()}
-                style={styles.input}
-                right={<TextInput.Affix text={appData.settings.glucose} />}
-                dense
-            />
-        </Surface>
-    );
 
-    const renderCarbsCard = () => (
-        <Surface style={styles.card} elevation={2}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="food" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Carbohydrates
-                </Text>
-            </View>
-            <TextInput
-                ref={carbsInputRef}
-                mode="outlined"
-                value={dbHook.carbs}
-                onChangeText={dbHook.setCarbs}
-                placeholder="Enter carbs amount"
-                keyboardType="numeric"
-                returnKeyType="done"
-                onSubmitEditing={() => Keyboard.dismiss()}
-                style={styles.input}
-                right={<TextInput.Affix text="g" />}
-                dense
-            />
-        </Surface>
-    );
-
-    const renderQuickSelectors = () => (
-        <Surface style={styles.card} elevation={2}>
-            <Text variant="titleMedium" style={[styles.cardTitle, { marginBottom: 16 }]}>
-                Quick Details
-            </Text>
-
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Meal Type
-                    </Text>
-                    <View style={styles.chipContainer}>
-                        {dbHook.foodOptions.map((option: any) => (
-                            <Button
-                                key={option}
-                                mode={diaryState.foodType === option ? "contained" : "outlined"}
-                                onPress={() => diaryState.setFoodType(option)}
-                                style={[
-                                    styles.chip,
-                                    diaryState.foodType === option && { backgroundColor: theme.colors.primary }
-                                ]}
-                                labelStyle={{
-                                    fontSize: 12,
-                                    color: diaryState.foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
-                                }}
-                                compact
-                            >
-                                {option}
-                            </Button>
-                        ))}
+    const renderInputCard = () => (
+        <View style={{ margin: 8 }}>
+            <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                <View style={{ flex: 1, }}>
+                    <View style={styles.cardHeader}>
+                        <MaterialCommunityIcons name="blood-bag" size={20} color={theme.colors.primary} />
+                        <Text variant="titleMedium" style={styles.cardTitle}>
+                            Blood Glucose
+                        </Text>
                     </View>
+                    <TextInput
+                        ref={glucoseInputRef}
+                        mode="outlined"
+                        value={diaryState.glucose}
+                        onChangeText={(text) => diaryState.setGlucose(text)}
+                        placeholder="5.5"
+                        keyboardType="decimal-pad"
+                        returnKeyType="next"
+                        onSubmitEditing={() => carbsInputRef.current?.focus()}
+                        style={styles.input}
+                        right={<TextInput.Affix text={appData.settings.glucose} />}
+                        dense
+                    />
+
+
+                </View>
+                <View style={{ flex: 1 }}>
+
+                    <View style={styles.cardHeader}>
+                        <MaterialCommunityIcons name="food" size={20} color={theme.colors.primary} />
+                        <Text variant="titleMedium" style={styles.cardTitle}>
+                            Carbohydrates
+                        </Text>
+                    </View>
+                    <TextInput
+                        ref={carbsInputRef}
+                        mode="outlined"
+                        value={diaryState.carbs}
+                        onChangeText={(text) => diaryState.setCarbs(text)}
+                        placeholder="60"
+                        keyboardType="numeric"
+                        returnKeyType="next"
+                        onSubmitEditing={() => {
+                            noteInputRef.current?.focus();
+                        }}
+                        style={styles.input}
+                        right={<TextInput.Affix text="g" />}
+                        dense
+                    />
+
+                </View>
+
+            </View>
+            <View>
+                <View style={[styles.cardHeader, { justifyContent: 'space-between' }]}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <MaterialCommunityIcons name="note-text" size={20} color={theme.colors.primary} />
+                        <Text variant="titleMedium" style={styles.cardTitle}>
+                            Notes
+                        </Text>
+                    </View>
+
+                </View>
+                <TextInput
+                    ref={noteInputRef}
+                    mode="outlined"
+                    value={diaryState.note}
+                    onChangeText={diaryState.setNote}
+                    placeholder="Add any notes about your meal or how you're feeling..."
+                    multiline
+                    numberOfLines={3}
+                    style={[styles.input, { maxHeight: 100, minHeight: 100 }]}
+                    returnKeyType="default"
+                    textAlignVertical="top"
+                    blurOnSubmit={false}
+                    dense
+                />
+            </View>
+        </View>
+    );
+
+    const renderMealSelector = () => (
+
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+            <View style={{ flex: 1, }}>
+                <View style={styles.cardHeader}>
+                    <MaterialCommunityIcons name="food-fork-drink" size={20} color={theme.colors.primary} />
+                    <Text variant="titleMedium" style={styles.cardTitle}>
+                        Meal
+                    </Text>
+                </View>
+                <View style={styles.chipContainer}>
+                    {dbHook.foodOptions.map((option: any) => (
+                        <Button
+                            key={option}
+                            mode={diaryState.foodType === option ? "contained" : "outlined"}
+                            onPress={() => diaryState.setFoodType(option)}
+                            style={[
+                                styles.chip,
+                                diaryState.foodType === option && { backgroundColor: theme.colors.primary }
+                            ]}
+                            labelStyle={{
+                                fontSize: 12,
+                                color: diaryState.foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
+                            }}
+                            compact
+                        >
+                            {option}
+                        </Button>
+                    ))}
                 </View>
             </View>
+        </View>
 
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Activity Level
-                    </Text>
-                    <View style={styles.chipContainer}>
-                        {dbHook.activityOptions.map((option: any) => (
-                            <Button
-                                key={option}
-                                mode={diaryState.activity === option ? "contained" : "outlined"}
-                                onPress={() => diaryState.setActivity(option)}
-                                style={[
-                                    styles.chip,
-                                    diaryState.activity === option && { backgroundColor: theme.colors.secondary }
-                                ]}
-                                labelStyle={{
-                                    fontSize: 12,
-                                    color: diaryState.activity === option ? theme.colors.onSecondary : theme.colors.onSurface
-                                }}
-                                compact
-                            >
-                                {option}
-                            </Button>
-                        ))}
-                    </View>
-                </View>
-            </View>
-        </Surface>
     );
 
-    const renderNotesCard = () => (
-        <Surface style={styles.card} elevation={2}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="note-text" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Notes
-                </Text>
+    const renderActivitySelector = () => (
+
+        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+            <View style={{ flex: 1, }}>
+                <View style={styles.cardHeader}>
+                    <MaterialCommunityIcons name="run-fast" size={20} color={theme.colors.primary} />
+                    <Text variant="titleMedium" style={styles.cardTitle}>
+                        Activity
+                    </Text>
+                </View>
+                <View style={styles.chipContainer}>
+                    {dbHook.activityOptions.map((option: any) => (
+                        <Button
+                            key={option}
+                            mode={diaryState.activity === option ? "contained" : "outlined"}
+                            onPress={() => diaryState.setActivity(option)}
+                            style={[
+                                styles.chip,
+                                diaryState.activity === option && { backgroundColor: theme.colors.secondary }
+                            ]}
+                            labelStyle={{
+                                fontSize: 12,
+                                color: diaryState.activity === option ? theme.colors.onSecondary : theme.colors.onSurface
+                            }}
+                            compact
+                        >
+                            {option}
+                        </Button>
+                    ))}
+                </View>
             </View>
-            <TextInput
-                mode="outlined"
-                value={diaryState.note}
-                onChangeText={diaryState.setNote}
-                placeholder="Add any notes about your meal or how you're feeling..."
-                multiline
-                numberOfLines={3}
-                style={[styles.input, { height: 80 }]}
-                textAlignVertical="top"
-                dense
-            />
-        </Surface>
+        </View>
     );
 
     const renderPhotosCard = () => (
-        <Surface style={styles.card} elevation={2}>
+        <View>
             <View style={styles.cardHeader}>
                 <MaterialCommunityIcons name="camera" size={20} color={theme.colors.primary} />
                 <Text variant="titleMedium" style={styles.cardTitle}>
                     Photos
                 </Text>
-                <Button
-                    mode="outlined"
-                    onPress={() => setToggleCamera(!toggleCamera)}
-                    style={styles.photoButton}
-                    compact
-                >
-                    {toggleCamera ? "Close Camera" : "Take Photo"}
-                </Button>
             </View>
 
-            {toggleCamera ? (
-                <View style={styles.cameraContainer}>
-                    {renderCamera()}
-                    <View style={styles.cameraControls}>
-                        <IconButton
-                            icon={getFlashIcon()}
-                            iconColor={getFlashIconColor()}
-                            size={24}
-                            onPress={cycleFlash}
-                            mode="contained"
-                        />
-                        <IconButton
-                            icon="camera"
-                            size={30}
-                            onPress={capturePhoto}
-                            mode="contained"
-                            style={{ backgroundColor: theme.colors.primary }}
-                            iconColor={theme.colors.onPrimary}
-                        />
-                    </View>
-                </View>
-            ) : photoURIs.length > 0 ? (
+            {cameraHook.photoURIs.length > 0 ? (
                 <ScrollView horizontal style={styles.photoScroll}>
-                    {photoURIs.map((uri, index) => (
+                    {cameraHook.photoURIs.map((uri: string, index: any) => (
                         <View key={index} style={styles.photoItem}>
                             <Avatar.Image size={60} source={{ uri }} />
                             <IconButton
                                 icon="close"
                                 size={16}
-                                onPress={() => removePhotoURI(index)}
+                                onPress={() => cameraHook.removePhotoURI(index)}
                                 style={styles.photoDelete}
                                 iconColor={theme.colors.onErrorContainer}
                             />
@@ -283,64 +280,189 @@ export function DiaryInput({
                     ))}
                 </ScrollView>
             ) : (
-                <View style={styles.emptyPhotos}>
-                    <MaterialCommunityIcons name="camera-plus" size={32} color={theme.colors.onSurfaceVariant} />
+
+                <View style={{}}>
                     <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
                         No photos added yet
                     </Text>
                 </View>
             )}
-        </Surface>
-    );
-
-    const renderActionButtons = () => (
-        <View style={styles.actionContainer}>
-            <Button
-                mode="outlined"
-                onPress={handleCancel}
-                style={styles.cancelButton}
-                icon="close"
-            >
-                Cancel
-            </Button>
-            <Button
-                mode="contained"
-                onPress={handleSave}
-                style={styles.saveButton}
-                icon="content-save"
-                loading={dbHook.isLoading}
-                disabled={!dbHook.glucose || !dbHook.carbs}
-            >
-                Save Entry
-            </Button>
         </View>
     );
 
-    return (
-        <View style={{
-            flex: 1,
-            backgroundColor: theme.colors.surface,
-            minHeight: 400
-        }}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-                <View style={styles.content}>
-                    {renderGlucoseCard()}
-                    {renderCarbsCard()}
-                    {renderQuickSelectors()}
-                    {renderNotesCard()}
-                    {renderPhotosCard()}
+    const renderActionButtons = () => (
+        <View>
+            {toggleCamera ? (
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View style={{ flex: 1, alignItems: 'center' }} >
+                        <IconButton
+                            icon='camera-off'
+                            size={30}
+                            onPress={() => setToggleCamera(false)}
+                            mode="contained"
+                            style={{ backgroundColor: theme.colors.error }}
+                            iconColor={theme.colors.onError}
+                        />
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }} >
+                        <IconButton
+                            icon="camera"
+                            size={30}
+                            onPress={cameraHook.capturePhoto}
+                            mode="contained"
+                            style={{ backgroundColor: theme.colors.primary }}
+                            iconColor={theme.colors.onPrimary}
+                        />
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }} >
+                        <IconButton
+                            icon={cameraHook.getFlashIcon()}
+                            iconColor={cameraHook.getFlashIconColor()}
+                            size={30}
+                            onPress={cameraHook.cycleFlash}
+                            mode="contained"
+                        />
+                    </View>
 
-                    {dbHook.error && (
-                        <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
-                                {dbHook.error}
-                            </Text>
-                        </Surface>
-                    )}
+
+
                 </View>
+            ) : (
+                <View style={{ flexDirection: 'row', }}>
+                    <View style={{ flex: 1 }} >
 
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }} >
+                        <IconButton
+                            icon={"camera-plus"}
+                            size={30}
+                            onPress={() => setToggleCamera(!toggleCamera)}
+                            // style={styles.actionButton}
+                            iconColor={theme.colors.primary}
+                        />
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }} >
+                        <IconButton
+                            icon="content-save"
+                            size={30}
+                            onPress={handleSave}
+                            // style={styles.actionButton}
+                            iconColor={theme.colors.primary}
+                            disabled={!diaryState.glucose || !diaryState.carbs}
+                            loading={dbHook.isLoading}
+                        />
+                    </View>
+                </View>
+            )}
+
+
+
+        </View>
+    );
+
+    const renderHeaderCard = () => {
+        return (
+
+            <View style={styles.row}>
+                <View style={{ flex: 1 }}>
+                    <Text variant="titleSmall" style={styles.appBarTitle}>
+                        12:24 - 21/8
+                    </Text>
+
+                </View>
+                <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end' }}>
+                    <IconButton
+                        icon="close"
+                        mode="outlined"
+                        size={24}
+                        onPress={() => handleCancel()}
+                        style={{ backgroundColor: theme.colors.error }}
+                        iconColor={theme.colors.onError}
+                    />
+                </View>
+            </View>
+
+
+        );
+    }
+
+    
+
+
+
+    return (
+        <View style={{ flex: 1, position: 'relative' }}>
+
+            {toggleCamera ? (
+                <View style={[styles.background, { padding: 8 }]}>
+                    {renderPhotosCard()}
+                    {cameraHook.renderCamera()}
+                </View>
+            ) : (
+
+
+
+                <ScrollView style={styles.background} showsVerticalScrollIndicator={false}>
+                    <Surface style={[styles.card, { margin: 8 }]} elevation={2}>
+                        {renderHeaderCard()}
+                        <Divider style={{ marginVertical: 4 }} />
+                        {renderInputCard()}
+                        <Divider style={{ marginVertical: 4 }} />
+                        <View style={{
+                            flexDirection: 'row',
+                            gap: 8,
+                            marginBottom: 8,
+                            marginTop: 8,
+
+                        }}>
+                            <View style={{ flex: 1, paddingLeft: 16 }}>
+                                {renderMealSelector()}
+                            </View>
+                            <View style={{ flex: 1, paddingLeft: 16 }}>
+                                {renderActivitySelector()}
+                            </View>
+                        </View>
+                        <Divider style={{ marginVertical: 4 }} />
+                        <View style={{ padding: 16 }}>
+                            {renderPhotosCard()}
+                        </View>
+                    </Surface>
+                    <View style={styles.content}>
+
+
+
+
+
+
+                        {dbHook.error && (
+                            <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
+                                <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                                    {dbHook.error}
+                                </Text>
+                            </Surface>
+                        )}
+                    </View>
+
+
+
+
+                </ScrollView>
+
+            )}
+
+            <View style={{
+                position: 'absolute',
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: theme.colors.background,
+                padding: 8,
+                borderTopWidth: 1,
+                borderTopColor: theme.colors.outlineVariant,
+            }}
+            >
                 {renderActionButtons()}
-            </ScrollView>
+            </View>
         </View>
     );
 }

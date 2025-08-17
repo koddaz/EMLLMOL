@@ -209,8 +209,8 @@ export function AppSettings({
 
     const [weight, setWeight] = useState(appData.settings.weight);
     const [glucose, setGlucose] = useState(appData.settings.glucose);
-    const [clockformat, setClockformat] = useState(appData.settings.clockformat || '24');
-    const [dateformat, setDateformat] = useState(appData.settings.dateformat || 'DD/MM/YYYY');
+    const [clockformat, setClockformat] = useState(appData.settings.clockformat || '24h');  // Add 'h'
+    const [dateformat, setDateformat] = useState(appData.settings.dateformat || 'DD/MM/YYYY');  // Use full format
 
     // Set current section when this component comes into view
     useEffect(() => {
@@ -240,7 +240,7 @@ export function AppSettings({
         setClockformat(newclockformat);
         saveSetting('clockformat', newclockformat);
     };
-    
+
     const handleDateformatChange = (newdateformat: string) => {
         setDateformat(newdateformat);
         saveSetting('dateformat', newdateformat);
@@ -313,12 +313,12 @@ export function AppSettings({
                         onValueChange={handleClockformatChange}
                         buttons={[
                             {
-                                value: '12',
+                                value: '12h',  // Change from '12' to '12h'
                                 label: '12-hour',
                                 icon: 'clock'
                             },
                             {
-                                value: '24',
+                                value: '24h',  // Change from '24' to '24h'
                                 label: '24-hour',
                                 icon: 'clock'
                             },
@@ -336,12 +336,12 @@ export function AppSettings({
                         onValueChange={handleDateformatChange}
                         buttons={[
                             {
-                                value: 'EU',
+                                value: 'DD/MM/YYYY',  // Change from 'EU' to 'DD/MM/YYYY'
                                 label: 'DD/MM/YYYY',
                                 icon: 'calendar'
                             },
                             {
-                                value: 'US',
+                                value: 'MM/DD/YYYY',  // Change from 'US' to 'MM/DD/YYYY'
                                 label: 'MM/DD/YYYY',
                                 icon: 'calendar',
                             },

@@ -15,11 +15,13 @@ export function DiaryList(
   { toggleEntry,
     dbHook,
     calendarHook,
+    cameraHook,
     setSelectedDiaryData
   }: {
     toggleEntry: (state: boolean) => void,
     dbHook: any,
-    calendarHook: any
+    calendarHook: any,
+    cameraHook: any,
     setSelectedDiaryData?: (data: DiaryData) => void
   }
 ) {
@@ -41,7 +43,6 @@ export function DiaryList(
   }, [calendarHook.selectedDate, calendarHook.setSelectedDate]);
 
   const panGesture = useSwipeGesture(handleDateNavigation);
-
 
   if (dbHook.isLoading) {
     return <LoadingScreen />;

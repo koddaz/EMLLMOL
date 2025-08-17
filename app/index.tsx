@@ -1,7 +1,7 @@
 import AuthScreen from '@/db/supabase/auth/authScreen';
 import { supabase } from '@/db/supabase/supabase';
 import React, { useEffect, useState } from "react";
-import { AppState, Text, View } from "react-native";
+import { AppState, SafeAreaView, Text, View } from "react-native";
 import { PaperProvider, useTheme } from 'react-native-paper';
 import { RootNavigation } from './tabs/rootNavigation';
 import { customStyles } from './constants/UI/styles';
@@ -96,14 +96,18 @@ export default function Index() {
 
         // 3. Load AsyncStorage settings
         console.log('⚙️ Loading local settings...');
-        const [savedWeight, savedGlucose] = await Promise.all([
+        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
           AsyncStorage.getItem('weight'),
-          AsyncStorage.getItem('glucose')
+          AsyncStorage.getItem('glucose'),
+          AsyncStorage.getItem('dateformat'),
+          AsyncStorage.getItem('clockformat')
         ]);
 
         const settings = {
           weight: savedWeight || 'kg',
-          glucose: savedGlucose || 'mmol'
+          glucose: savedGlucose || 'mmol',
+          dateformat: savedDateFormat || 'DD/MM/YYYY',
+          clockformat: savedClockFormat || '24h'
         };
 
         console.log('✅ Settings loaded:', settings);
@@ -111,8 +115,6 @@ export default function Index() {
         // 4. Set all app data at once - including diary entries
         setAppData({
           session,
-          permission: cameraPermission,
-          requestCameraPermission,
           profile: profileData,
           settings,
           diaryEntries, // Add diary entries to initial app data
@@ -160,15 +162,6 @@ export default function Index() {
     };
   }, [cameraPermission, isInitialized]);
 
-  useEffect(() => {
-    if (appData) {
-      setAppData(prev => prev ? {
-        ...prev,
-        permission: cameraPermission,
-        requestCameraPermission
-      } : null);
-    }
-  }, [cameraPermission, requestCameraPermission]);
 
   // Show loading screen until everything is ready
   if (isLoading || !isInitialized) {
@@ -203,13 +196,13 @@ export default function Index() {
     <SafeAreaProvider>
       <GestureHandlerRootView>
         <PaperProvider>
-          <View style={styles.background}>
+          <SafeAreaView style={styles.background}>
             {appData?.session && appData.session.user ? (
               <RootNavigation appData={appData} />
             ) : (
               <AuthScreen />
             )}
-          </View>
+          </SafeAreaView>
         </PaperProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>

@@ -13,16 +13,18 @@ import { DiaryInput } from "./input/diaryInput";
 export function DiaryScreen({
   appData,
   dbHook,
-  calendarHook
+  calendarHook,
+  cameraHook,
 }: {
   appData: AppData,
   dbHook: any,
-  calendarHook: any
+  calendarHook: any,
+  cameraHook: any,
 }) {
   const { theme, styles } = useAppTheme();
 
   const [toggleEntry, setToggleEntry] = useState(false);
-  const [toggleInput, setToggleInput] = useState(false);
+  const [toggleInput, setToggleInput] = useState(true);
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 
   const [glucose, setGlucose] = useState("");
@@ -71,6 +73,7 @@ export function DiaryScreen({
           setSelectedDiaryData={setSelectedDiaryData}
           calendarHook={calendarHook}
           dbHook={dbHook}
+          cameraHook={cameraHook}
         />
       )}
 
@@ -98,6 +101,7 @@ export function DiaryScreen({
             appData={appData}
             toggleInput={handleToggleInput}
             calendarHook={calendarHook}
+            cameraHook={cameraHook}
             dbHook={dbHook}
             diaryState={diaryState}
           />

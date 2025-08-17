@@ -16,13 +16,13 @@ export function useCalendar(appData: AppData) {
       return date.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
-        year: 'numeric'
+
       });
     } else if (appData.settings.dateformat === 'US') {
       return date.toLocaleDateString('en-US', {
         month: '2-digit',
         day: '2-digit',
-        year: 'numeric'
+
       });
     }
   }
