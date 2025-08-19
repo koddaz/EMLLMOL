@@ -12,13 +12,13 @@ export function useCalendar(appData: AppData) {
   };
 
   const formatDate = (date: Date) => {
-    if (appData.settings.dateformat === 'EU') {
+    if (appData.settings.dateFormat === 'DD/MM/YYYY') {
       return date.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
 
       });
-    } else if (appData.settings.dateformat === 'US') {
+    } else if (appData.settings.dateFormat === 'MM/DD/YYYY') {
       return date.toLocaleDateString('en-US', {
         month: '2-digit',
         day: '2-digit',
@@ -28,7 +28,7 @@ export function useCalendar(appData: AppData) {
   }
 
   const formatTime = (date: Date) => {
-    if (appData.settings.clockformat === '12') {
+    if (appData.settings.clockFormat === '12h') {
       return date.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',

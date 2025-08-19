@@ -1,13 +1,14 @@
-import { DiaryData } from "@/app/constants/interface/diaryData";
-import { Surface, Text } from "react-native-paper";
 import { LoadingScreen } from "@/app/components/loadingScreen";
-import { FlatList, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { DiaryListItem } from "./diaryListItem";
-import { useCallback, useMemo } from "react";
+import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useSwipeGesture } from "../hooks/useGestures";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useCallback, useMemo } from "react";
+import { FlatList, View } from "react-native";
 import { GestureDetector } from "react-native-gesture-handler";
+import { Surface, Text } from "react-native-paper";
+import { useSwipeGesture } from "../../../hooks/useGestures";
+import { DiaryListItem } from "./diaryListItem";
+
 
 
 
@@ -141,7 +142,7 @@ export function DiaryList(
   };
 
   const renderEmptyState = () => (
-    <View style={[styles.content, { flex: 1, justifyContent: 'center', alignItems: 'center', paddingTop: 60 }]}>
+    <View style={styles.centeredContainer}>
       <Surface style={[styles.card, { alignItems: 'center', marginHorizontal: 32 }]} elevation={2}>
         <View style={{ alignItems: 'center', paddingVertical: 32 }}>
           <MaterialCommunityIcons
@@ -173,10 +174,10 @@ export function DiaryList(
     return (
       <GestureDetector gesture={panGesture}>
         <View style={styles.background}>
-          <View style={styles.container}>
+          
             {renderStats()}
             {renderEmptyState()}
-          </View>
+          
         </View>
       </GestureDetector>
     );
@@ -185,7 +186,7 @@ export function DiaryList(
   return (
     <GestureDetector gesture={panGesture}>
       <View style={styles.background}>
-        <View style={styles.container}>
+        
           {renderStats()}
           <FlatList
             data={filteredEntries}
@@ -221,7 +222,7 @@ export function DiaryList(
             extraData={calendarHook.selectedDate.toISOString()}
           />
         </View>
-      </View>
+
       </GestureDetector>
   );
 }

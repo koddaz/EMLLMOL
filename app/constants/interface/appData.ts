@@ -11,8 +11,8 @@ export interface AppData {
   settings: {
     weight: string;
     glucose: string;
-    dateformat?: string;
-    clockformat?: string;
+    dateFormat: string;
+    clockFormat: string;
   };
   diaryEntries: any[];
   isEntriesLoaded: boolean;

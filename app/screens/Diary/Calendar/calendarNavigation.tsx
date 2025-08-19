@@ -20,21 +20,17 @@ export function CalendarNavigation(
     return (
         <View style={styles.calendarNavigationContainer}>
             <IconButton
-                iconColor={theme.colors.primary}
+                iconColor={theme.colors.onSecondary}
                 size={28}
                 icon="chevron-left"
                 mode="contained-tonal"
                 onPress={() => navigateMonth('prev')}
                 style={{
-                    backgroundColor: theme.colors.primaryContainer,
+                    backgroundColor: theme.colors.secondary,
                     borderRadius: 12,
                 }}
             />
-            <View style={{
-                flex: 1,
-                alignItems: 'center',
-                paddingVertical: 8
-            }}>
+            <View style={[styles.plaincontainer, {flex: 1, alignItems: 'center'}]}>
                 <Text variant="titleLarge" style={{
                     color: theme.colors.onSurface,
                     fontWeight: '600',
@@ -47,14 +43,14 @@ export function CalendarNavigation(
                 </Text>
             </View>
             <IconButton
-                iconColor={disabled ? theme.colors.onSurfaceDisabled : theme.colors.primary}
+                iconColor={disabled ? theme.colors.onSurfaceDisabled : theme.colors.secondary}
                 size={28}
                 icon="chevron-right"
                 mode="contained-tonal"
                 onPress={() => navigateMonth('next')}
                 disabled={disabled}
                 style={{
-                    backgroundColor: disabled ? theme.colors.surfaceDisabled : theme.colors.primaryContainer,
+                    backgroundColor: disabled ? theme.colors.surfaceDisabled : theme.colors.onSecondary,
                     borderRadius: 12,
                 }}
             />

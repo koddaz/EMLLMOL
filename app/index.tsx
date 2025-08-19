@@ -1,17 +1,17 @@
-import AuthScreen from '@/db/supabase/auth/authScreen';
-import { supabase } from '@/db/supabase/supabase';
-import React, { useEffect, useState } from "react";
-import { AppState, SafeAreaView, Text, View } from "react-native";
-import { PaperProvider, useTheme } from 'react-native-paper';
-import { RootNavigation } from './tabs/rootNavigation';
-import { customStyles } from './constants/UI/styles';
-import { LoadingScreen } from './components/loadingScreen';
-import { AppData } from './constants/interface/appData';
+import AuthScreen from '@/app/api/supabase/auth/authScreen';
+import { supabase } from '@/app/api/supabase/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useCameraPermissions } from 'expo-camera';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useAppTheme } from './constants/UI/theme';
+import React, { useEffect, useState } from "react";
+import { AppState, SafeAreaView, Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { LoadingScreen } from './components/loadingScreen';
+import { AppData } from './constants/interface/appData';
+import { customTheme, useAppTheme } from './constants/UI/theme';
+import { RootNavigation } from './navigation/rootNavigation';
+
 
 
 AppState.addEventListener('change', (state) => {
@@ -99,15 +99,15 @@ export default function Index() {
         const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
           AsyncStorage.getItem('weight'),
           AsyncStorage.getItem('glucose'),
-          AsyncStorage.getItem('dateformat'),
-          AsyncStorage.getItem('clockformat')
+          AsyncStorage.getItem('clockformat'),   // <-- should be clockformat first
+          AsyncStorage.getItem('dateformat')     // <-- then dateformat
         ]);
 
         const settings = {
           weight: savedWeight || 'kg',
           glucose: savedGlucose || 'mmol',
-          dateformat: savedDateFormat || 'DD/MM/YYYY',
-          clockformat: savedClockFormat || '24h'
+          clockFormat: savedClockFormat || '24h',   // <-- assign correctly
+          dateFormat: savedDateFormat || 'DD/MM/YYYY'
         };
 
         console.log('✅ Settings loaded:', settings);
@@ -167,7 +167,7 @@ export default function Index() {
   if (isLoading || !isInitialized) {
     return (
       <SafeAreaProvider>
-        <PaperProvider>
+        <PaperProvider theme={customTheme}>
           <View style={styles.background}>
             <LoadingScreen />
           </View>
@@ -179,7 +179,7 @@ export default function Index() {
   if (error) {
     return (
       <SafeAreaProvider>
-        <PaperProvider>
+        <PaperProvider theme={customTheme}>
           <View style={styles.background}>
             <View style={styles.container}>
               <Text style={{ color: 'red', textAlign: 'center' }}>
@@ -195,14 +195,14 @@ export default function Index() {
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView>
-        <PaperProvider>
-          <SafeAreaView style={styles.background}>
+        <PaperProvider theme={customTheme}>
+          
             {appData?.session && appData.session.user ? (
-              <RootNavigation appData={appData} />
+              <RootNavigation appData={appData} setAppData={setAppData} />
             ) : (
               <AuthScreen />
             )}
-          </SafeAreaView>
+       
         </PaperProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>

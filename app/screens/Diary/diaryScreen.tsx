@@ -1,15 +1,14 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useCallback, useMemo, useState } from "react"; // Add useCallback and useMemo
+import { useCallback, useState } from "react"; // Add useCallback and useMemo
 import { KeyboardAvoidingView, Platform, View } from "react-native";
-import { Divider, FAB, Surface, Text } from "react-native-paper";
-import DiaryCalendar from "./calendar/diaryCalendar";
-import { DiaryEntry } from "./list/diaryEntry";
-import { DiaryList } from "./list/diaryList";
-import { DiaryInput } from "./input/diaryInput";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-
+import { FAB } from "react-native-paper";
+import { useSharedValue } from 'react-native-reanimated';
+import DiaryCalendar from "./Calendar/diaryCalendar";
+import { DiaryEntry } from "./Entry/diaryEntry";
+import { DiaryInput } from "./Input/diaryInput";
+import { DiaryList } from "./List/diaryList";
 
 export function DiaryScreen({
   appData,
@@ -62,51 +61,39 @@ export function DiaryScreen({
 
   return (
     <View style={styles.background}>
-
-
-
-
-
-
-      {!toggleEntry && (
-        <View style={{ flex: 1 }}>
-
-          <DiaryCalendar
-            calendarHook={calendarHook}
-            dbHook={dbHook}
-          />
-
-          <DiaryList
-            toggleEntry={setToggleEntry}
-            setSelectedDiaryData={setSelectedDiaryData}
-            calendarHook={calendarHook}
-            dbHook={dbHook}
-            cameraHook={cameraHook}
-          />
-        </View>
-      )}
-
       {toggleEntry && selectedDiaryData && (
-        <View style={{ flex: 1, position: 'relative' }}>
-          <DiaryCalendar
-            calendarHook={calendarHook}
-            dbHook={dbHook}
-          />
-          <View style={{
-            flex: 1,
-            // Add top margin equal to the calendar height when visible
-            marginTop: calendarHook.showCalendar ? 320 : 0, // Adjust 320 to your calendar's height
-          }}>
-            <DiaryList
-              toggleEntry={setToggleEntry}
-              setSelectedDiaryData={setSelectedDiaryData}
+        <View style={styles.centeredWrapper}>
+          <View style={styles.centeredContent}>
+            <DiaryEntry
+              appData={appData}
+              setToggleEntry={setToggleEntry}
+              diaryData={selectedDiaryData}
               calendarHook={calendarHook}
               dbHook={dbHook}
-              cameraHook={cameraHook}
             />
           </View>
         </View>
       )}
+     
+
+        <View style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          // overflow: 'hidden',
+        }}>
+          <DiaryCalendar
+            calendarHook={calendarHook}
+            dbHook={dbHook}
+            toggleEntry={toggleEntry}
+            toggleInput={toggleInput}
+          />
+        </View>
+     
+
+
 
       {toggleInput && (
         <KeyboardAvoidingView
@@ -125,6 +112,13 @@ export function DiaryScreen({
         </KeyboardAvoidingView>
       )}
 
+      <DiaryList
+        toggleEntry={setToggleEntry}
+        setSelectedDiaryData={setSelectedDiaryData}
+        calendarHook={calendarHook}
+        dbHook={dbHook}
+        cameraHook={cameraHook}
+      />
       <FAB
         icon={toggleInput ? "close" : "note-plus"}
         style={styles.fab}

@@ -233,8 +233,11 @@ export function SignUpScreen({
                 <TextInput
                     label="Email"
                     value={email}
+                    outlineColor={theme.colors.outlineVariant}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.onSurface}
                     onChangeText={setEmail}
-                    style={[styles.input, { marginBottom: 12 }]}
+                    style={[styles.textInput, { marginBottom: 12 }]}
                     mode="outlined"
                     autoCapitalize="none"
                     autoComplete="email"
@@ -245,8 +248,11 @@ export function SignUpScreen({
                 <TextInput
                     label="Password"
                     value={password}
+                    outlineColor={theme.colors.outlineVariant}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.onSurface}
                     onChangeText={setPassword}
-                    style={styles.input}
+                    style={styles.textInput}
                     mode="outlined"
                     secureTextEntry
                     autoCapitalize="none"
@@ -299,7 +305,10 @@ export function SignInScreen({
                     label="Email"
                     value={email}
                     onChangeText={setEmail}
-                    style={[styles.input, { marginBottom: 12 }]}
+                    outlineColor={theme.colors.outlineVariant}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.onSurface}
+                    style={[styles.textInput, { marginBottom: 12 }]}
                     mode="outlined"
                     autoCapitalize="none"
                     autoComplete="email"
@@ -311,7 +320,10 @@ export function SignInScreen({
                     label="Password"
                     value={password}
                     onChangeText={setPassword}
-                    style={styles.input}
+                    outlineColor={theme.colors.outlineVariant}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.onSurface}
+                    style={styles.textInput}
                     mode="outlined"
                     secureTextEntry
                     autoCapitalize="none"
@@ -351,7 +363,7 @@ export function useAuth(session?: Session | null) {
     useEffect(() => {
         const handleDeepLink = (url: string) => {
             console.log('🔗 Deep link received:', url);
-            
+
             // Check for auth callback in various formats
             if (url.includes('auth/callback') || url.includes('#access_token') || url.includes('?access_token')) {
                 console.log('✅ Auth callback detected');
@@ -400,7 +412,7 @@ export function useAuth(session?: Session | null) {
         try {
             // Handle different URL formats
             let params;
-            
+
             if (url.includes('#')) {
                 // Handle fragment-based URLs (common with Supabase)
                 const fragment = url.split('#')[1];
@@ -411,11 +423,11 @@ export function useAuth(session?: Session | null) {
             }
 
             const { access_token, refresh_token, error: urlError, error_description } = params;
-            
+
             if (urlError) {
                 throw new Error(error_description || urlError);
             }
-            
+
             if (!access_token) {
                 console.log('No access token found in URL');
                 return;
@@ -425,7 +437,7 @@ export function useAuth(session?: Session | null) {
                 access_token,
                 refresh_token,
             });
-            
+
             if (error) throw error;
             return data.session;
         } catch (error) {
@@ -438,9 +450,9 @@ export function useAuth(session?: Session | null) {
         try {
             setError(null);
             setIsLoading(true);
-            
+
             console.log('Signing up with redirect URL:', redirectTo);
-            
+
             const { data, error } = await supabase.auth.signUp({
                 email,
                 password,
@@ -448,7 +460,7 @@ export function useAuth(session?: Session | null) {
                     emailRedirectTo: redirectTo,
                 }
             });
-            
+
             if (error) {
                 console.error('Error signing up:', error.message);
                 setError(error.message);

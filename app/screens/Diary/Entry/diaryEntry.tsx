@@ -2,14 +2,15 @@ import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import { Alert, Dimensions, ScrollView, View } from "react-native";
 import { Card, IconButton, Surface, Text } from "react-native-paper";
-import { useCalendar } from "../hooks/useCalendar";
-import { useState } from "react";
+import { useCalendar } from "../../../hooks/useCalendar";
 
 export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const screenWidth = Dimensions.get('window').width;
+  const { theme, styles } = useAppTheme();
 
   const renderImageCarousel = () => {
     if (!diaryData.uri_array || diaryData.uri_array.length === 0) {
@@ -41,7 +42,7 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
             const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
             setCurrentImageIndex(index);
           }}
-          style={{ height: 200 }}
+          style={styles.container}
         >
           {diaryData.uri_array.map((uri, index) => (
             <Card.Cover

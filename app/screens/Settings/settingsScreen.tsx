@@ -1,38 +1,40 @@
+import { useAuth } from "@/app/api/supabase/auth/authScreen";
 import { AppData } from "@/app/constants/interface/appData";
-import { customStyles } from "@/app/constants/UI/styles";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useAuth } from "@/db/supabase/auth/authScreen";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
-import { Button, SegmentedButtons, Snackbar, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, SegmentedButtons, Snackbar, Surface, Text, TextInput } from "react-native-paper";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export function SettingsScreen({
     appData,
+    setAppData,
     editMode,
     setEditMode,
     currentSection,
-    setCurrentSection
+    setCurrentSection,
+    
 }: {
     appData: AppData;
+    setAppData: (data: AppData) => void;
     editMode: boolean;
     setEditMode: (mode: boolean) => void;
     currentSection: 'profile' | 'preferences' | 'account';
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+    
 }) {
     const { theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
-    // Auto-scroll to sections based on currentSection
-    useEffect(() => {
-        // You can implement auto-scrolling here if needed
-        console.log('Current section:', currentSection);
-    }, [currentSection]);
-
     return (
-        <View style={styles.background}>
-            <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <SafeAreaView style={styles.background} edges={['bottom']}>
+            <ScrollView
+                style={styles.container}
+                contentContainerStyle={styles.content} // unified padding/gap
+                showsVerticalScrollIndicator={false}
+            >
                 <ProfileSettings
                     appData={appData}
                     setShowSuccessMessage={setShowSuccessMessage}
@@ -42,6 +44,7 @@ export function SettingsScreen({
                 />
                 <AppSettings
                     appData={appData}
+                    setAppData={setAppData}
                     setCurrentSection={setCurrentSection}
                 />
                 <AccountActions
@@ -58,7 +61,7 @@ export function SettingsScreen({
             >
                 Profile updated successfully!
             </Snackbar>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -125,17 +128,15 @@ export function ProfileSettings({
                     Personal Information
                 </Text>
             </View>
-
             <TextInput
                 mode="outlined"
                 value={appData?.session?.user.email || ''}
                 label="Email"
                 disabled
                 left={<TextInput.Icon icon="email" />}
-                style={[styles.input, { marginBottom: 12 }]}
+                style={styles.textInput}
                 dense
             />
-
             <TextInput
                 mode="outlined"
                 value={username}
@@ -143,10 +144,9 @@ export function ProfileSettings({
                 label="Username"
                 editable={editMode}
                 left={<TextInput.Icon icon="account" />}
-                style={[styles.input, { marginBottom: 12 }]}
+                style={styles.textInput}
                 dense
             />
-
             <TextInput
                 mode="outlined"
                 value={fullName}
@@ -154,14 +154,14 @@ export function ProfileSettings({
                 label="Full Name"
                 editable={editMode}
                 left={<TextInput.Icon icon="account-details" />}
-                style={styles.input}
+                style={styles.textInput}
                 dense
             />
         </Surface>
     );
 
     return (
-        <View style={styles.content}>
+        <View style={styles.section}>
             {error && (
                 <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
                     <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
@@ -169,9 +169,7 @@ export function ProfileSettings({
                     </Text>
                 </Surface>
             )}
-
             {renderProfileCard()}
-
             {editMode && (
                 <View style={styles.actionContainer}>
                     <Button
@@ -198,52 +196,79 @@ export function ProfileSettings({
     );
 }
 
+
+
 export function AppSettings({
     appData,
-    setCurrentSection
+    setCurrentSection,
+    setAppData
 }: {
     appData: AppData;
     setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+    setAppData: (data: AppData) => void;
 }) {
     const { theme, styles } = useAppTheme();
 
     const [weight, setWeight] = useState(appData.settings.weight);
     const [glucose, setGlucose] = useState(appData.settings.glucose);
-    const [clockformat, setClockformat] = useState(appData.settings.clockformat || '24h');  // Add 'h'
-    const [dateformat, setDateformat] = useState(appData.settings.dateformat || 'DD/MM/YYYY');  // Use full format
+    const [clockFormat, setClockFormat] = useState(appData.settings.clockFormat);
+    const [dateFormat, setDateFormat] = useState(appData.settings.dateFormat);
 
     // Set current section when this component comes into view
     useEffect(() => {
         setCurrentSection('preferences');
     }, []);
 
-    const saveSetting = async (key: string, value: string) => {
+    const saveAndLoadSetting = async (
+        key: string,
+        newValue: string,
+        setValue: (v: string) => void
+    ) => {
         try {
-            await AsyncStorage.setItem(key, value);
-            console.log(`Saved ${key}: ${value}`);
+            await AsyncStorage.setItem(key, newValue);
+            console.log(`Saved ${key}: ${newValue}`);
+            // Immediately load the value back from AsyncStorage
+            const loaded = await AsyncStorage.getItem(key);
+            setValue(loaded !== null ? loaded : newValue);
+            console.log(`Loaded ${key}: ${loaded}`);
         } catch (error) {
-            console.error(`Error saving ${key}:`, error);
+            console.error(`Error saving/loading ${key}:`, error);
         }
+    };
+
+    const handleSettingChange = (
+        key: keyof AppData["settings"],
+        setValue: (v: string) => void
+    ) => (newValue: string) => {
+        setValue(newValue);
+        saveAndLoadSetting(key, newValue, setValue);
+        setAppData({
+            ...appData,
+            settings: {
+                ...appData.settings,
+                [key]: newValue,
+            },
+        });
     };
 
     const handleWeightChange = (newWeight: string) => {
         setWeight(newWeight);
-        saveSetting('weight', newWeight);
+        saveAndLoadSetting('weight', newWeight, setWeight);
     };
 
     const handleGlucoseChange = (newGlucose: string) => {
         setGlucose(newGlucose);
-        saveSetting('glucose', newGlucose);
+        saveAndLoadSetting('glucose', newGlucose, setGlucose);
     };
 
-    const handleClockformatChange = (newclockformat: string) => {
-        setClockformat(newclockformat);
-        saveSetting('clockformat', newclockformat);
+    const handleClockformatChange = (newClockFormat: string) => {
+        setClockFormat(newClockFormat);
+        saveAndLoadSetting('clockformat', newClockFormat, setClockFormat);
     };
 
-    const handleDateformatChange = (newdateformat: string) => {
-        setDateformat(newdateformat);
-        saveSetting('dateformat', newdateformat);
+    const handleDateformatChange = (newDateformat: string) => {
+        setDateFormat(newDateformat);
+        saveAndLoadSetting('dateformat', newDateformat, setDateFormat);
     };
 
     const renderUnitsCard = () => (
@@ -254,106 +279,64 @@ export function AppSettings({
                     Measurement Units
                 </Text>
             </View>
-
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Weight Unit
-                    </Text>
-                    <SegmentedButtons
-                        value={weight}
-                        style={{ marginBottom: 16 }}
-                        onValueChange={handleWeightChange}
-                        buttons={[
-                            {
-                                value: 'kg',
-                                label: 'Kilograms',
-                                icon: 'weight-kilogram'
-                            },
-                            {
-                                value: 'lbs',
-                                label: 'Pounds',
-                                icon: 'weight-pound'
-                            },
-                        ]}
-                    />
-                </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Weight Unit
+                </Text>
+                <SegmentedButtons
+                    value={weight}
+                    style={{ marginBottom: 16 }}
+                    onValueChange={handleSettingChange('weight', setWeight)}
+                    buttons={[
+                        { value: 'kg', label: 'Kilograms', icon: 'weight-kilogram' },
+                        { value: 'lbs', label: 'Pounds', icon: 'weight-pound' },
+                    ]}
+                />
             </View>
-
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Glucose Unit
-                    </Text>
-                    <SegmentedButtons
-                        value={glucose}
-                        onValueChange={handleGlucoseChange}
-                        buttons={[
-                            {
-                                value: 'mmol',
-                                label: 'mmol/L',
-                                icon: 'test-tube'
-                            },
-                            {
-                                value: 'mgdl',
-                                label: 'mg/dL',
-                                icon: 'test-tube'
-                            },
-                        ]}
-                    />
-                </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Glucose Unit
+                </Text>
+                <SegmentedButtons
+                    value={glucose}
+                    onValueChange={handleSettingChange('glucose', setGlucose)}
+                    buttons={[
+                        { value: 'mmol', label: 'mmol/L', icon: 'test-tube' },
+                        { value: 'mgdl', label: 'mg/dL', icon: 'test-tube' },
+                    ]}
+                />
             </View>
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Clock Format
-                    </Text>
-                    <SegmentedButtons
-                        value={clockformat}
-                        onValueChange={handleClockformatChange}
-                        buttons={[
-                            {
-                                value: '12h',  // Change from '12' to '12h'
-                                label: '12-hour',
-                                icon: 'clock'
-                            },
-                            {
-                                value: '24h',  // Change from '24' to '24h'
-                                label: '24-hour',
-                                icon: 'clock'
-                            },
-                        ]}
-                    />
-                </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Clock Format
+                </Text>
+                <SegmentedButtons
+                    value={clockFormat}
+                    onValueChange={handleSettingChange('clockFormat', setClockFormat)}
+                    buttons={[
+                        { value: '12h', label: '12-hour', icon: 'clock' },
+                        { value: '24h', label: '24-hour', icon: 'clock' },
+                    ]}
+                />
             </View>
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Date Format
-                    </Text>
-                    <SegmentedButtons
-                        value={dateformat}
-                        onValueChange={handleDateformatChange}
-                        buttons={[
-                            {
-                                value: 'DD/MM/YYYY',  // Change from 'EU' to 'DD/MM/YYYY'
-                                label: 'DD/MM/YYYY',
-                                icon: 'calendar'
-                            },
-                            {
-                                value: 'MM/DD/YYYY',  // Change from 'US' to 'MM/DD/YYYY'
-                                label: 'MM/DD/YYYY',
-                                icon: 'calendar',
-                            },
-                        ]}
-                    />
-                </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Date Format
+                </Text>
+                <SegmentedButtons
+                    value={dateFormat}
+                    onValueChange={handleSettingChange('dateFormat', setDateFormat)}
+                    buttons={[
+                        { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY', icon: 'calendar' },
+                        { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY', icon: 'calendar' },
+                    ]}
+                />
             </View>
         </Surface>
     );
 
     return (
-        <View style={styles.content}>
+        <View style={styles.section}>
             {renderUnitsCard()}
         </View>
     );
@@ -401,69 +384,63 @@ export function AccountActions({
                     Account Actions
                 </Text>
             </View>
-
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Data Management
-                    </Text>
-                    <View style={styles.chipContainer}>
-                        <Button
-                            mode="outlined"
-                            onPress={() => console.log('Export data')}
-                            style={styles.chip}
-                            icon="download"
-                            compact
-                        >
-                            Export Data
-                        </Button>
-                        <Button
-                            mode="outlined"
-                            onPress={() => console.log('Privacy policy')}
-                            style={styles.chip}
-                            icon="shield-account"
-                            compact
-                        >
-                            Privacy Policy
-                        </Button>
-                    </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Data Management
+                </Text>
+                <View style={styles.chipContainer}>
+                    <Button
+                        mode="outlined"
+                        onPress={() => console.log('Export data')}
+                        style={styles.chip}
+                        icon="download"
+                        compact
+                    >
+                        Export Data
+                    </Button>
+                    <Button
+                        mode="outlined"
+                        onPress={() => console.log('Privacy policy')}
+                        style={styles.chip}
+                        icon="shield-account"
+                        compact
+                    >
+                        Privacy Policy
+                    </Button>
                 </View>
             </View>
-
-            <View style={styles.selectorRow}>
-                <View style={styles.selectorGroup}>
-                    <Text variant="labelMedium" style={[styles.selectorLabel, { color: theme.colors.error }]}>
-                        Danger Zone
-                    </Text>
-                    <View style={styles.chipContainer}>
-                        <Button
-                            mode="contained"
-                            onPress={handleSignOut}
-                            style={[styles.chip, { backgroundColor: theme.colors.error }]}
-                            labelStyle={{ color: theme.colors.onError }}
-                            icon="logout"
-                            compact
-                        >
-                            Sign Out
-                        </Button>
-                        <Button
-                            mode="contained"
-                            onPress={handleRemoveAccount}
-                            style={[styles.chip, { backgroundColor: theme.colors.error }]}
-                            labelStyle={{ color: theme.colors.onError }}
-                            icon="logout"
-                            compact
-                        >
-                            Delete Account
-                        </Button>
-                    </View>
+            <View style={styles.section}>
+                <Text variant="labelMedium" style={[styles.selectorLabel, { color: theme.colors.error }]}>
+                    Danger Zone
+                </Text>
+                <View style={styles.chipContainer}>
+                    <Button
+                        mode="contained"
+                        onPress={handleSignOut}
+                        style={[styles.chip, { backgroundColor: theme.colors.error }]}
+                        labelStyle={{ color: theme.colors.onError }}
+                        icon="logout"
+                        compact
+                    >
+                        Sign Out
+                    </Button>
+                    <Button
+                        mode="contained"
+                        onPress={handleRemoveAccount}
+                        style={[styles.chip, { backgroundColor: theme.colors.error }]}
+                        labelStyle={{ color: theme.colors.onError }}
+                        icon="logout"
+                        compact
+                    >
+                        Delete Account
+                    </Button>
                 </View>
             </View>
         </Surface>
     );
 
     return (
-        <View style={styles.content}>
+        <View style={styles.section}>
             {renderActionsCard()}
         </View>
     );

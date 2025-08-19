@@ -15,10 +15,8 @@ export function CalendarGrid(
 
     const entriesMap = useMemo(() => {
         return diaryEntries.reduce((acc, entry) => {
-            // Create a proper Date object from the timestamp
-            const entryDate = new Date(entry.created_at);
 
-            // Use local date string to avoid timezone issues
+            const entryDate = new Date(entry.created_at);
             const year = entryDate.getFullYear();
             const month = String(entryDate.getMonth() + 1).padStart(2, '0');
             const day = String(entryDate.getDate()).padStart(2, '0');
@@ -30,7 +28,6 @@ export function CalendarGrid(
     }, [diaryEntries]);
 
     const hasEntry = (date: Date) => {
-        // Use the same local date formatting
         const year = date.getFullYear();
         const month = String(date.getMonth() + 1).padStart(2, '0');
         const day = String(date.getDate()).padStart(2, '0');
@@ -53,7 +50,7 @@ export function CalendarGrid(
     const weekdayHeaders = weekdays.map(day => (
         <View key={day} style={styles.weekdayHeader}>
             <Text
-                variant="labelMedium"
+                variant="labelLarge"
                 style={styles.calendarWeekDay}
             >
                 {day}
@@ -205,6 +202,9 @@ export function CalendarGrid(
             </View>
             <View style={styles.calendarGrid}>
                 {days}
+            </View>
+            <View style={styles.calendarGridFiller}>
+                <Text>  </Text>
             </View>
         </View>
     );

@@ -29,7 +29,7 @@ export function DiaryListItem(
   };
 
   return (
-    <View style={styles.diaryListRow}>
+    <View style={styles.container}>
       <Surface style={styles.diaryListItem} elevation={2}>
         <View style={[styles.itemContent, { opacity: onPress ? 1 : 1 }]} onTouchEnd={onPress}>
           {/* Left side - Time and meal info */}

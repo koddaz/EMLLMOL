@@ -1,6 +1,6 @@
+import { supabase } from "@/app/api/supabase/supabase";
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
-import { supabase } from "@/db/supabase/supabase";
 import { useCallback, useEffect, useState } from "react";
 
 export function useDB(appData: AppData) {

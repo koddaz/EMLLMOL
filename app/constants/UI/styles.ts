@@ -2,27 +2,32 @@ import { StyleSheet } from "react-native";
 import { MD3Theme } from "react-native-paper";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
+
+
 export const customStyles = (theme: MD3Theme) => StyleSheet.create({
+
 
     background: {
         flex: 1,
-        width: '100%',
         backgroundColor: theme.colors.background,
-
     },
     container: {
-
         flex: 1,
         backgroundColor: theme.colors.surface,
 
     },
-    plaincontainer: {
-        width: '100%',
+    wrapper: {
+        marginHorizontal: 16,
+        marginVertical: 8,
         backgroundColor: Colors.transparent,
-        marginBottom: 8
+
+    },
+    plaincontainer: {
+        backgroundColor: Colors.transparent,
+
     },
     errorcontainer: {
-        width: '100%',
+
         paddingHorizontal: 8,
         backgroundColor: theme.colors.errorContainer
     },
@@ -31,20 +36,30 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         // justifyContent: 'space-between',
         alignItems: 'center'
     },
+
+    centeredContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignContent: 'center',
+        alignItems: 'center',
+    },
+
+    section: {
+        marginBottom: 8, // or whatever spacing you want between cards/sections
+    },
     textInput: {
-        marginVertical: 8,
-        backgroundColor: theme.colors.elevation?.level1 ?? theme.colors.surface,
+
         borderRadius: 8,
         fontSize: 16,
-        color: theme.colors.onSurface,
         paddingHorizontal: 12,
-        justifyContent: 'center',
     },
     fab: {
         position: 'absolute',
         margin: 16,
-        right: 0,
-        bottom: 0,
+        right: 16,
+        bottom: 60,
+        zIndex: 1000,
+        backgroundColor: theme.colors.primary
     },
     centeredWrapper: {
         position: 'absolute',
@@ -65,113 +80,93 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: 'transparent',
     },
     surface: {
-        backgroundColor: theme.colors.primaryContainer,
+        backgroundColor: theme.colors.surface,
         padding: 16,
         borderRadius: 8,
         borderWidth: 1,
         borderColor: theme.colors.error
     },
 
-    // APP BAR STYLES
-    appBar: {
-        backgroundColor: theme.colors.primaryContainer,
-        // borderBottomWidth: 0.5,
-       // borderBottomColor: theme.colors.outline + '20', // 20% opacity
-    },
-    appBarTitle: {
-        color: theme.colors.onSurface,
-        fontSize: 20,
-        fontWeight: '600',
-        marginLeft: 16,
-        // textAlign: 'center',
-        letterSpacing: 0.15,
-    },
-    appBarAction: {
-        backgroundColor: 'transparent',
-        borderRadius: 12,
-        marginHorizontal: 4,
-    },
-    appBarContent: {
-        alignItems: 'center',
-    },
-    bottomAppBar: {
-        backgroundColor: theme.colors.primaryContainer,
-        borderTopWidth: 0.5,
-        borderTopColor: theme.colors.outline + '20',
 
-    },
 
     // CALENDAR STYLES - Smaller and more compact
 
     calendarNavigationContainer: {
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
         padding: 8,
         alignItems: 'center',
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
-        marginTop: 8,
+        borderTopEndRadius: 16,
+        borderTopStartRadius: 16,
         marginHorizontal: 8,
-
     },
 
     calendarContainer: {
         backgroundColor: theme.colors.surface,
         borderRadius: 16,
-        borderWidth: 1,
-        borderColor: theme.colors.primary,
-        padding: 8,
-        marginVertical: 8,
+        marginBottom: 16,
         marginHorizontal: 8,
     },
+
     weekdayRow: {
+        backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
-        marginBottom: 12,
-        paddingHorizontal: 0, // Remove padding to align with grid
+        paddingHorizontal: 4,
     },
+
     weekdayHeader: {
-        width: '14.28571%', // Exact 1/7 of width to match calendar days
+        backgroundColor: 'transparent',
+        flex: 1,
         alignItems: 'center',
         paddingVertical: 8,
+
     },
+
+    calendarGridFiller: {
+        backgroundColor: theme.colors.secondaryContainer,
+        flexDirection: 'row',
+        paddingHorizontal: 4,
+        borderBottomEndRadius: 16,
+        borderBottomStartRadius: 16,
+    },
+
     calendarGrid: {
+        backgroundColor: 'transparent',
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 0,
     },
+
     calendarDay: {
-        width: '14.28571%', // Exact 1/7 of width (100% / 7 days)
-        //aspectRatio: 1,
+        width: '14.28571%',
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'transparent',
-        paddingVertical: 2, // Small padding for spacing
+        paddingVertical: 2,
     },
-    calendarSheet: {
-        backgroundColor: theme.colors.primaryContainer,
-        paddingBottom: 16,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
-    },
+
+
 
     calendarWeekDay: {
         fontSize: 12,
         fontWeight: '600',
-        color: theme.colors.onSurfaceVariant,
+        color: theme.colors.onSurfaceVariant ?? theme.colors.onSurface,
         textAlign: 'center',
         letterSpacing: 0.5,
     },
+
     calendarDayButton: {
         width: 36,
         height: 36,
-        borderRadius: 18, // Perfect circle
+        borderRadius: 18,
         margin: 0,
         minWidth: 36,
         padding: 0,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: theme.colors.surface, // subtle highlight for button
     },
+
     calendarDayContent: {
         width: 36,
         height: 36,
@@ -181,53 +176,18 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 18,
+        backgroundColor: theme.colors.surface, // or transparent if you prefer
     },
+
     calendarDayLabel: {
         fontSize: 14,
         fontWeight: '500',
         margin: 0,
         lineHeight: 16,
         textAlign: 'center',
+        color: theme.colors.onSurface,
     },
 
-
-
-
-    // CRAP FOR THE AI CAM
-
-    message: {
-        textAlign: 'center',
-        paddingBottom: 10,
-        color: theme.colors.onBackground
-    },
-    camera: {
-        flex: 1,
-        width: '100%'
-    },
-    buttonContainer: {
-        flex: 1,
-        width: '100%',
-        flexDirection: 'row',
-        justifyContent: 'center',
-        alignItems: 'baseline',
-        backgroundColor: 'transparent',
-        paddingBottom: 32,
-    },
-    iconButton: {
-        alignSelf: 'flex-end',
-        alignItems: 'center',
-
-    },
-    button: {
-        flex: 1,
-        alignSelf: 'flex-end',
-        alignItems: 'center',
-    },
-    text: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        color: 'white',
-    },
 
     // INPUT STYLES:
     inputWrapper: {
@@ -243,11 +203,10 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        padding: 8,
         borderBottomWidth: 1,
-        borderBottomColor: theme.colors.outlineVariant,
-        backgroundColor: theme.colors.surface,
+        borderBottomColor: theme.colors.outline,
+        backgroundColor: theme.colors.primaryContainer,
     },
     headerContent: {
         flexDirection: 'row',
@@ -268,22 +227,14 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     cardHeader: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 12,
+        marginVertical: 4,
     },
     cardTitle: {
         marginLeft: 8,
         color: theme.colors.onSurface,
         flex: 1,
     },
-    input: {
-        backgroundColor: 'transparent',
-    },
-    selectorRow: {
-        marginBottom: 16,
-    },
-    selectorGroup: {
-        flex: 1,
-    },
+
     selectorLabel: {
         color: theme.colors.onSurfaceVariant,
         marginBottom: 8,
@@ -292,28 +243,16 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 8,
+        marginTop: 4,
+        marginBottom: 8
     },
     chip: {
         borderRadius: 20,
         minWidth: 70,
     },
-    photoButton: {
-        marginLeft: 'auto',
-    },
-    cameraContainer: {
-        borderRadius: 8,
-        overflow: 'hidden',
-        height: 200,
-    },
-    cameraControls: {
-        position: 'absolute',
-        bottom: 16,
-        left: 0,
-        right: 0,
-        flexDirection: 'row',
-        justifyContent: 'center',
-        gap: 16,
-    },
+
+
+
     photoScroll: {
         marginTop: 8,
     },
@@ -349,10 +288,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
 
     // DIARY LIST ITEM:
-    diaryListRow: {
-        marginHorizontal: 8,
-        marginTop: 16,
-    },
+
     diaryListItem: {
         borderRadius: 8,
         backgroundColor: theme.colors.surface,
