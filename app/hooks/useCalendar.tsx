@@ -2,13 +2,17 @@ import { AppData } from "@/app/constants/interface/appData";
 import { useState } from "react";
 
 export function useCalendar(appData: AppData) {
-  const [showCalendar, setShowCalendar] = useState(true);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
 
 
-  const toggleCalendar = () => {
-    setShowCalendar(!showCalendar);
+  const toggleCalendar = (value?: boolean) => {
+    if (typeof value === "boolean") {
+      setShowCalendar(value);
+    } else {
+      setShowCalendar((prev) => !prev);
+    }
   };
 
   const formatDate = (date: Date) => {

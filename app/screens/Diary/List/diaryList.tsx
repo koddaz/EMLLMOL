@@ -8,6 +8,7 @@ import { GestureDetector } from "react-native-gesture-handler";
 import { Surface, Text } from "react-native-paper";
 import { useSwipeGesture } from "../../../hooks/useGestures";
 import { DiaryListItem } from "./diaryListItem";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 
 
@@ -28,7 +29,7 @@ export function DiaryList(
 ) {
   const { theme, styles } = useAppTheme();
 
-  const filteredEntries = useMemo(() => dbHook.diaryEntries.filter((item : DiaryData) => {
+  const filteredEntries = useMemo(() => dbHook.diaryEntries.filter((item: DiaryData) => {
     const itemDate = new Date(item.created_at);
     return itemDate.toDateString() === calendarHook.selectedDate.toDateString();
   }), [dbHook.diaryEntries, calendarHook.selectedDate]);
@@ -56,94 +57,108 @@ export function DiaryList(
       : '0';
 
     return (
-      <Surface style={[
-        styles.card,
-        {
-          margin: 8,
-        }
-      ]} elevation={4}>
-        <View style={[styles.cardHeader, { marginBottom: 6 }]}>
-          <MaterialCommunityIcons name="chart-line" size={16} color={theme.colors.primary} />
-          <Text variant="labelLarge" style={[styles.cardTitle, { fontSize: 12 }]}>
-            Daily Summary: {calendarHook.selectedDate.toLocaleDateString('en-EU', {
-              month: 'numeric',
-              day: 'numeric',
-              year: 'numeric'
-            })}
-          </Text>
-        </View>
+      <Surface style={{
+        backgroundColor: theme.colors.secondaryContainer,
+        borderBottomStartRadius: 8,
+        borderBottomEndRadius: 8,
 
-        <View style={[styles.chipContainer, { gap: 4, flexWrap: 'wrap' }]}>
-          <Surface style={[
-            styles.chip,
-            {
-              backgroundColor: theme.colors.primaryContainer,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              minWidth: 60
-            }
-          ]}>
-            <Text variant="labelSmall" style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}>
-              Entries
-            </Text>
-            <Text variant="labelMedium" style={{
-              color: theme.colors.onPrimaryContainer,
-              fontWeight: '600',
-              fontSize: 11
-            }}>
-              {filteredEntries.length}
-            </Text>
-          </Surface>
+      }} elevation={4}>
+        <View style={styles.row}>
+          <View style={{ paddingHorizontal: 16 }}>
+            <MaterialCommunityIcons name="chart-line" size={40} color={theme.colors.onSecondaryContainer} />
+          </View>
+          <View>
+            <View style={[styles.cardHeader, { marginBottom: 6 }]}>
 
-          <Surface style={[
-            styles.chip,
-            {
-              backgroundColor: theme.colors.secondaryContainer,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              minWidth: 60
-            }
-          ]}>
-            <Text variant="labelSmall" style={{ color: theme.colors.onSecondaryContainer, fontSize: 9 }}>
-              Carbs
-            </Text>
-            <Text variant="labelMedium" style={{
-              color: theme.colors.onSecondaryContainer,
-              fontWeight: '600',
-              fontSize: 11
-            }}>
-              {totalCarbs}g
-            </Text>
-          </Surface>
+              <Text variant="labelLarge">
+                Daily Summary: {calendarHook.selectedDate.toLocaleDateString('en-EU', {
+                  month: 'numeric',
+                  day: 'numeric',
+                  year: 'numeric'
+                })}
+              </Text>
+            </View>
 
-          <Surface style={[
-            styles.chip,
-            {
-              backgroundColor: theme.colors.tertiaryContainer,
-              paddingHorizontal: 8,
-              paddingVertical: 4,
-              minWidth: 60
-            }
-          ]}>
-            <Text variant="labelSmall" style={{ color: theme.colors.onTertiaryContainer, fontSize: 9 }}>
-              Avg BG
-            </Text>
-            <Text variant="labelMedium" style={{
-              color: theme.colors.onTertiaryContainer,
-              fontWeight: '600',
-              fontSize: 11
-            }}>
-              {avgGlucose}
-            </Text>
-          </Surface>
+            <View style={[styles.chipContainer, { gap: 4, flexWrap: 'wrap' }]}>
+              <Surface style={[
+                styles.chip,
+                {
+                  alignItems: 'center',
+                  backgroundColor: theme.colors.primaryContainer,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  minWidth: 60
+                }
+              ]}>
+
+                <Text variant="labelMedium" style={{
+                  color: theme.colors.onPrimaryContainer,
+                  fontWeight: '600',
+
+                }}>
+                  {filteredEntries.length}
+                </Text>
+                <Text variant="labelSmall" style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}>
+                  Entries
+                </Text>
+              </Surface>
+
+              <Surface style={[
+                styles.chip,
+                {
+                  alignItems: 'center',
+                  backgroundColor: theme.colors.secondaryContainer,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  minWidth: 60
+                }
+              ]}>
+
+                <Text variant="labelMedium" style={{
+                  color: theme.colors.onSecondaryContainer,
+                  fontWeight: '600',
+                  fontSize: 11
+                }}>
+                  {totalCarbs}g
+                </Text>
+                <Text variant="labelSmall" style={{ color: theme.colors.onSecondaryContainer, fontSize: 9 }}>
+                  Carbs
+                </Text>
+              </Surface>
+
+              <Surface style={[
+                styles.chip,
+                {
+                  alignItems: 'center',
+                  backgroundColor: theme.colors.tertiaryContainer,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  minWidth: 60
+                }
+              ]}>
+
+                <Text variant="labelMedium" style={{
+                  color: theme.colors.onTertiaryContainer,
+                  fontWeight: '600',
+
+                }}>
+                  {avgGlucose}
+                </Text>
+                <Text variant="labelSmall" style={{ color: theme.colors.onTertiaryContainer, fontSize: 9 }}>
+                  Avg BG
+                </Text>
+              </Surface>
+            </View>
+          </View>
         </View>
       </Surface>
     );
   };
 
   const renderEmptyState = () => (
-    <View style={styles.centeredContainer}>
-      <Surface style={[styles.card, { alignItems: 'center', marginHorizontal: 32 }]} elevation={2}>
+    <SafeAreaView edges={['bottom']} style={[styles.background, { justifyContent: 'center', alignItems: 'center' }]}>
+      <View style={{ paddingHorizontal: 8}}>
+      <Surface style={styles.card} elevation={1}>
         <View style={{ alignItems: 'center', paddingVertical: 32 }}>
           <MaterialCommunityIcons
             name="clipboard-plus"
@@ -167,17 +182,18 @@ export function DiaryList(
           </Text>
         </View>
       </Surface>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 
   if (filteredEntries.length === 0) {
     return (
       <GestureDetector gesture={panGesture}>
         <View style={styles.background}>
-          
-            {renderStats()}
-            {renderEmptyState()}
-          
+
+          {renderStats()}
+          {renderEmptyState()}
+
         </View>
       </GestureDetector>
     );
@@ -185,9 +201,10 @@ export function DiaryList(
 
   return (
     <GestureDetector gesture={panGesture}>
-      <View style={styles.background}>
-        
-          {renderStats()}
+      <SafeAreaView edges={['bottom']} style={[styles.background]}>
+
+        {renderStats()}
+        <View style={{ flex: 1, paddingHorizontal: 8}}>
           <FlatList
             data={filteredEntries}
             keyExtractor={(item) => item.id.toString()}
@@ -222,7 +239,8 @@ export function DiaryList(
             extraData={calendarHook.selectedDate.toISOString()}
           />
         </View>
+      </SafeAreaView>
 
-      </GestureDetector>
+    </GestureDetector>
   );
 }

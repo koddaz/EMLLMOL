@@ -11,6 +11,7 @@ import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
 import { RootNavigation } from './navigation/rootNavigation';
+import { NavigationContainer } from '@react-navigation/native';
 
 
 
@@ -198,7 +199,9 @@ export default function Index() {
         <PaperProvider theme={customTheme}>
           
             {appData?.session && appData.session.user ? (
+              <NavigationContainer>
               <RootNavigation appData={appData} setAppData={setAppData} />
+              </NavigationContainer>
             ) : (
               <AuthScreen />
             )}

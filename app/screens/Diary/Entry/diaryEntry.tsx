@@ -99,19 +99,16 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
     );
   };
 
-  // ADD THIS RETURN STATEMENT - this was missing!
   return renderImageCarousel();
 }
 
   export function DiaryEntry({
     appData,
-    setToggleEntry,
     diaryData,
     calendarHook,
     dbHook
   }: {
     appData: AppData,
-    setToggleEntry: (state: boolean) => void,
     diaryData: DiaryData,
     calendarHook: any,
     dbHook: any
@@ -140,14 +137,6 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
       }
     };
 
-    const getActivityColor = (activityLevel: string) => {
-      switch (activityLevel?.toLowerCase()) {
-        case 'low': return theme.colors.secondary;
-        case 'medium': return theme.colors.tertiary;
-        case 'high': return theme.colors.error;
-        default: return theme.colors.onSurfaceVariant;
-      }
-    };
 
 
 
@@ -163,7 +152,7 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
             onPress: async () => {
               await dbHook.removeEntry(diaryData.id.toString());
               await dbHook.refreshEntries();
-              setToggleEntry(false);
+              dbHook.toggleEntry;
             }
           }
         ]
@@ -184,29 +173,27 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
         {...props}
         icon="close"
         size={24}
-        onPress={() => setToggleEntry(false)}
+        onPress={() => dbHook.toggleEntry()}
       />
     );
 
     const renderMetricsContent = () => (
-      <View>
-        <View style={[styles.row]}>
-          <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.primary} />
-
+      <View style={styles.container}>
+        <View style={styles.entryRow}>
+          <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.error} />
           <Text variant="titleMedium" style={{
-            color: theme.colors.onPrimaryContainer,
+            color: theme.colors.onSecondaryContainer,
             fontWeight: 'bold',
             marginLeft: 8,
           }}>
             {diaryData.glucose || '0'} {appData.settings.glucose}
           </Text>
-
         </View>
 
-        <View style={[styles.row, { marginTop: 8 }]}>
-          <MaterialCommunityIcons name="food" size={16} color={theme.colors.primary} />
+        <View style={styles.entryRow}>
+          <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondaryContainer} />
           <Text variant="titleMedium" style={{
-            color: theme.colors.onSurface,
+            color: theme.colors.onSecondaryContainer,
             fontWeight: 'bold',
             marginLeft: 8,
             textAlign: 'center'
@@ -215,14 +202,14 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
           </Text>
         </View>
 
-        <View style={[styles.row, { marginTop: 8 }]}>
+        <View style={styles.entryRow}>
           <MaterialCommunityIcons
             name={getActivityIcon(diaryData.activity_level || '')}
             size={16}
-            color={getActivityColor(diaryData.activity_level || '')}
+            color={theme.colors.onSecondaryContainer}
           />
           <Text variant="titleMedium" style={{
-            color: getActivityColor(diaryData.activity_level || ''),
+            color: theme.colors.onSecondaryContainer,
             fontWeight: 'bold',
             marginLeft: 8,
             textTransform: 'capitalize',
@@ -249,41 +236,30 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
         <PhotoScroll diaryData={diaryData} />
         <Card.Content>
 
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            {/* Metrics Content - Left Side */}
-            <Surface style={{
-              marginTop: 8,
-              flex: 1,
-              backgroundColor: theme.colors.surface,
-              borderRadius: 8,
-              padding: 8,
-              borderWidth: 1,
-              borderColor: theme.colors.outline,
-            }}>
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+
               {renderMetricsContent()}
-            </Surface>
+        
 
             {/* Note Content - Right Side */}
             {diaryData.note && diaryData.note.trim() !== '' && (
               <View style={{
                 flex: 1,
                 marginTop: 8,
+                borderWidth: 1,
+                borderColor: theme.colors.tertiary,
+                backgroundColor: theme.colors.secondaryContainer,
+                borderRadius: 8,
+                padding: 8
               }}>
-                <Surface style={{
-                  flex: 1,
-                  backgroundColor: theme.colors.surface,
-                  borderRadius: 8,
-                  padding: 8,
-                  borderWidth: 1,
-                  borderColor: theme.colors.outline,
-                }}>
+                
                   <Text variant="bodyMedium" style={{
                     color: theme.colors.onSurface,
                     lineHeight: 20
                   }}>
                     {diaryData.note}
                   </Text>
-                </Surface>
+               
               </View>
             )}
           </View>
@@ -296,7 +272,15 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
             onPress={handleDelete}
             icon="delete"
             loading={dbHook.isLoading}
-          //buttonColor={theme.colors.error}
+            iconColor={theme.colors.error}
+            style={{backgroundColor: theme.colors.errorContainer, marginRight: 8}}
+          />
+          <IconButton
+            mode="contained"
+            onPress={() => dbHook.toggleEntry()}
+            icon="pencil"
+            iconColor={theme.colors.onPrimary}
+            style={{backgroundColor: theme.colors.primary, borderColor: theme.colors.outline, }}
           />
 
 

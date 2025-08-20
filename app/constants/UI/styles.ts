@@ -36,43 +36,83 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         // justifyContent: 'space-between',
         alignItems: 'center'
     },
-
     centeredContainer: {
         flex: 1,
         justifyContent: 'center',
         alignContent: 'center',
         alignItems: 'center',
     },
-
     section: {
         marginBottom: 8, // or whatever spacing you want between cards/sections
     },
     textInput: {
-
         borderRadius: 8,
         fontSize: 16,
         paddingHorizontal: 12,
     },
-    fab: {
-        position: 'absolute',
-        margin: 16,
-        right: 16,
-        bottom: 60,
-        zIndex: 1000,
-        backgroundColor: theme.colors.primary
+
+    // MENU WITH FABS
+    shutterButton: {
+        backgroundColor: 'transparent',
+        borderColor: theme.colors.secondary,
+        borderWidth: 4,
+        borderRadius: 100,
+        padding: 24
     },
+    shutterBackground: {
+        flex: 1,
+        backgroundColor: theme.colors.backdrop,
+        opacity: 0.4,
+        borderRadius: 100,
+    },
+    fabSecondary: {
+        backgroundColor: theme.colors.secondary,
+        borderColor: theme.colors.outline,
+        borderWidth: 1,
+        marginLeft: 8,
+        marginTop: 8,
+    },
+    fab: {
+        backgroundColor: theme.colors.primary,
+        borderColor: theme.colors.outline,
+        borderWidth: 1,
+        marginLeft: 16,
+        marginTop: 8,
+    },
+    fabContainer: {
+        position: 'absolute',
+        bottom: '7.5%',
+        left: 0,
+        right: 0,
+        zIndex: 1000,
+    },
+    fabRow: {
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        marginRight: 32,
+    },
+    fabActionRow: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+    },
+
+
     centeredWrapper: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        justifyContent: 'center',
+        //justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.5)',
         zIndex: 100
     },
     centeredContent: {
+        marginTop: 40,
         maxHeight: '70%',
         minHeight: '70%',
         maxWidth: '95%',
@@ -87,6 +127,15 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderColor: theme.colors.error
     },
 
+    // DIARY ENTRY:
+    entryRow: {
+        flexDirection: 'row', 
+        backgroundColor: theme.colors.primary, 
+        borderRadius: 16, 
+        padding: 8, 
+        alignItems: 'center', 
+        marginTop: 8
+    },
 
 
     // CALENDAR STYLES - Smaller and more compact
@@ -100,28 +149,23 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderTopStartRadius: 16,
         marginHorizontal: 8,
     },
-
     calendarContainer: {
         backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginBottom: 16,
         marginHorizontal: 8,
     },
-
     weekdayRow: {
         backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
         paddingHorizontal: 4,
     },
-
     weekdayHeader: {
         backgroundColor: 'transparent',
         flex: 1,
         alignItems: 'center',
         paddingVertical: 8,
-
     },
-
     calendarGridFiller: {
         backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
@@ -129,14 +173,12 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderBottomEndRadius: 16,
         borderBottomStartRadius: 16,
     },
-
     calendarGrid: {
         backgroundColor: 'transparent',
         flexDirection: 'row',
         flexWrap: 'wrap',
         gap: 0,
     },
-
     calendarDay: {
         width: '14.28571%',
         justifyContent: 'center',
@@ -144,9 +186,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: 'transparent',
         paddingVertical: 2,
     },
-
-
-
     calendarWeekDay: {
         fontSize: 12,
         fontWeight: '600',
@@ -154,7 +193,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         textAlign: 'center',
         letterSpacing: 0.5,
     },
-
     calendarDayButton: {
         width: 36,
         height: 36,
@@ -166,7 +204,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         alignItems: 'center',
         backgroundColor: theme.colors.surface, // subtle highlight for button
     },
-
     calendarDayContent: {
         width: 36,
         height: 36,
@@ -178,7 +215,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderRadius: 18,
         backgroundColor: theme.colors.surface, // or transparent if you prefer
     },
-
     calendarDayLabel: {
         fontSize: 14,
         fontWeight: '500',
@@ -187,7 +223,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         textAlign: 'center',
         color: theme.colors.onSurface,
     },
-
 
     // INPUT STYLES:
     inputWrapper: {

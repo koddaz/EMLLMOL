@@ -9,6 +9,12 @@ export function useCamera(appData: AppData) {
 
   const theme = useTheme();
 
+  const [showCamera, setShowCamera] = useState(false);
+
+  const toggleCamera = () => {
+    setShowCamera(!showCamera);
+  }
+
   const cameraRef = useRef<CameraView>(null);
   const [flash, setFlash] = useState<"on" | "off" | "auto">("off");
   const [zoom, setZoom] = useState(0);
@@ -155,6 +161,8 @@ export function useCamera(appData: AppData) {
 
   return {
     renderCamera,
+    showCamera,
+    toggleCamera,
 
     // handle photo capture
     capturePhoto,

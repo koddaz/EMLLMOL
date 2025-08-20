@@ -11,12 +11,29 @@ export function useDB(appData: AppData) {
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
+  const [glucose, setGlucose] = useState("");
+  const [carbs, setCarbs] = useState("");
+  const [note, setNote] = useState("");
+  const [activity, setActivity] = useState("none");
+  const [foodType, setFoodType] = useState("snack");
+
+  const [showInput, setShowInput] = useState(false)
+  const [showEntry, setShowEntry] = useState(false)
+
+  const toggleInput = () => {
+    setShowInput(!showInput);
+  };
+  const toggleEntry = () => {
+    setShowEntry(!showEntry)
+  }
+
+
   useEffect(() => {
     if (appData?.session?.user?.id) {
       retrieveEntries()
     }
   }, [appData.session?.user?.id]);
-  
+
   // Wrap retrieveEntries in useCallback to prevent infinite loops
   const retrieveEntries = useCallback(async () => {
     setIsLoading(true);
@@ -145,5 +162,20 @@ export function useDB(appData: AppData) {
     diaryEntries,
     foodOptions,
     activityOptions,
+    toggleInput,
+    toggleEntry,
+    showEntry,
+    showInput,
+    glucose,
+    setGlucose,
+    carbs,
+    setCarbs,
+    note,
+    setNote,
+    activity,
+    setActivity,
+    foodType,
+    setFoodType
+
   };
 }

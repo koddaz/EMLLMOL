@@ -9,19 +9,12 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 export default function DiaryCalendar(
     { calendarHook, 
         dbHook,
-        toggleInput,
-        toggleEntry
     }: {
-
         calendarHook: any,
         dbHook: any,
-        toggleInput: boolean,
-        toggleEntry: boolean
     }
 ) {
     const { theme, styles } = useAppTheme();
-
-
 
     return (
         <>
@@ -52,57 +45,10 @@ export default function DiaryCalendar(
                     </Surface>
                     
                 )}
-                {!toggleInput && !toggleEntry && (
-                <CalendarTab calendarHook={calendarHook} /> 
-                )}
+
          
 
         </>
     );
 }
 
-export function CalendarTab(
-    {calendarHook}: {
-        calendarHook: any}
-) {
-
-    const { theme, styles } = useAppTheme();
-
-    return (
-        <View style={{ flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 28 }}>
-                    <TouchableOpacity
-                        // elevation={4}
-                        style={{
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            borderTopLeftRadius: 0,
-                            borderTopRightRadius: 0,
-                            borderBottomStartRadius: 12,
-                            borderBottomEndRadius: 12,
-                            backgroundColor: theme.colors.primaryContainer,
-                            opacity: 0.5,
-                            flex: 0.4,
-                        }}
-                        onPress={() => calendarHook.toggleCalendar()}
-                    >
-                        <MaterialCommunityIcons
-                            name="calendar-month"
-                            size={24}
-                            color={theme.colors.onPrimaryContainer}
-                            style={{marginTop: 4}}
-                        />
-
-                        <Divider style={{
-                            width: '60%',
-                            height: 4,
-                            borderRadius: 2,
-                            backgroundColor: theme.colors.onPrimaryContainer,
-                            marginTop: 0,
-                            marginBottom: 4,
-                            alignSelf: 'center',
-                            opacity: 0.2,
-                        }} />
-                    </TouchableOpacity>
-                </View>
-    )
-}

@@ -2,23 +2,23 @@ import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
-import { ScrollView, View } from "react-native";
-import { Avatar, Button, Divider, IconButton, Surface, Text, TextInput } from "react-native-paper";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { Avatar, Button, Divider, FAB, IconButton, Surface, Text, TextInput } from "react-native-paper";
 
 // Remove the complex memo comparison and just use basic memo
 export function DiaryInput({
     appData,
-    toggleInput,
     calendarHook,
     dbHook,
     cameraHook,
-    diaryState
+    diaryState,
+    navigation
 }: {
     appData: AppData,
-    toggleInput?: (state: boolean) => void,
     calendarHook: any,
     dbHook: any,
     cameraHook: any,
+    navigation: any,
     diaryState: {
         glucose: string,
         setGlucose: (value: string) => void,
@@ -36,65 +36,53 @@ export function DiaryInput({
 
     console.log('🔄 DiaryInput rendered');
 
+    const handleSave = useCallback(async () => {
+    try {
+      const permanentURIs = await Promise.all(
+        cameraHook.photoURIs.map((tempUri: string) => cameraHook.savePhotoLocally(tempUri))
+      );
 
+      const entryData = {
+        glucose: diaryState.glucose,
+        carbs: diaryState.carbs,
+        note: diaryState.note,
+        activity: diaryState.activity,
+        foodType: diaryState.foodType,
+      };
 
-    // toggles and arrays
-    const [toggleCamera, setToggleCamera] = useState(false);
-    // const [toggleNote, setToggleNote] = useState(false);
+      await dbHook.saveDiaryEntry(entryData, permanentURIs);
+      // Clear camera and diary states
+      if (cameraHook.showCamera) cameraHook.toggleCamera();
+      cameraHook.clearPhotoURIs();
+
+      diaryState.setGlucose('');
+      diaryState.setCarbs('');
+      diaryState.setNote('');
+      diaryState.setActivity('');
+      diaryState.setFoodType('');
+
+      // Optionally close the input
+      if (dbHook.toggleInput) dbHook.toggleInput();
+    } catch (error) {
+      console.error('❌ Error saving entry:', error);
+    } finally {
+        navigation.navigate('Diary');
+    }
+  }, [
+    cameraHook.photoURIs,
+    cameraHook.savePhotoLocally,
+    cameraHook.showCamera,
+    cameraHook.toggleCamera,
+    cameraHook.clearPhotoURIs,
+    dbHook,
+    dbHook.toggleInput,
+    diaryState,
+  ]);
 
     // keyboard related
     const glucoseInputRef = useRef<any>(null);
     const carbsInputRef = useRef<any>(null);
     const noteInputRef = useRef<any>(null);
-
-    // Stabilize the save function
-    const handleSave = useCallback(async () => {
-        console.log('📝 Saving entry...');
-
-        try {
-            // First, save all photos locally and get permanent URIs
-            const permanentURIs: string[] = [];
-            for (const tempUri of cameraHook.photoURIs) {
-                console.log('📷 Processing photo:', tempUri);
-                const permanentUri = await cameraHook.savePhotoLocally(tempUri);
-                console.log('📷 Saved as:', permanentUri);
-                permanentURIs.push(permanentUri);
-            }
-
-            console.log('📷 All permanent URIs:', permanentURIs);
-            // Create the diary entry data object
-            const entryData = {
-                glucose: diaryState.glucose,
-                carbs: diaryState.carbs,
-                note: diaryState.note,
-                activity: diaryState.activity,
-                foodType: diaryState.foodType,
-            };
-            await dbHook.saveDiaryEntry(entryData, permanentURIs);
-
-
-            console.log('✅ Entry saved, closing input...');
-
-            // Clear camera and note states
-            setToggleCamera(false);
-            // setToggleNote(false);
-            cameraHook.clearPhotoURIs();
-
-            // Clear the diary state
-            diaryState.setGlucose('');
-            diaryState.setCarbs('');
-            diaryState.setNote('');
-            diaryState.setActivity('');
-            diaryState.setFoodType('');
-
-            // Close the input after successful save
-            if (toggleInput) {
-                toggleInput(false);
-            }
-        } catch (error) {
-            console.error('❌ Error saving entry:', error);
-        }
-    }, [cameraHook.photoURIs, cameraHook.savePhotoLocally, dbHook, cameraHook.clearPhotoURIs, toggleInput, diaryState]);
 
     const renderNoteCard = () => (
         <View style={styles.wrapper}>
@@ -126,7 +114,6 @@ export function DiaryInput({
             />
         </View>
     );
-
     const renderInputCard = () => (
 
         <View style={styles.wrapper}>
@@ -193,7 +180,6 @@ export function DiaryInput({
 
 
     );
-
     const renderMealSelector = () => (
 
         <View style={styles.wrapper}>
@@ -227,7 +213,6 @@ export function DiaryInput({
         </View>
 
     );
-
     const renderActivitySelector = () => (
 
         <View style={styles.wrapper}>
@@ -259,7 +244,6 @@ export function DiaryInput({
             </View>
         </View>
     );
-
     const renderPhotosCard = () => (
         <View style={styles.wrapper}>
             <View style={styles.cardHeader}>
@@ -294,76 +278,47 @@ export function DiaryInput({
             )}
         </View>
     );
-
-    const renderActionButtons = () => (
-        <View>
-
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View style={{ flex: 1, alignItems: 'center' }} >
-                    <IconButton
-                        icon='camera-off'
-                        size={30}
-                        onPress={() => setToggleCamera(false)}
-                        mode="contained"
-                        style={{ backgroundColor: theme.colors.error }}
-                        iconColor={theme.colors.onError}
-                    />
+    const renderHeaderCard = () => (
+        <View style={styles.header}>
+            <View style={styles.row}>
+                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
+                    <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
+                        {calendarHook.formatTime(new Date())}
+                    </Text>
                 </View>
-                <View style={{ flex: 1, alignItems: 'center' }} >
-                    <IconButton
-                        icon="camera"
-                        size={30}
-                        onPress={cameraHook.capturePhoto}
-                        mode="contained"
-                        style={{ backgroundColor: theme.colors.primary }}
-                        iconColor={theme.colors.onPrimary}
-                    />
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                    <Text>
+                        {calendarHook.formatDate(new Date())}
+                    </Text>
                 </View>
-                <View style={{ flex: 1, alignItems: 'center' }} >
-                    <IconButton
-                        icon={cameraHook.getFlashIcon()}
-                        iconColor={cameraHook.getFlashIconColor()}
-                        size={30}
-                        onPress={cameraHook.cycleFlash}
-                        mode="contained"
-                    />
-                </View>
-
-
 
             </View>
-
-
-
 
         </View>
+
     );
 
-    const renderHeaderCard = () => {
-        return (
-
-
-            <View style={styles.header}>
-                <View style={styles.row}>
-                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
-                        <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
-                            {calendarHook.formatTime(new Date())}
-                        </Text>
-                    </View>
-                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                        <Text>
-                            {calendarHook.formatDate(new Date())}
-                        </Text>
-                    </View>
-
-                </View>
-
-            </View>
-
-
-        );
-    }
+    const renderFAB = () => (
+        <View style={styles.fabContainer}>
+        <View style={styles.fabRow}>
+          <FAB
+            color={theme.colors.onPrimary}
+            icon="floppy"
+            size="medium"
+            style={styles.fabSecondary}
+            onPress={handleSave}
+          />
+          <FAB
+            color={theme.colors.onPrimary}
+            icon="camera-plus"
+            size="medium"
+            style={styles.fabSecondary}
+            onPress={cameraHook.toggleCamera}
+          />
+        </View>
+      </View>
+    );
 
 
 
@@ -372,7 +327,7 @@ export function DiaryInput({
     return (
         <View style={styles.background}>
 
-            {toggleCamera ? (
+            {cameraHook.showCamera ? (
                 <View style={[styles.container, { padding: 8 }]}>
                     {renderPhotosCard()}
                     {cameraHook.renderCamera()}
@@ -381,9 +336,24 @@ export function DiaryInput({
 
 
 
-                <View style={styles.container}>
+                <KeyboardAvoidingView
+                    style={styles.inputWrapper}
+                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+                >
 
                     {renderHeaderCard()}
+                    {dbHook.error && (
+                        <View style={styles.content}>
+
+                            <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
+                                <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                                    {dbHook.error}
+                                </Text>
+                            </Surface>
+
+                        </View>
+                    )}
                     {renderInputCard()}
                     <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
                     {renderNoteCard()}
@@ -393,40 +363,17 @@ export function DiaryInput({
                     {renderActivitySelector()}
                     <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
                     {renderPhotosCard()}
-
-                    <View style={styles.content}>
-                        {dbHook.error && (
-                            <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
-                                <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
-                                    {dbHook.error}
-                                </Text>
-                            </Surface>
-                        )}
-                    </View>
+                    {renderFAB()}
+                    
 
 
 
 
 
-                </View>
+                </KeyboardAvoidingView>
 
             )}
-            {toggleCamera && (
-                <View style={{
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    backgroundColor: theme.colors.background,
-                    padding: 8,
-                    borderTopWidth: 1,
-                    borderTopColor: theme.colors.outlineVariant,
-                }}
-                >
-                    {renderActionButtons()}
 
-                </View>
-            )}
         </View>
     );
 }
