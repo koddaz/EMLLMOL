@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { MD3Theme } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
 
@@ -59,12 +60,19 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderRadius: 100,
         padding: 24
     },
-    shutterBackground: {
-        flex: 1,
-        backgroundColor: theme.colors.backdrop,
-        opacity: 0.4,
-        borderRadius: 100,
+    photoRow: {
+        flexDirection: 'row',
+
+        
     },
+    cameraOptions: {
+
+        backgroundColor: theme.colors.surface,
+        justifyContent: 'center',
+        alignItems: 'center',
+
+    },
+
     fabSecondary: {
         backgroundColor: theme.colors.secondary,
         borderColor: theme.colors.outline,
@@ -292,6 +300,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         marginTop: 8,
     },
     photoItem: {
+        flex: 1,
         marginRight: 12,
         position: 'relative',
     },

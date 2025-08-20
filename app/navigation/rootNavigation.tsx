@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Appbar, Button, FAB, Icon, IconButton } from "react-native-paper";
+import { Appbar, Avatar, Button, FAB, Icon, IconButton, Text } from "react-native-paper";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { AppData } from "../constants/interface/appData";
 import { useAppTheme } from "../constants/UI/theme";
@@ -12,12 +12,14 @@ import { DiaryScreen } from "../screens/Diary/diaryScreen";
 import { useCamera } from "../hooks/useCamera";
 import { useDB } from "../hooks/useDB";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
-import { TouchableOpacity, View } from "react-native";
+import { Dimensions, Image, TouchableOpacity, View } from "react-native";
 import { DiaryInput } from "../screens/Diary/Input/diaryInput";
 // import { useNavigation } from "expo-router";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Colors } from "react-native/Libraries/NewAppScreen";
+import { FlatList, ScrollView } from "react-native-gesture-handler";
+import { useHeaderHeight } from "@react-navigation/elements";
 
 
 const Stack = createNativeStackNavigator();
@@ -88,7 +90,7 @@ export function RootNavigation({ appData, setAppData }: { appData: AppData, setA
     return (
 
         <Stack.Navigator
-            initialRouteName="Camera"
+            initialRouteName="Diary"
             screenOptions={{
                 headerStyle: { backgroundColor: theme.colors.primary, },
                 headerBackButtonMenuEnabled: false,
@@ -166,10 +168,11 @@ export function RootNavigation({ appData, setAppData }: { appData: AppData, setA
 
             <Stack.Screen
                 name="Camera"
-                
+
                 options={{
                     headerTransparent: true,
                     headerStyle: { backgroundColor: 'transparent' },
+                    contentStyle: { backgroundColor: 'transparent' },
                     headerTintColor: theme.colors.onPrimary,
                     headerTitle: '',
                     headerLeft: () => (
@@ -189,12 +192,13 @@ export function RootNavigation({ appData, setAppData }: { appData: AppData, setA
                         <IconButton
                             iconColor={theme.colors.onSecondary}
                             size={28}
-                            icon={getSettingsIcon()}
+                            icon={cameraHook.getFlashIcon()}
                             mode="contained-tonal"
-                            onPress={() => cameraHook.cycleFlash}
+                            onPress={cameraHook.cycleFlash}
                             style={{
                                 backgroundColor: theme.colors.secondary,
                                 borderRadius: 12,
+                                zIndex: 1000,
                             }}
                         />
 
@@ -268,32 +272,91 @@ export function CameraScreen(
     { cameraHook, dbHook, appData }: { cameraHook: any, dbHook: any, appData: AppData }
 ) {
     const { styles, theme } = useAppTheme();
+    const insets = useSafeAreaInsets();
+    const headerHeight = useHeaderHeight();
+
+
+    const screenWidth = Dimensions.get('window').width;
+    const slotCount = 3;
+    const slotSpacing = 8 * 2; // paddingHorizontal: 8 on both sides
+    const slotWidth = (screenWidth - slotSpacing - 16) / slotCount; // 16 for possible margins
+
+    const paddedPhotoURIs = [
+        ...cameraHook.photoURIs,
+        ...Array(Math.max(0, slotCount - cameraHook.photoURIs.length)).fill(null)
+    ];
+
     return (
-        <View style={styles.background}>
-            {cameraHook.renderCamera()}
-            <View style={{
-                position: 'absolute',
-                bottom: '10%',
-                left: 0,
-                right: 0,
-                alignItems: 'center',
-            }}>
-                <TouchableOpacity
-                    style={styles.shutterButton}
-                    onPress={() => {cameraHook.capturePhoto()}}
-                >
-                    
-                    <MaterialCommunityIcons
-                        name="circle"
-                        size={24}
-                        color={theme.colors.secondary}
-                    />
-                    
-                </TouchableOpacity>
-                
-           
-                
+
+        <SafeAreaView style={{flex: 1}} edges={['bottom', 'left', 'right', 'top']}>
+            
+            {/* CAMERA */}
+            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1 }}>
+                {cameraHook.renderCamera()}
             </View>
-        </View>
+                {/* HEADER */}
+                <View style={[{ position: 'absolute', top: headerHeight + 8, zIndex: 2 }]}>
+                    <FlatList
+                        data={paddedPhotoURIs}
+                        horizontal
+                        style={{ backgroundColor: 'transparent' }}
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: 8 }}
+                        renderItem={({ item, index }) => (
+                            <View
+                                style={{
+                                    width: slotWidth,
+                                    height: slotWidth,
+                                    marginRight: index < slotCount - 1 ? 8 : 0,
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    backgroundColor: 'transparent',
+                                }}
+                                key={index}
+                            >
+
+                                <Image
+                                    source={{ uri: item }}
+                                    style={{
+                                        width: '100%',
+                                        height: '100%',
+                                        padding: 8,
+                                        borderWidth: 1,
+                                        borderColor: theme.colors.primary,
+                                        backgroundColor: 'transparent',
+                                    }}
+                                />
+
+                            </View>
+                        )}
+                        keyExtractor={(_, index) => index.toString()}
+                    />
+
+                </View>
+         
+            
+
+            {/* CAMERA CONTROLS */}
+            
+
+                <View style={{flex: 1, justifyContent: 'flex-end', alignItems: 'center', backgroundColor: 'transparent', paddingBottom: 40, zIndex: 3}}>
+
+
+                    <TouchableOpacity
+                        
+                        onPress={() => { cameraHook.capturePhoto() }}
+                    >
+                        <View style={styles.shutterButton}>
+                        <View style={styles.shutterButton}>
+
+                        </View>
+                        </View>
+
+                    </TouchableOpacity>
+                </View>
+
+           
+        </SafeAreaView>
+
     );
 }

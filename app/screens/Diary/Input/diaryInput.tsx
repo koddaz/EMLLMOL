@@ -314,7 +314,7 @@ export function DiaryInput({
             icon="camera-plus"
             size="medium"
             style={styles.fabSecondary}
-            onPress={cameraHook.toggleCamera}
+            onPress={navigation.navigate('Camera')}
           />
         </View>
       </View>
@@ -327,12 +327,7 @@ export function DiaryInput({
     return (
         <View style={styles.background}>
 
-            {cameraHook.showCamera ? (
-                <View style={[styles.container, { padding: 8 }]}>
-                    {renderPhotosCard()}
-                    {cameraHook.renderCamera()}
-                </View>
-            ) : (
+            
 
 
 
@@ -372,7 +367,7 @@ export function DiaryInput({
 
                 </KeyboardAvoidingView>
 
-            )}
+            
 
         </View>
     );

@@ -8,6 +8,7 @@ import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryInput } from "./Input/diaryInput";
 import { DiaryList } from "./List/diaryList";
+import { Stack } from "expo-router";
 
 export function DiaryScreen({
   appData,
@@ -41,6 +42,7 @@ export function DiaryScreen({
 
 
   return (
+    
     <View style={styles.background}>
 
       {showEntry && selectedDiaryData && (
@@ -106,6 +108,10 @@ export function DiaryScreen({
   );
 }
 
+export function Diary() {
+  return ()
+    
+}
 
 export function DiaryFabGrid(
   { calendarHook,
