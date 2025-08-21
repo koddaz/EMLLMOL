@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>emiliemol</string>
+    <string>EMLLMOL</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,14 +27,14 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>com.koddaz.emiliemol</string>
-          <string>com.knoddaz.emiliemol</string>
+          <string>com.koddaz.emllmol</string>
+          <string>com.knoddaz.emllmol</string>
         </array>
       </dict>
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>exp+emiliemol</string>
+          <string>exp+emllmol</string>
         </array>
       </dict>
     </array>

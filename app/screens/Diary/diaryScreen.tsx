@@ -70,6 +70,7 @@ export function DiaryScreen({
 
       <View style={styles.fabContainer}>
         <View style={styles.fabRow}>
+          
           <FAB
             color={theme.colors.onPrimary}
             icon="note-plus"
@@ -78,163 +79,13 @@ export function DiaryScreen({
             onPress={() => navigation.navigate('Diary', { screen: 'DiaryInput' })}
 
             />
+       
         </View>
       </View>
       {/* 
-      <DiaryFabGrid
-        cameraHook={cameraHook}
-        calendarHook={calendarHook}
-        dbHook={dbHook}
-        diaryState={diaryState}
-        navigation={navigation}
-
-      />
 */}
     </View>
   );
 }
-
-
-
-export function DiaryFabGrid(
-  { calendarHook,
-    cameraHook,
-    dbHook,
-    diaryState,
-    navigation,
-
-  }: {
-    calendarHook: any,
-    cameraHook: any,
-    dbHook: any,
-    diaryState: any,
-    navigation: any
-  }
-) {
-  const { styles, theme } = useAppTheme();
-
-
-
-  const renderFAB = () => (
-    <>
-      {!dbHook.showInput && (
-        <View style={styles.fabRow}>
-          <FAB
-            color={theme.colors.onSecondary}
-            icon={calendarHook.showCalendar ? "close" : "calendar"}
-            size={"medium"}
-            style={styles.fabSecondary}
-            onPress={calendarHook.toggleCalendar}
-          />
-        </View>
-      )}
-
-      {/* */}
-      {!cameraHook.showCamera && dbHook.showInput && (
-        <View style={styles.fabRow}>
-          <FAB
-            color={theme.colors.onPrimary}
-            icon="camera-plus"
-            size="medium"
-            style={styles.fabSecondary}
-            onPress={() => cameraHook.toggleCamera()}
-          />
-        </View>
-      )
-      }
-      {/* */}
-      <View style={styles.fabRow}>
-        {!cameraHook.showCamera && dbHook.showInput && (
-          <FAB
-            color={theme.colors.onPrimary}
-            icon="close"
-            size="medium"
-            style={styles.fabSecondary}
-            onPress={() => { navigation.navigate('Diary') }}
-          />
-        )}
-
-        {!cameraHook.showCamera && (
-          <FAB
-            color={theme.colors.onPrimary}
-            icon={dbHook.showInput ? "floppy" : "note-plus"}
-            size="medium"
-            style={styles.fab}
-            onPress={() => {
-              if (dbHook.showInput) {
-                //handleSave();
-              } else {
-                if (calendarHook.showCalendar) {
-                  calendarHook.toggleCalendar(false)
-                }
-                navigation.navigate('Input');
-                dbHook.toggleInput();
-
-              }
-            }}
-          />
-        )
-
-
-
-        }
-
-      </View>
-
-      {cameraHook.showCamera && (
-
-        <View style={styles.fabActionRow}>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <FAB
-              color={cameraHook.getFlashIconColor()}
-              icon={cameraHook.getFlashIcon()}
-              size="medium"
-              style={styles.shutterButton}
-              onPress={cameraHook.cycleFlash}
-            />
-          </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-
-            <FAB
-              color={theme.colors.onPrimary}
-              icon={"camera"}
-              size="medium"
-              style={styles.shutterButton}
-              onPress={
-                cameraHook.capturePhoto
-              }
-            />
-          </View>
-          <View style={{ flex: 1, alignItems: 'center' }}>
-            <FAB
-              color={theme.colors.onPrimary}
-              icon={"camera-off"}
-              size="medium"
-              style={styles.shutterButton}
-              onPress={
-                cameraHook.toggleCamera
-              }
-            />
-          </View>
-        </View>
-
-      )}
-    </>
-  );
-
-
-
-
-  return (
-    <View style={styles.fabContainer}>
-
-
-      {renderFAB()}
-
-
-    </View>
-  );
-}
-
 
 

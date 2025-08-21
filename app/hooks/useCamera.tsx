@@ -58,29 +58,30 @@ export function useCamera(appData: AppData) {
   };
 
   const renderCamera = () => {
-    // Check if permission is still loading
+    console.log('📷 renderCamera called, permission:', permission);
+
     if (permission === null) {
+      console.log('📷 Permission is null - showing loading');
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'red' }}>
           <Text>Loading camera permissions...</Text>
         </View>
       );
     }
 
     if (!permission?.granted) {
+      console.log('📷 Permission denied - showing grant button');
       return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'blue' }}>
           <Text>Camera permission not granted</Text>
-          <Button
-            mode="contained"
-            onPress={requestPermission}
-          >
+          <Button mode="contained" onPress={requestPermission}>
             Grant Camera Permission
           </Button>
         </View>
       );
     }
 
+    console.log('📷 Permission granted - rendering CameraView');
     return (
       <CameraView style={{flex: 1}} flash={flash} ref={cameraRef} />
     );

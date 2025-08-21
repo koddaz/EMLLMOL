@@ -6,7 +6,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { Avatar, Button, Divider, FAB, IconButton, Surface, Text, TextInput } from "react-native-paper";
 
 // Remove the complex memo comparison and just use basic memo
-export function DiaryInput({
+export function InputScreen({
     appData,
     calendarHook,
     dbHook,
@@ -66,7 +66,7 @@ export function DiaryInput({
     } catch (error) {
       console.error('❌ Error saving entry:', error);
     } finally {
-        navigation.navigate('Diary');
+        navigation.goBack();
     }
   }, [
     cameraHook.photoURIs,
@@ -302,6 +302,7 @@ export function DiaryInput({
     const renderFAB = () => (
         <View style={styles.fabContainer}>
         <View style={styles.fabRow}>
+            <View>
           <FAB
             color={theme.colors.onPrimary}
             icon="floppy"
@@ -314,8 +315,9 @@ export function DiaryInput({
             icon="camera-plus"
             size="medium"
             style={styles.fabSecondary}
-            onPress={() => navigation.navigate('Diary', { screen: 'DiaryCamera' })}
+            onPress={() => navigation.navigate('DiaryCamera')}
           />
+          </View>
         </View>
       </View>
     );
@@ -327,10 +329,6 @@ export function DiaryInput({
     return (
         <View style={styles.background}>
 
-            
-
-
-
                 <KeyboardAvoidingView
                     style={styles.inputWrapper}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -341,7 +339,7 @@ export function DiaryInput({
                     {dbHook.error && (
                         <View style={styles.content}>
 
-                            <Surface style={[styles.card, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
+                            <Surface style={[styles.container, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
                                 <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
                                     {dbHook.error}
                                 </Text>
@@ -359,15 +357,8 @@ export function DiaryInput({
                     <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
                     {renderPhotosCard()}
                     {renderFAB()}
-                    
-
-
-
-
 
                 </KeyboardAvoidingView>
-
-            
 
         </View>
     );

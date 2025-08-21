@@ -3,10 +3,11 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { useHeaderHeight } from "@react-navigation/elements";
 import { Dimensions, Image, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
+import { IconButton } from "react-native-paper";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function CameraScreen(
-    { cameraHook, dbHook, appData }: { cameraHook: any; dbHook: any; appData: AppData; }
+    { cameraHook, dbHook, appData, navigation }: { cameraHook: any, dbHook: any, appData: AppData, navigation: any}
 ) {
     const { styles, theme } = useAppTheme();
     const headerHeight = useHeaderHeight();
@@ -24,32 +25,11 @@ export function CameraScreen(
     ];
 
     return (
-        <View style={{ flex: 1 }}>
-            {/* CAMERA VIEW - Full screen background */}
-            <View style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                bottom: 0,
-                width: screenWidth,
-                height: screenHeight
-            }}>
-                {cameraHook.renderCamera()}
-            </View>
-
-            {/* PHOTO ROW - Positioned at top with safe area */}
-            <SafeAreaView style={{ 
-                position: 'absolute', 
-                top: 0, 
-                left: 0, 
-                right: 0, 
-                zIndex: 10 
-            }} edges={['top']}>
-                <View style={{
-                    marginTop: headerHeight + 8,
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)', // Semi-transparent background
-                    paddingVertical: 8
+        <SafeAreaView style={styles.background}>
+            <View style={{
+                    paddingTop: headerHeight + 8,
+                    backgroundColor: theme.colors.primary, // Semi-transparent background
+                    paddingBottom: 8
                 }}>
                     <FlatList
                         data={paddedPhotoURIs}
@@ -114,22 +94,33 @@ export function CameraScreen(
                         keyExtractor={(_, index) => index.toString()}
                     />
                 </View>
-            </SafeAreaView>
 
-            {/* CAMERA CONTROLS - Bottom positioned with safe area */}
-            <SafeAreaView style={{ 
-                position: 'absolute', 
-                bottom: 0, 
-                left: 0, 
-                right: 0, 
-                zIndex: 10 
-            }} edges={['bottom']}>
-                <View style={{
+
+            
+            {cameraHook.renderCamera()}
+            
+
+
+            <View style={{
+                    flexDirection: 'row',
                     paddingBottom: 16,
-                    paddingTop: 16,
+                    paddingTop: 8,
+                    paddingHorizontal: 16,
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Semi-transparent background
+                    backgroundColor: theme.colors.primary // Semi-transparent background
                 }}>
+                    <IconButton
+                            iconColor={theme.colors.onSecondary}
+                            size={28}
+                            icon="close"
+                            mode="contained-tonal"
+                            onPress={() => navigation.goBack()}
+                            style={{
+                                backgroundColor: theme.colors.secondary,
+                                borderRadius: 12,
+                            }}
+                        />
                     <TouchableOpacity
                         style={{
                             backgroundColor: 'white',
@@ -147,7 +138,7 @@ export function CameraScreen(
                             },
                             shadowOpacity: 0.25,
                             shadowRadius: 3.84,
-                            elevation: 5,
+                            elevation: 10,
                         }}
                         onPress={() => { cameraHook.capturePhoto(); }}
                     >
@@ -158,8 +149,23 @@ export function CameraScreen(
                             height: 60,
                         }} />
                     </TouchableOpacity>
+                    <IconButton
+                            iconColor={theme.colors.onSecondary}
+                            size={28}
+                            icon={cameraHook.getFlashIcon()}
+                            mode="contained-tonal"
+                            onPress={() => {
+                                cameraHook.cycleFlash();
+                                console.log('Flash cycled');
+                            }}
+                            style={{
+                                backgroundColor: theme.colors.secondary,
+                                borderRadius: 12,
+                                zIndex: 1000,
+                            }}
+                        />
                 </View>
-            </SafeAreaView>
-        </View>
+                
+        </SafeAreaView>
     );
 }
