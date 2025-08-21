@@ -82,7 +82,7 @@ export function useCamera(appData: AppData) {
     }
 
     return (
-      <CameraView style={{ flex: 1 }} flash={flash} ref={cameraRef} />
+      <CameraView style={{flex: 1}} flash={flash} ref={cameraRef} />
     );
   }
 

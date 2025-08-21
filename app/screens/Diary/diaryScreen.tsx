@@ -1,28 +1,24 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useCallback, useState } from "react"; // Add useCallback and useMemo
-import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { useState } from "react"; // Add useCallback and useMemo
+import { View } from "react-native";
 import { FAB } from "react-native-paper";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
-import { DiaryInput } from "./Input/diaryInput";
 import { DiaryList } from "./List/diaryList";
-import { Stack } from "expo-router";
 
 export function DiaryScreen({
   appData,
   dbHook,
   calendarHook,
   cameraHook,
-  diaryState,
   navigation,
 }: {
   appData: AppData,
   dbHook: any,
   calendarHook: any,
   cameraHook: any,
-  diaryState: any,
   navigation: any
 }) {
   const { theme, styles } = useAppTheme();
@@ -30,19 +26,8 @@ export function DiaryScreen({
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
   const [showEntry, setShowEntry] = useState(false);
 
-  /* const [glucose, setGlucose] = useState("");
-  const [carbs, setCarbs] = useState("");
-  const [note, setNote] = useState("");
-  const [activity, setActivity] = useState("none");
-  const [foodType, setFoodType] = useState("snack");
- */
-
-
-
-
-
   return (
-    
+
     <View style={styles.background}>
 
       {showEntry && selectedDiaryData && (
@@ -74,7 +59,7 @@ export function DiaryScreen({
       </View>
 
 
-     
+
       <DiaryList
         toggleEntry={() => { setShowEntry(!showEntry) }}
         setSelectedDiaryData={setSelectedDiaryData}
@@ -90,8 +75,9 @@ export function DiaryScreen({
             icon="note-plus"
             size="medium"
             style={styles.fabSecondary}
-            onPress={() => navigation.navigate('Input')}
-          />
+            onPress={() => navigation.navigate('Diary', { screen: 'DiaryInput' })}
+
+            />
         </View>
       </View>
       {/* 
@@ -108,10 +94,7 @@ export function DiaryScreen({
   );
 }
 
-export function Diary() {
-  return ()
-    
-}
+
 
 export function DiaryFabGrid(
   { calendarHook,
@@ -130,7 +113,7 @@ export function DiaryFabGrid(
 ) {
   const { styles, theme } = useAppTheme();
 
-  
+
 
   const renderFAB = () => (
     <>

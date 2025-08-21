@@ -314,7 +314,7 @@ export function DiaryInput({
             icon="camera-plus"
             size="medium"
             style={styles.fabSecondary}
-            onPress={navigation.navigate('Camera')}
+            onPress={() => navigation.navigate('Diary', { screen: 'DiaryCamera' })}
           />
         </View>
       </View>
