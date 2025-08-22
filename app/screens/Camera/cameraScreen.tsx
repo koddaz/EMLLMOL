@@ -91,7 +91,7 @@ export function CameraScreen(
                                 </TouchableOpacity>
                             </View>
                         )}
-                        keyExtractor={(_, index) => index.toString()}
+                        keyExtractor={(_, camera) => camera.toString()}
                     />
                 </View>
 

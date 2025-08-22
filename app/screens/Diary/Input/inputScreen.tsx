@@ -280,7 +280,7 @@ export function InputScreen({
     );
     const renderHeaderCard = () => (
         <View style={styles.header}>
-            <View style={styles.row}>
+            
                 <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                     <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
                     <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
@@ -293,7 +293,7 @@ export function InputScreen({
                     </Text>
                 </View>
 
-            </View>
+            
 
         </View>
 
@@ -330,7 +330,7 @@ export function InputScreen({
         <View style={styles.background}>
 
                 <KeyboardAvoidingView
-                    style={styles.inputWrapper}
+                    style={styles.background}
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
                 >

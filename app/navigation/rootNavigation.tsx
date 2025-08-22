@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { IconButton } from "react-native-paper";
+import { Icon, IconButton } from "react-native-paper";
 import { AppData } from "../constants/interface/appData";
 import { useAppTheme } from "../constants/UI/theme";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
@@ -9,6 +9,7 @@ import { useDB } from "../hooks/useDB";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
 import { DiaryNavigation } from "./diaryNav";
 import { SafeAreaView, StatusBar, View } from "react-native";
+import StatNav from "../screens/Statistics/statNav";
 
 export const rootNav = createNativeStackNavigator();
 
@@ -53,15 +54,19 @@ export function RootNavigation({
         <View style={styles.background}>
             <StatusBar backgroundColor={theme.colors.primary} barStyle="light-content" />
             <rootNav.Navigator
-                initialRouteName="Diary"
+                initialRouteName="Statistics"
                 screenOptions={{
                     headerShown: false,
                     animation: 'slide_from_right',
+                    
                 }}
             >
                 <rootNav.Screen
                     name="Diary"
-                    options={{ headerShown: false }}
+                    options={{ 
+                        headerShown: true,
+                        
+                    }}
                 >
                     {(props) => (
                         <DiaryNavigation
@@ -76,15 +81,59 @@ export function RootNavigation({
 
                 <rootNav.Screen
                     name="Statistics"
-                    options={{ headerShown: false }}
+                    options={({navigation}) => ({ 
+                        headerShown: true,
+                        title: 'Statistics',
+                        headerStyle: { backgroundColor: theme.colors.primary },
+                        headerLeft: () => (
+                            <IconButton
+                                iconColor={theme.colors.onSecondary}
+                                size={28}
+                                icon="arrow-left"
+                                mode="contained-tonal"
+                                onPress={() => navigation.goBack()}
+                                style={{
+                                    backgroundColor: theme.colors.secondary,
+                                    borderRadius: 12,
+                                }}
+                            />
+                        ),
+                        headerRight: () => (
+                            <View style={styles.row}>
+                            <IconButton
+                                iconColor={theme.colors.onSecondary}
+                                size={28}
+                                icon="cog"
+                                mode="contained-tonal"
+                                onPress={() => navigation.navigate('Settings')}
+                                style={{
+                                    backgroundColor: theme.colors.secondary,
+                                    borderRadius: 12,
+                                }}
+                            />
+                            <IconButton
+                                iconColor={theme.colors.onSecondary}
+                                size={28}
+                                icon="cog"
+                                mode="contained-tonal"
+                                onPress={() => navigation.navigate('Diary')}
+                                style={{
+                                    backgroundColor: theme.colors.secondary,
+                                    borderRadius: 12,
+                                }}
+                            />
+                            </View>
+                            
+                        ),
+                    })}
                 >
                     {(props) => (
-                        <DiaryNavigation
+                        <StatNav
                             {...props}
                             appData={appData}
                             calendarHook={calendarHook}
                             dbHook={dbHook}
-                            cameraHook={cameraHook}
+                            
                         />
                     )}
                 </rootNav.Screen>

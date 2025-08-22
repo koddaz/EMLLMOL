@@ -233,19 +233,10 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
 
     // INPUT STYLES:
-    inputWrapper: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: theme.colors.surface,
-        zIndex: 100
-    },
+
     header: {
         flexDirection: 'row',
         alignItems: 'center',
-        justifyContent: 'space-between',
         padding: 8,
         borderBottomWidth: 1,
         borderBottomColor: theme.colors.outline,

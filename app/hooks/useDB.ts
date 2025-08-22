@@ -3,7 +3,7 @@ import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useCallback, useEffect, useState } from "react";
 
-export function useDB(appData: AppData) {
+export function useDB(appData?: AppData) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [diaryEntries, setDiaryEntries] = useState<DiaryData[]>([]);
@@ -32,7 +32,7 @@ export function useDB(appData: AppData) {
     if (appData?.session?.user?.id) {
       retrieveEntries()
     }
-  }, [appData.session?.user?.id]);
+  }, [appData?.session?.user?.id]);
 
   // Wrap retrieveEntries in useCallback to prevent infinite loops
   const retrieveEntries = useCallback(async () => {
@@ -41,7 +41,7 @@ export function useDB(appData: AppData) {
       const { data, error } = await supabase
         .from('entries')
         .select('*')
-        .eq('user_id', appData.session?.user.id)
+        .eq('user_id', appData?.session?.user.id)
         .order('created_at', { ascending: true });
 
       if (error) {
@@ -73,7 +73,7 @@ export function useDB(appData: AppData) {
     } finally {
       setIsLoading(false);
     }
-  }, [appData.session?.user.id]);
+  }, [appData?.session?.user.id]);
 
   const saveDiaryEntry = async (formData: {
     glucose: string;
@@ -98,7 +98,7 @@ export function useDB(appData: AppData) {
       }
 
       const entryData = {
-        user_id: appData.session?.user.id,
+        user_id: appData?.session?.user.id,
         glucose: parseFloat(formData.glucose),
         carbs: parseFloat(formData.carbs),
         note: formData.note || null,
@@ -135,7 +135,7 @@ export function useDB(appData: AppData) {
         .from('entries')
         .delete()
         .eq('id', entryId)
-        .eq('user_id', appData.session?.user.id);
+        .eq('user_id', appData?.session?.user.id);
       if (error) {
         console.error('❌ Failed to delete diary entry:', error);
         setError('Failed to delete diary entry');
