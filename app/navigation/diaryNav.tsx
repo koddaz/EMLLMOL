@@ -73,27 +73,40 @@ export function DiaryNavigation({
                 }}
               />
               <IconButton
-              iconColor={theme.colors.onSecondary}
-              size={28}
-              icon="cog"
-              mode="contained-tonal"
-              onPress={() => {
-                // Navigate to Settings in the root navigator
-                if (rootNavigation) {
-                  rootNavigation.navigate('Settings');
-                } else {
-                  // Fallback: get parent navigator
-                  const parentNav = diaryNavigation.getParent();
-                  if (parentNav) {
-                    parentNav.navigate('Settings');
+                iconColor={theme.colors.onSecondary}
+                size={28}
+                icon={"chart-line"}
+                mode="contained-tonal"
+                onPress={() => {
+                  rootNavigation.navigate('Statistics');
+                }}
+                style={{
+                  backgroundColor: theme.colors.secondary,
+                  borderRadius: 12,
+                }}
+              />
+              <IconButton
+                iconColor={theme.colors.onSecondary}
+                size={28}
+                icon="cog"
+                mode="contained-tonal"
+                onPress={() => {
+                  // Navigate to Settings in the root navigator
+                  if (rootNavigation) {
+                    rootNavigation.navigate('Settings');
+                  } else {
+                    // Fallback: get parent navigator
+                    const parentNav = diaryNavigation.getParent();
+                    if (parentNav) {
+                      parentNav.navigate('Settings');
+                    }
                   }
-                }
-              }}
-              style={{
-                backgroundColor: theme.colors.secondary,
-                borderRadius: 12,
-              }}
-            />
+                }}
+                style={{
+                  backgroundColor: theme.colors.secondary,
+                  borderRadius: 12,
+                }}
+              />
 
             </View>
 
@@ -125,8 +138,8 @@ export function DiaryNavigation({
             appData={appData}
             dbHook={dbHook}
             cameraHook={cameraHook}
-          
-            
+
+
           />
         )}
       </diaryNav.Screen>

@@ -54,7 +54,7 @@ export function RootNavigation({
         <View style={styles.background}>
             <StatusBar backgroundColor={theme.colors.primary} barStyle="light-content" />
             <rootNav.Navigator
-                initialRouteName="Statistics"
+                initialRouteName="Diary"
                 screenOptions={{
                     headerShown: false,
                     animation: 'slide_from_right',
@@ -64,7 +64,7 @@ export function RootNavigation({
                 <rootNav.Screen
                     name="Diary"
                     options={{ 
-                        headerShown: true,
+                        headerShown: false,
                         
                     }}
                 >
@@ -98,33 +98,7 @@ export function RootNavigation({
                                 }}
                             />
                         ),
-                        headerRight: () => (
-                            <View style={styles.row}>
-                            <IconButton
-                                iconColor={theme.colors.onSecondary}
-                                size={28}
-                                icon="cog"
-                                mode="contained-tonal"
-                                onPress={() => navigation.navigate('Settings')}
-                                style={{
-                                    backgroundColor: theme.colors.secondary,
-                                    borderRadius: 12,
-                                }}
-                            />
-                            <IconButton
-                                iconColor={theme.colors.onSecondary}
-                                size={28}
-                                icon="cog"
-                                mode="contained-tonal"
-                                onPress={() => navigation.navigate('Diary')}
-                                style={{
-                                    backgroundColor: theme.colors.secondary,
-                                    borderRadius: 12,
-                                }}
-                            />
-                            </View>
-                            
-                        ),
+                        
                     })}
                 >
                     {(props) => (
