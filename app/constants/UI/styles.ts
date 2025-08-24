@@ -123,7 +123,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         marginTop: 40,
         maxHeight: '70%',
         minHeight: '70%',
-        maxWidth: '95%',
         width: '100%',
         backgroundColor: 'transparent',
     },
@@ -254,9 +253,11 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         gap: 16,
     },
     card: {
-        padding: 16,
+        
         borderRadius: 12,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.primaryContainer,
+        borderWidth: 1,
+        borderColor: theme.colors.onSecondaryContainer
     },
     cardHeader: {
         flexDirection: 'row',

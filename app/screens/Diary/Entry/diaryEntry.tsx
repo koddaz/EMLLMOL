@@ -10,6 +10,7 @@ import { useCalendar } from "../../../hooks/useCalendar";
 export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const screenWidth = Dimensions.get('window').width;
+
   const { theme, styles } = useAppTheme();
 
   const renderImageCarousel = () => {
@@ -102,191 +103,203 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
   return renderImageCarousel();
 }
 
-  export function DiaryEntry({
-    appData,
-    diaryData,
-    calendarHook,
-    dbHook
-  }: {
-    appData: AppData,
-    diaryData: DiaryData,
-    calendarHook: any,
-    dbHook: any
-  }) {
-    const { theme, styles } = useAppTheme();
-
-    const { formatTime } = useCalendar(appData);
-
-
-    const getMealIcon = (mealType: string) => {
-      switch (mealType?.toLowerCase()) {
-        case 'breakfast': return 'coffee';
-        case 'lunch': return 'food';
-        case 'dinner': return 'food-variant';
-        case 'snack': return 'food-apple';
-        default: return 'silverware';
-      }
-    };
-
-    const getActivityIcon = (activityLevel: string) => {
-      switch (activityLevel?.toLowerCase()) {
-        case 'low': return 'walk';
-        case 'medium': return 'run';
-        case 'high': return 'run-fast';
-        default: return 'sleep';
-      }
-    };
+export function DiaryEntry({
+  appData,
+  diaryData,
+  calendarHook,
+  dbHook
+}: {
+  appData: AppData,
+  diaryData: DiaryData,
+  calendarHook: any,
+  dbHook: any
+}) {
+  const { theme, styles } = useAppTheme();
 
 
 
 
-    const handleDelete = () => {
-      Alert.alert(
-        'Delete Entry',
-        'Are you sure you want to delete this diary entry? This action cannot be undone.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: async () => {
-              await dbHook.removeEntry(diaryData.id.toString());
-              await dbHook.refreshEntries();
-              dbHook.toggleEntry;
-            }
+  const getMealIcon = (mealType: string) => {
+    switch (mealType?.toLowerCase()) {
+      case 'breakfast': return 'coffee';
+      case 'lunch': return 'food';
+      case 'dinner': return 'food-variant';
+      case 'snack': return 'food-apple';
+      default: return 'silverware';
+    }
+  };
+
+  const getActivityIcon = (activityLevel: string) => {
+    switch (activityLevel?.toLowerCase()) {
+      case 'low': return 'walk';
+      case 'medium': return 'run';
+      case 'high': return 'run-fast';
+      default: return 'sleep';
+    }
+  };
+
+
+
+
+  const handleDelete = () => {
+    Alert.alert(
+      'Delete Entry',
+      'Are you sure you want to delete this diary entry? This action cannot be undone.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await dbHook.removeEntry(diaryData.id.toString());
+            await dbHook.refreshEntries();
+            dbHook.toggleEntry;
           }
-        ]
-      );
-    };
-
-    const LeftContent = (props: any) => (
-      <MaterialCommunityIcons
-        {...props}
-        name={getMealIcon(diaryData.meal_type || '')}
-        size={40}
-        color={theme.colors.primary}
-      />
+        }
+      ]
     );
+  };
 
-    const RightContent = (props: any) => (
-      <IconButton
-        {...props}
-        icon="close"
-        size={24}
-        onPress={() => dbHook.toggleEntry()}
-      />
-    );
+  const LeftContent = (props: any) => (
+    <MaterialCommunityIcons
+      {...props}
+      name={getMealIcon(diaryData.meal_type || '')}
+      size={40}
+      color={theme.colors.onPrimary}
+    />
+  );
 
-    const renderMetricsContent = () => (
-      <View style={styles.container}>
-        <View style={styles.entryRow}>
-          <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.error} />
-          <Text variant="titleMedium" style={{
-            color: theme.colors.onSecondaryContainer,
-            fontWeight: 'bold',
-            marginLeft: 8,
-          }}>
-            {diaryData.glucose || '0'} {appData.settings.glucose}
-          </Text>
-        </View>
+  const RightContent = (props: any) => (
 
-        <View style={styles.entryRow}>
-          <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondaryContainer} />
-          <Text variant="titleMedium" style={{
-            color: theme.colors.onSecondaryContainer,
-            fontWeight: 'bold',
-            marginLeft: 8,
-            textAlign: 'center'
-          }}>
-            {diaryData.carbs || '0'} g
-          </Text>
-        </View>
+    <IconButton
+      iconColor={theme.colors.onSecondary}
+      mode="contained-tonal"
+      icon="close"
+      size={28}
+      onPress={() => { dbHook.toggleEntry() }}
+      style={{
+        backgroundColor: theme.colors.secondary,
+        borderRadius: 12,
+      }}
+    />
+  );
 
-        <View style={styles.entryRow}>
-          <MaterialCommunityIcons
-            name={getActivityIcon(diaryData.activity_level || '')}
-            size={16}
-            color={theme.colors.onSecondaryContainer}
-          />
-          <Text variant="titleMedium" style={{
-            color: theme.colors.onSecondaryContainer,
-            fontWeight: 'bold',
-            marginLeft: 8,
-            textTransform: 'capitalize',
-            textAlign: 'center'
-          }}>
-            {diaryData.activity_level || 'None'}
-          </Text>
-        </View>
-
-
+  const renderMetricsContent = () => (
+    <View style={[styles.container, { backgroundColor: theme.colors.primaryContainer }]}>
+      <View style={styles.entryRow}>
+        <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.error} />
+        <Text variant="titleMedium" style={{
+          color: theme.colors.onSecondaryContainer,
+          fontWeight: 'bold',
+          marginLeft: 8,
+        }}>
+          {diaryData.glucose || '0'} {appData.settings.glucose}
+        </Text>
       </View>
-    );
 
-    return (
+      <View style={styles.entryRow}>
+        <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondaryContainer} />
+        <Text variant="titleMedium" style={{
+          color: theme.colors.onSecondaryContainer,
+          fontWeight: 'bold',
+          marginLeft: 8,
+          textAlign: 'center'
+        }}>
+          {diaryData.carbs || '0'} g
+        </Text>
+      </View>
 
-
-      <Card style={[styles.card, { margin: 8 }]}>
-        <Card.Title
-          title={diaryData.meal_type?.charAt(0).toUpperCase() + diaryData.meal_type?.slice(1) || 'Meal'}
-          subtitle={`${formatTime(diaryData.created_at)} • ${diaryData.created_at.toLocaleDateString()}`}
-          left={LeftContent}
-          right={RightContent}
+      <View style={styles.entryRow}>
+        <MaterialCommunityIcons
+          name={getActivityIcon(diaryData.activity_level || '')}
+          size={16}
+          color={theme.colors.onSecondaryContainer}
         />
-        <PhotoScroll diaryData={diaryData} />
-        <Card.Content>
+        <Text variant="titleMedium" style={{
+          color: theme.colors.onSecondaryContainer,
+          fontWeight: 'bold',
+          marginLeft: 8,
+          textTransform: 'capitalize',
+          textAlign: 'center'
+        }}>
+          {diaryData.activity_level || 'None'}
+        </Text>
+      </View>
 
-          <View style={{ flexDirection: 'row', gap: 8 }}>
 
-              {renderMetricsContent()}
-        
+    </View>
+  );
 
-            {/* Note Content - Right Side */}
-            {diaryData.note && diaryData.note.trim() !== '' && (
-              <View style={{
-                flex: 1,
-                marginTop: 8,
-                borderWidth: 1,
-                borderColor: theme.colors.tertiary,
-                backgroundColor: theme.colors.secondaryContainer,
-                borderRadius: 8,
-                padding: 8
+  return (
+
+
+    <Card style={[styles.card, { margin: 8 }]}>
+      <Card.Title
+        title={diaryData.meal_type?.charAt(0).toUpperCase() + diaryData.meal_type?.slice(1) || 'Meal'}
+        subtitle={`${calendarHook.formatTime(diaryData.created_at)} • ${diaryData.created_at.toLocaleDateString()}`}
+        left={LeftContent}
+        right={RightContent}
+        style={{ backgroundColor: theme.colors.primary, borderTopLeftRadius: 12, borderTopRightRadius: 12 }}
+      />
+      <PhotoScroll diaryData={diaryData} />
+      <Card.Content style={{ paddingHorizontal: 0, paddingBottom: 8 }}>
+
+        <View style={{ flexDirection: 'row', gap: 4 }}>
+
+          {renderMetricsContent()}
+
+
+          {/* Note Content - Right Side */}
+          {diaryData.note && diaryData.note.trim() !== '' && (
+            <View style={{
+              flex: 1,
+              marginTop: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.tertiary,
+              backgroundColor: theme.colors.secondaryContainer,
+              borderRadius: 8,
+              padding: 8
+            }}>
+
+              <Text variant="bodyMedium" style={{
+                color: theme.colors.onSurface,
+                lineHeight: 20
               }}>
-                
-                  <Text variant="bodyMedium" style={{
-                    color: theme.colors.onSurface,
-                    lineHeight: 20
-                  }}>
-                    {diaryData.note}
-                  </Text>
-               
-              </View>
-            )}
-          </View>
-        </Card.Content>
+                {diaryData.note}
+              </Text>
 
-        <Card.Actions>
+            </View>
+          )}
+        </View>
 
-          <IconButton
-            mode="contained"
-            onPress={handleDelete}
-            icon="delete"
-            loading={dbHook.isLoading}
-            iconColor={theme.colors.error}
-            style={{backgroundColor: theme.colors.errorContainer, marginRight: 8}}
-          />
-          <IconButton
-            mode="contained"
-            onPress={() => dbHook.toggleEntry()}
-            icon="pencil"
-            iconColor={theme.colors.onPrimary}
-            style={{backgroundColor: theme.colors.primary, borderColor: theme.colors.outline, }}
-          />
+      </Card.Content>
+
+      <Card.Actions style={{
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        flexDirection: 'row',
+        backgroundColor: theme.colors.primary,
+        borderBottomLeftRadius: 12,
+        borderBottomRightRadius: 12
+      }}>
+        <IconButton
+          mode="contained-tonal"
+          onPress={handleDelete}
+          icon="delete"
+          loading={dbHook.isLoading}
+          iconColor={theme.colors.secondary}
+          style={{ backgroundColor: theme.colors.onSecondary }}
+        />
+        <IconButton
+          mode="contained"
+          onPress={() => dbHook.toggleEntry()}
+          icon="pencil"
+          iconColor={theme.colors.onPrimary}
+          style={{ backgroundColor: theme.colors.primary, borderColor: theme.colors.outline }}
+        />
+      </Card.Actions>
+    </Card>
 
 
-        </Card.Actions>
-      </Card>
-
-
-    );
-  }
+  );
+}

@@ -24,13 +24,13 @@ export function DiaryScreen({
   const { theme, styles } = useAppTheme();
 
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
-  const [showEntry, setShowEntry] = useState(false);
+  // const [showEntry, setShowEntry] = useState(false);
 
   return (
 
     <View style={styles.background}>
 
-      {showEntry && selectedDiaryData && (
+      {dbHook.showEntry && selectedDiaryData && (
         <View style={styles.centeredWrapper}>
           <View style={styles.centeredContent}>
             <DiaryEntry
@@ -61,7 +61,7 @@ export function DiaryScreen({
 
 
       <DiaryList
-        toggleEntry={() => { setShowEntry(!showEntry) }}
+        toggleEntry={() => { dbHook.toggleEntry() }}
         setSelectedDiaryData={setSelectedDiaryData}
         calendarHook={calendarHook}
         dbHook={dbHook}

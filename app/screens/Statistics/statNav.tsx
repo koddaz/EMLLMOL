@@ -39,44 +39,16 @@ export default function StatNav(
     );
 }
 
-export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: {
+export function StatisticsScreen({ navigation, dbHook }: {
     navigation: any,
     dbHook: any,
     calendarHook: any,
     appData: AppData
 }) {
     const { styles, theme } = useAppTheme();
-    const { LineChart } = useStats(dbHook);
+    const { LineChart, setTimeArray, setDaysArray, generateDateArray, days, time, daysArray } = useStats(dbHook);
 
-    const [daysArray, setDaysArray] = useState([new Date()]);
-    const [timeArray, setTimeArray] = useState([new Date()]);
-    const [days, setDays] = useState(7);
-    const [time, setTime] = useState(12);
-
-    const generateDateArray = (count: number, unit: 'days' | 'hours') => {
-        if (unit === 'days') {
-            setDays(count);
-        } else {
-            setTime(count);
-        }
-
-        const array: Date[] = [];
-        const now = new Date();
-
-        for (let i = count - 1; i >= 0; i--) {
-            if (unit === 'days') {
-                const date = new Date(now);
-                date.setDate(date.getDate() - i);
-                array.push(date);
-            } else {
-                const date = new Date(now);
-                date.setHours(date.getHours() - i);
-                array.push(date);
-            }
-        }
-
-        return array;
-    };
+    
 
     useEffect(() => {
         setDaysArray(generateDateArray(days, 'days'));
@@ -117,6 +89,36 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
 
 export function useStats(dbHook: any) {
     const [containerDimensions, setContainerDimensions] = useState({ width: 300, height: 200 });
+
+    const [daysArray, setDaysArray] = useState([new Date()]);
+    const [timeArray, setTimeArray] = useState([new Date()]);
+    const [days, setDays] = useState(7);
+    const [time, setTime] = useState(12);
+
+    const generateDateArray = (count: number, unit: 'days' | 'hours') => {
+        if (unit === 'days') {
+            setDays(count);
+        } else {
+            setTime(count);
+        }
+
+        const array: Date[] = [];
+        const now = new Date();
+
+        for (let i = count - 1; i >= 0; i--) {
+            if (unit === 'days') {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                array.push(date);
+            } else {
+                const date = new Date(now);
+                date.setHours(date.getHours() - i);
+                array.push(date);
+            }
+        }
+
+        return array;
+    };
 
     const getEntriesCountByDate = (entries: DiaryData[]) => {
         const countByDate: { [key: string]: number } = {};
@@ -277,5 +279,13 @@ export function useStats(dbHook: any) {
         );
     };
 
-    return { LineChart };
+    return { 
+        LineChart,
+        generateDateArray,
+        setDaysArray,
+        setTimeArray,
+        daysArray,
+        timeArray,
+        days,
+        time};
 }
