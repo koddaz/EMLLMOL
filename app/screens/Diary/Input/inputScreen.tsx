@@ -2,10 +2,9 @@ import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Alert } from "react-native";
 import { Avatar, Button, Divider, FAB, IconButton, Surface, Text, TextInput } from "react-native-paper";
 
-// Remove the complex memo comparison and just use basic memo
 export function InputScreen({
     appData,
     calendarHook,
@@ -33,51 +32,67 @@ export function InputScreen({
     }
 }) {
     const { theme, styles } = useAppTheme();
+    const [isSaving, setIsSaving] = useState(false);
 
-    console.log('🔄 DiaryInput rendered');
+    console.log('📄 DiaryInput rendered');
 
     const handleSave = useCallback(async () => {
-    try {
-      const permanentURIs = await Promise.all(
-        cameraHook.photoURIs.map((tempUri: string) => cameraHook.savePhotoLocally(tempUri))
-      );
+        if (isSaving) return; // Prevent double saves
+        
+        try {
+            setIsSaving(true);
+            
+            // Save photos locally if any
+            const permanentURIs = await Promise.all(
+                cameraHook.photoURIs.map((tempUri: string) => cameraHook.savePhotoLocally(tempUri))
+            );
 
-      const entryData = {
-        glucose: diaryState.glucose,
-        carbs: diaryState.carbs,
-        note: diaryState.note,
-        activity: diaryState.activity,
-        foodType: diaryState.foodType,
-      };
+            const entryData = {
+                glucose: diaryState.glucose,
+                carbs: diaryState.carbs,
+                note: diaryState.note,
+                activity: diaryState.activity,
+                foodType: diaryState.foodType,
+            };
 
-      await dbHook.saveDiaryEntry(entryData, permanentURIs);
-      // Clear camera and diary states
-      if (cameraHook.showCamera) cameraHook.toggleCamera();
-      cameraHook.clearPhotoURIs();
+            // Save the entry
+            await dbHook.saveDiaryEntry(entryData, permanentURIs);
+            
+            // Wait a moment for the save to complete
+            await new Promise(resolve => setTimeout(resolve, 100));
+            
+            // Retrieve updated entries
+            if (dbHook.retrieveEntries) {
+                console.log('📔 Refreshing entries after save...');
+                await dbHook.retrieveEntries();
+            }
+            
+            // Clear states
+            if (cameraHook.showCamera) cameraHook.toggleCamera();
+            cameraHook.clearPhotoURIs();
 
-      diaryState.setGlucose('');
-      diaryState.setCarbs('');
-      diaryState.setNote('');
-      diaryState.setActivity('');
-      diaryState.setFoodType('');
+            diaryState.setGlucose('');
+            diaryState.setCarbs('');
+            diaryState.setNote('');
+            diaryState.setActivity('none');
+            diaryState.setFoodType('snack');
 
-      // Optionally close the input
-      if (dbHook.toggleInput) dbHook.toggleInput();
-    } catch (error) {
-      console.error('❌ Error saving entry:', error);
-    } finally {
-        navigation.goBack();
-    }
-  }, [
-    cameraHook.photoURIs,
-    cameraHook.savePhotoLocally,
-    cameraHook.showCamera,
-    cameraHook.toggleCamera,
-    cameraHook.clearPhotoURIs,
-    dbHook,
-    dbHook.toggleInput,
-    diaryState,
-  ]);
+            // Navigate back
+            navigation.goBack();
+            
+        } catch (error) {
+            console.error('❌ Error saving entry:', error);
+            Alert.alert('Error', 'Failed to save entry. Please try again.');
+        } finally {
+            setIsSaving(false);
+        }
+    }, [
+        cameraHook,
+        dbHook,
+        diaryState,
+        navigation,
+        isSaving
+    ]);
 
     // keyboard related
     const glucoseInputRef = useRef<any>(null);
@@ -93,7 +108,6 @@ export function InputScreen({
                         Notes
                     </Text>
                 </View>
-
             </View>
             <TextInput
                 ref={noteInputRef}
@@ -111,11 +125,12 @@ export function InputScreen({
                 textAlignVertical="top"
                 blurOnSubmit={false}
                 dense
+                disabled={isSaving}
             />
         </View>
     );
-    const renderInputCard = () => (
 
+    const renderInputCard = () => (
         <View style={styles.wrapper}>
             <View style={styles.row}>
                 <View style={{ flex: 1, }}>
@@ -140,12 +155,10 @@ export function InputScreen({
                         style={styles.textInput}
                         right={<TextInput.Affix text={appData.settings.glucose} />}
                         dense
+                        disabled={isSaving}
                     />
-
-
                 </View>
                 <View style={{ flex: 1 }}>
-
                     <View style={styles.cardHeader}>
                         <MaterialCommunityIcons name="food" size={20} color={theme.colors.primary} />
                         <Text variant="titleMedium" style={styles.cardTitle}>
@@ -169,19 +182,14 @@ export function InputScreen({
                         style={styles.textInput}
                         right={<TextInput.Affix text="g" />}
                         dense
+                        disabled={isSaving}
                     />
-
                 </View>
-
             </View>
-
         </View>
-
-
-
     );
-    const renderMealSelector = () => (
 
+    const renderMealSelector = () => (
         <View style={styles.wrapper}>
             <View style={styles.cardHeader}>
                 <MaterialCommunityIcons name="food-fork-drink" size={20} color={theme.colors.primary} />
@@ -204,17 +212,16 @@ export function InputScreen({
                             color: diaryState.foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
                         }}
                         compact
+                        disabled={isSaving}
                     >
                         {option}
                     </Button>
                 ))}
             </View>
-
         </View>
-
     );
-    const renderActivitySelector = () => (
 
+    const renderActivitySelector = () => (
         <View style={styles.wrapper}>
             <View style={styles.cardHeader}>
                 <MaterialCommunityIcons name="run-fast" size={20} color={theme.colors.primary} />
@@ -237,6 +244,7 @@ export function InputScreen({
                             color: diaryState.activity === option ? theme.colors.onSecondary : theme.colors.onSurface
                         }}
                         compact
+                        disabled={isSaving}
                     >
                         {option}
                     </Button>
@@ -244,6 +252,7 @@ export function InputScreen({
             </View>
         </View>
     );
+
     const renderPhotosCard = () => (
         <View style={styles.wrapper}>
             <View style={styles.cardHeader}>
@@ -264,12 +273,12 @@ export function InputScreen({
                                 onPress={() => cameraHook.removePhotoURI(index)}
                                 style={styles.photoDelete}
                                 iconColor={theme.colors.onErrorContainer}
+                                disabled={isSaving}
                             />
                         </View>
                     ))}
                 </ScrollView>
             ) : (
-
                 <View style={{}}>
                     <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
                         No photos added yet
@@ -278,88 +287,77 @@ export function InputScreen({
             )}
         </View>
     );
+
     const renderHeaderCard = () => (
         <View style={styles.header}>
-            
-                <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
-                    <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
-                        {calendarHook.formatTime(new Date())}
-                    </Text>
-                </View>
-                <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <Text>
-                        {calendarHook.formatDate(new Date())}
-                    </Text>
-                </View>
-
-            
-
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
+                <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
+                    {calendarHook.formatTime(new Date())}
+                </Text>
+            </View>
+            <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                <Text>
+                    {calendarHook.formatDate(new Date())}
+                </Text>
+            </View>
         </View>
-
     );
 
     const renderFAB = () => (
         <View style={styles.fabContainer}>
-        <View style={styles.fabRow}>
-            <View>
-          <FAB
-            color={theme.colors.onPrimary}
-            icon="floppy"
-            size="medium"
-            style={styles.fabSecondary}
-            onPress={handleSave}
-          />
-          <FAB
-            color={theme.colors.onPrimary}
-            icon="camera-plus"
-            size="medium"
-            style={styles.fabSecondary}
-            onPress={() => navigation.navigate('DiaryCamera')}
-          />
-          </View>
+            <View style={styles.fabRow}>
+                <View>
+                    <FAB
+                        color={theme.colors.onPrimary}
+                        icon={isSaving ? "loading" : "floppy"}
+                        size="medium"
+                        style={styles.fabSecondary}
+                        onPress={handleSave}
+                        disabled={isSaving}
+                        loading={isSaving}
+                    />
+                    <FAB
+                        color={theme.colors.onPrimary}
+                        icon="camera-plus"
+                        size="medium"
+                        style={styles.fabSecondary}
+                        onPress={() => navigation.navigate('DiaryCamera')}
+                        disabled={isSaving}
+                    />
+                </View>
+            </View>
         </View>
-      </View>
     );
-
-
-
-
 
     return (
         <View style={styles.background}>
-
-                <KeyboardAvoidingView
-                    style={styles.background}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
-                >
-
-                    {renderHeaderCard()}
-                    {dbHook.error && (
-                        <View style={styles.content}>
-
-                            <Surface style={[styles.container, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
-                                <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
-                                    {dbHook.error}
-                                </Text>
-                            </Surface>
-
-                        </View>
-                    )}
-                    {renderInputCard()}
-                    <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                    {renderNoteCard()}
-                    <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                    {renderMealSelector()}
-                    <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                    {renderActivitySelector()}
-                    <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                    {renderPhotosCard()}
-                    {renderFAB()}
-
-                </KeyboardAvoidingView>
-
+            <KeyboardAvoidingView
+                style={styles.background}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+            >
+                {renderHeaderCard()}
+                {dbHook.error && (
+                    <View style={styles.content}>
+                        <Surface style={[styles.container, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
+                            <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                                {dbHook.error}
+                            </Text>
+                        </Surface>
+                    </View>
+                )}
+                {renderInputCard()}
+                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
+                {renderNoteCard()}
+                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
+                {renderMealSelector()}
+                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
+                {renderActivitySelector()}
+                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
+                {renderPhotosCard()}
+                {renderFAB()}
+            </KeyboardAvoidingView>
         </View>
     );
 }

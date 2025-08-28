@@ -25,7 +25,7 @@ export function CameraScreen(
     ];
 
     return (
-        <SafeAreaView style={styles.background}>
+        <View style={styles.background}>
             <View style={{
                     paddingTop: headerHeight + 8,
                     backgroundColor: theme.colors.primary, // Semi-transparent background
@@ -166,6 +166,6 @@ export function CameraScreen(
                         />
                 </View>
                 
-        </SafeAreaView>
+        </View>
     );
 }

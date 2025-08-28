@@ -156,7 +156,7 @@ export function DiaryList(
   };
 
   const renderEmptyState = () => (
-    <SafeAreaView edges={['bottom']} style={[styles.background, { justifyContent: 'center', alignItems: 'center' }]}>
+    <View style={[styles.background, { justifyContent: 'center', alignItems: 'center' }]}>
       <View style={{ paddingHorizontal: 8}}>
       <Surface style={styles.card} elevation={1}>
         <View style={{ alignItems: 'center', paddingVertical: 32 }}>
@@ -183,7 +183,7 @@ export function DiaryList(
         </View>
       </Surface>
       </View>
-    </SafeAreaView>
+    </View>
   );
 
   if (filteredEntries.length === 0) {
@@ -201,7 +201,7 @@ export function DiaryList(
 
   return (
     <GestureDetector gesture={panGesture}>
-      <SafeAreaView edges={['bottom']} style={[styles.background]}>
+      <View style={[styles.background]}>
 
         {renderStats()}
         <View style={{ flex: 1, paddingHorizontal: 8}}>
@@ -239,7 +239,7 @@ export function DiaryList(
             extraData={calendarHook.selectedDate.toISOString()}
           />
         </View>
-      </SafeAreaView>
+      </View>
 
     </GestureDetector>
   );
