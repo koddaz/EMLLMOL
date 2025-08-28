@@ -1,19 +1,18 @@
 import AuthScreen from '@/app/api/supabase/auth/authScreen';
 import { supabase } from '@/app/api/supabase/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { NavigationContainer } from '@react-navigation/native';
 import { useCameraPermissions } from 'expo-camera';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { AppState, SafeAreaView, Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
+import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
 import { RootNavigation } from './navigation/rootNavigation';
-import { NavigationContainer } from '@react-navigation/native';
-
-
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -25,147 +24,196 @@ AppState.addEventListener('change', (state) => {
 
 export default function Index() {
   const { theme, styles } = useAppTheme();
-
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
-
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
 
-  useEffect(() => {
-    const initializeApp = async () => {
-      try {
-        console.log('🚀 Initializing application...');
-        setIsLoading(true);
-        setError(null);
-
-        // 1. Get session
-        console.log('📱 Checking authentication session...');
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-
-        if (sessionError) {
-          console.error('Session error:', sessionError);
-          throw sessionError;
-        }
-
-        let profileData = null;
-        let diaryEntries = [];
-
-        // 2. If user is logged in, fetch their profile AND diary entries
-        if (session?.user?.id) {
-          console.log('👤 Fetching user profile and diary entries...');
-
-          try {
-            // Fetch profile
-            const { data, error: profileError } = await supabase
-              .from('profiles')
-              .select(`username, full_name, avatar_url`)
-              .eq('id', session.user.id)
-              .single();
-
-            if (profileError && profileError.code !== 'PGRST116') {
-              console.error('Profile error:', profileError);
-            } else if (data) {
-              profileData = {
-                username: data.username,
-                fullName: data.full_name,
-                avatarUrl: data.avatar_url
-              };
-              console.log('✅ Profile loaded');
-            }
-
-            // Fetch diary entries
-            console.log('📔 Loading diary entries...');
-            const { data: entriesData, error: entriesError } = await supabase
-              .from('entries')
-              .select('*')
-              .eq('user_id', session.user.id)
-              .order('created_at', { ascending: false });
-
-            if (entriesError) {
-              console.error('❌ Failed to load diary entries:', entriesError);
-            } else {
-              diaryEntries = entriesData || [];
-              console.log(`✅ Loaded ${diaryEntries.length} diary entries`);
-            }
-
-          } catch (error) {
-            console.warn('Profile/entries fetch failed:', error);
-          }
-        }
-
-        // 3. Load AsyncStorage settings
-        console.log('⚙️ Loading local settings...');
-        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
-          AsyncStorage.getItem('weight'),
-          AsyncStorage.getItem('glucose'),
-          AsyncStorage.getItem('clockformat'),   // <-- should be clockformat first
-          AsyncStorage.getItem('dateformat')     // <-- then dateformat
-        ]);
-
-        const settings = {
-          weight: savedWeight || 'kg',
-          glucose: savedGlucose || 'mmol',
-          clockFormat: savedClockFormat || '24h',   // <-- assign correctly
-          dateFormat: savedDateFormat || 'DD/MM/YYYY'
-        };
-
-        console.log('✅ Settings loaded:', settings);
-
-        // 4. Set all app data at once - including diary entries
-        setAppData({
-          session,
-          profile: profileData,
-          settings,
-          diaryEntries, // Add diary entries to initial app data
-          isEntriesLoaded: true // Flag to indicate entries are loaded
-        });
-
-        setIsInitialized(true);
-        console.log('✅ Application initialized successfully');
-
-      } catch (error) {
-        console.error('❌ Failed to initialize application:', error);
-        setError(error instanceof Error ? error.message : 'Unknown error occurred');
-      } finally {
-        setIsLoading(false);
+  // Separate function to fetch diary entries
+  const fetchDiaryEntries = useCallback(async (userId: string): Promise<DiaryData[]> => {
+    try {
+      console.log('📔 Fetching diary entries for user:', userId);
+      const { data, error } = await supabase
+        .from('entries')
+        .select('*')
+        .eq('user_id', userId)  // FIXED: Changed from 'user_id' to 'userId'
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        console.error('❌ Failed to load diary entries:', error);
+        return [];
       }
+
+      // Transform the data to match DiaryData interface
+      const transformedData: DiaryData[] = (data || []).map(item => ({
+        id: item.id.toString(),
+        created_at: new Date(item.created_at),
+        glucose: item.glucose || 0,
+        carbs: item.carbs || 0,
+        insulin: item.insulin || 0,
+        meal_type: item.meal_type || '',
+        activity_level: item.activity_level || '',
+        note: item.note || '',
+        uri_array: item.uri_array || []
+      }));
+
+      console.log(`✅ Loaded ${transformedData.length} diary entries`);
+      return transformedData;
+    } catch (err) {
+      console.error('❌ Error fetching diary entries:', err);
+      return [];
+    }
+  }, []);
+
+  // Separate function to load settings
+  const loadSettings = async () => {
+    const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
+      AsyncStorage.getItem('weight'),
+      AsyncStorage.getItem('glucose'),
+      AsyncStorage.getItem('clockformat'),
+      AsyncStorage.getItem('dateformat')
+    ]);
+
+    return {
+      weight: savedWeight || 'kg',
+      glucose: savedGlucose || 'mmol',
+      clockFormat: savedClockFormat || '24h',
+      dateFormat: savedDateFormat || 'DD/MM/YYYY'
     };
+  };
 
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state changed:', event);
+  // Separate function to fetch profile
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(`username, full_name, avatar_url`)
+        .eq('id', userId)
+        .single();
+      
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Profile error:', error);
+        return null;
+      }
+      
+      if (data) {
+        return {
+          username: data.username,
+          fullName: data.full_name,
+          avatarUrl: data.avatar_url
+        };
+      }
+      
+      return null;
+    } catch (err) {
+      console.error('Profile fetch error:', err);
+      return null;
+    }
+  };
 
-      if (event === 'SIGNED_OUT') {
-        // Update appData but keep permission and requestCameraPermission
-        setAppData(prev => prev ? {
-          ...prev,
+  // Main initialization function
+  const initializeApp = useCallback(async () => {
+    console.log('🚀 Initializing app...');
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Get session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('Session error:', sessionError);
+        setError(sessionError.message);
+        setIsLoading(false);
+        return;
+      }
+
+      // Load settings (always needed)
+      const settings = await loadSettings();
+      console.log('✅ Settings loaded:', settings);
+
+      // If no session, show auth screen
+      if (!session?.user?.id) {
+        console.log('No user session - showing auth screen');
+        setAppData({
           session: null,
           profile: null,
+          settings,
           diaryEntries: [],
           isEntriesLoaded: false
-        } : null);
-        setIsInitialized(false);
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      // User is authenticated - fetch their data
+      console.log('👤 User authenticated:', session.user.email);
+      
+      // Fetch profile and diary entries in parallel
+      const [profile, diaryEntries] = await Promise.all([
+        fetchProfile(session.user.id),
+        fetchDiaryEntries(session.user.id)
+      ]);
+
+      // Set all data
+      setAppData({
+        session,
+        profile,
+        settings,
+        diaryEntries,
+        isEntriesLoaded: true
+      });
+
+      console.log('✅ App initialized successfully');
+    } catch (error) {
+      console.error('❌ Initialization error:', error);
+      setError(error instanceof Error ? error.message : 'Unknown error');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [fetchDiaryEntries]);
+
+  // Refresh entries function that can be passed down
+  const refreshEntries = useCallback(async () => {
+    if (!appData?.session?.user?.id) return;
+    
+    const entries = await fetchDiaryEntries(appData.session.user.id);
+    setAppData(prev => prev ? { ...prev, diaryEntries: entries } : null);
+  }, [appData?.session?.user?.id, fetchDiaryEntries]);
+
+  // Initial load
+  useEffect(() => {
+    initializeApp();
+  }, []);
+
+  // Auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log('🔄 Auth state changed:', event);
+      
+      if (event === 'SIGNED_OUT') {
+        // Clear user data but keep settings
+        const settings = await loadSettings();
+        setAppData({
+          session: null,
+          profile: null,
+          settings,
+          diaryEntries: [],
+          isEntriesLoaded: false
+        });
       } else if (event === 'SIGNED_IN' && session?.user?.id) {
-        setIsInitialized(false);
-        initializeApp();
+        // Re-initialize when signing in
+        await initializeApp();
       }
     });
-
-    // Only initialize if not already done
-    if (!isInitialized) {
-      initializeApp();
-    }
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [cameraPermission, isInitialized]);
+  }, [initializeApp]);
 
-
-  // Show loading screen until everything is ready
-  if (isLoading || !isInitialized) {
+  // Loading state
+  if (isLoading) {
     return (
       <SafeAreaProvider>
         <PaperProvider theme={customTheme}>
@@ -177,6 +225,7 @@ export default function Index() {
     );
   }
 
+  // Error state
   if (error) {
     return (
       <SafeAreaProvider>
@@ -193,31 +242,25 @@ export default function Index() {
     );
   }
 
+  // Main render
   return (
     <SafeAreaProvider>
       <GestureHandlerRootView>
         <PaperProvider theme={customTheme}>
-          
+          <SafeAreaView style={{ flex: 1 }}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
-              <RootNavigation appData={appData} setAppData={setAppData} />
+                <RootNavigation 
+                  appData={appData} 
+                  setAppData={setAppData} 
+                />
               </NavigationContainer>
             ) : (
               <AuthScreen />
             )}
-       
+          </SafeAreaView>
         </PaperProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );
 }
-
-
-
-
-
-
-
-
-
-

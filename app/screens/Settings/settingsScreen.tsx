@@ -1,9 +1,9 @@
-import { useAuth } from "@/app/api/supabase/auth/authScreen";
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
+import { useAuth } from "@/app/hooks/useAuth";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Button, SegmentedButtons, Snackbar, Surface, Text, TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -29,7 +29,7 @@ export function SettingsScreen({
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
     return (
-        <SafeAreaView style={styles.background} edges={['bottom']}>
+        <View style={styles.background}>
             <ScrollView
                 style={styles.container}
                 contentContainerStyle={styles.content} // unified padding/gap
@@ -61,7 +61,7 @@ export function SettingsScreen({
             >
                 Profile updated successfully!
             </Snackbar>
-        </SafeAreaView>
+        </View>
     );
 }
 
