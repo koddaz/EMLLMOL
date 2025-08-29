@@ -6,6 +6,7 @@ import { IconButton } from "react-native-paper";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
 import { View } from "react-native";
+import { AICameraScreen } from "../screens/Camera/aiCameraScreen";
 
 const diaryNav = createNativeStackNavigator();
 
@@ -124,6 +125,7 @@ export function DiaryNavigation({
         )}
       </diaryNav.Screen>
 
+
       <diaryNav.Screen
         name="DiaryCamera"
         options={({ navigation: diaryNavigation }) => ({
@@ -133,14 +135,13 @@ export function DiaryNavigation({
         })}
       >
         {(props) => (
-          <CameraScreen
+          <AICameraScreen
             {...props}
-            appData={appData}
-            dbHook={dbHook}
             cameraHook={cameraHook}
-
-
+            dbHook={dbHook}
+            appData={appData}
           />
+
         )}
       </diaryNav.Screen>
 
