@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { View, Dimensions } from "react-native";
 import { Text } from "react-native-paper";
 import Svg, { Line, Path, G, Circle, Text as SvgText, Rect } from 'react-native-svg';
-import { add, set } from 'date-fns';
+import { add } from 'date-fns';
 import { MaterialIcons } from "@expo/vector-icons";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useDB } from "@/app/hooks/useDB";
