@@ -4,16 +4,17 @@
     "slug": "EMLLMOL",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/logo.png",
     "scheme": "com.koddaz.emllmol",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "linking": {
-      "scheme": "com.koddaz.emllmol",
-      "prefixes": [
-        "com.koddaz.emllmol://"
-      ]
+    "splash": {
+      "image": "./assets/images/logo-loading.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
     },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.knoddaz.emllmol"
@@ -23,7 +24,6 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
@@ -53,10 +53,24 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
+      ],
+      [
+        "onnxruntime-react-native",
+        {
+          "enableBestPlatformProviders": true,
+          "minAndroidApiLevel": 21
+        }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "newArchEnabled": true,
+    "linking": {
+      "scheme": "com.koddaz.emllmol",
+      "prefixes": [
+        "com.koddaz.emllmol://"
+      ]
     },
     "extra": {
       "router": {},

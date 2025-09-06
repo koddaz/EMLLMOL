@@ -7,19 +7,23 @@ import { FAB } from "react-native-paper";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
+import { FabGroup } from "@/app/components/fabGroup";
 
 export function DiaryScreen({
   appData,
   dbHook,
   calendarHook,
   cameraHook,
-  navigation,
+  rootNavigation,
+  navigation
 }: {
   appData: AppData,
   dbHook: any,
   calendarHook: any,
   cameraHook: any,
-  navigation: any
+  rootNavigation: any,
+  navigation: any,
+
 }) {
   const { theme, styles } = useAppTheme();
 
@@ -70,7 +74,25 @@ export function DiaryScreen({
 
       <View style={styles.fabContainer}>
         <View style={styles.fabRow}>
-          
+
+          <FabGroup
+            navigation={navigation}
+            open={false}
+            onPress={() => { navigation.navigate('Diary', { screen: 'DiaryInput' }) }}
+            actions={[
+              {
+                icon: 'cog',
+                label: 'Settings',
+                onPress: () => { rootNavigation.navigate('Settings') }
+              },
+              {
+                icon: 'chart-line',
+                label: 'Statistics',
+                onPress: () => { rootNavigation.navigate('Statistics') }
+              },
+            ]}
+          />
+          {/*
           <FAB
             color={theme.colors.onPrimary}
             icon="note-plus"
@@ -79,7 +101,8 @@ export function DiaryScreen({
             onPress={() => navigation.navigate('Diary', { screen: 'DiaryInput' })}
 
             />
-       
+          */}
+
         </View>
       </View>
       {/* 
