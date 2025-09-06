@@ -4,8 +4,8 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Alert, Dimensions, ScrollView, View } from "react-native";
-import { Card, IconButton, Surface, Text } from "react-native-paper";
-import { useCalendar } from "../../../hooks/useCalendar";
+import { Card, IconButton, Text } from "react-native-paper";
+
 
 export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -107,12 +107,14 @@ export function DiaryEntry({
   appData,
   diaryData,
   calendarHook,
-  dbHook
+  dbHook,
+  navigation
 }: {
   appData: AppData,
   diaryData: DiaryData,
   calendarHook: any,
-  dbHook: any
+  dbHook: any,
+  navigation: any
 }) {
   const { theme, styles } = useAppTheme();
 
@@ -138,8 +140,10 @@ export function DiaryEntry({
     }
   };
 
-
-
+  const handleEdit = () => {
+    dbHook.toggleEntry();
+    navigation.navigate('DiaryInput', { diaryData });
+  }
 
   const handleDelete = () => {
     Alert.alert(
@@ -282,6 +286,16 @@ export function DiaryEntry({
         borderBottomLeftRadius: 12,
         borderBottomRightRadius: 12
       }}>
+        <IconButton
+          icon="edit"
+          mode="contained-tonal"
+          iconColor={theme.colors.onSecondary}
+          style={{ backgroundColor: theme.colors.secondary }}
+          size={24}
+          onPress={() => {
+            handleEdit();
+          }}
+        />
         <IconButton
           mode="contained-tonal"
           onPress={handleDelete}

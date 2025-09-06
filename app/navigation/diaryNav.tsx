@@ -1,15 +1,16 @@
+import { Header } from '@react-navigation/elements';
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAppTheme } from "../constants/UI/theme";
 import { AppData } from "../constants/interface/appData";
-import { Header } from '@react-navigation/elements';
 
+import { Alert, Image, View } from "react-native";
 import { IconButton } from "react-native-paper";
-import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
-import { Image, View } from "react-native";
 
-import { DiaryScreen } from "../screens/Diary/diaryScreen";
+import { useCallback, useState } from "react";
 import { AICameraScreen } from "../ai";
+import { FabContainer } from "../components/fabGroup";
+import { DiaryScreen } from "../screens/Diary/diaryScreen";
 
 const diaryNav = createNativeStackNavigator();
 
@@ -28,8 +29,9 @@ export function DiaryNavigation({
   rootNavigation: any, // Make optional since it comes from the navigator
 }) {
   const { theme, styles } = useAppTheme();
+  const currentRoute = diaryNav.Screen.name;
 
-  // Create diary state object
+  const [isSaving, setIsSaving] = useState(false);
   const diaryState = {
     glucose: dbHook.glucose,
     setGlucose: dbHook.setGlucose,
@@ -45,6 +47,67 @@ export function DiaryNavigation({
     activityOptions: dbHook.activityOptions
   };
 
+  const handleSave = useCallback(async () => {
+    if (isSaving) return; // Prevent double saves
+
+    try {
+      setIsSaving(true);
+
+      // Save photos locally if any
+      const permanentURIs = await Promise.all(
+        cameraHook.photoURIs.map((tempUri: string) => cameraHook.savePhotoLocally(tempUri))
+      );
+
+      const entryData = {
+        glucose: diaryState.glucose,
+        carbs: diaryState.carbs,
+        note: diaryState.note,
+        activity: diaryState.activity,
+        foodType: diaryState.foodType,
+      };
+
+      // Save the entry
+      await dbHook.saveDiaryEntry(entryData, permanentURIs);
+
+      // Wait a moment for the save to complete
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Retrieve updated entries
+      if (dbHook.retrieveEntries) {
+        console.log('📔 Refreshing entries after save...');
+        await dbHook.retrieveEntries();
+      }
+
+      // Clear states
+      if (cameraHook.showCamera) cameraHook.toggleCamera();
+      cameraHook.clearPhotoURIs();
+
+      diaryState.setGlucose('');
+      diaryState.setCarbs('');
+      diaryState.setNote('');
+      diaryState.setActivity('none');
+      diaryState.setFoodType('snack');
+
+      // Navigate back
+      rootNavigation.goBack();
+
+    } catch (error) {
+      console.error('❌ Error saving entry:', error);
+      Alert.alert('Error', 'Failed to save entry. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  }, [
+    cameraHook,
+    dbHook,
+    diaryState,
+    rootNavigation,
+    isSaving
+  ]);
+
+  // Create diary state object
+
+
   return (
     <diaryNav.Navigator
       initialRouteName="MainDiary"
@@ -58,8 +121,8 @@ export function DiaryNavigation({
         contentStyle: { backgroundColor: theme.colors.background },
       }}
     >
-      <diaryNav.Screen
-        name="MainDiary"
+      {/* Wrap all screen components with fragments to include FAB */}
+      <diaryNav.Screen name="MainDiary"
         options={({ navigation: diaryNavigation, route }) => ({
           header: ({ options }) => (
             <CustomHeader
@@ -74,19 +137,25 @@ export function DiaryNavigation({
         })}
       >
         {(props) => (
-          <DiaryScreen
-            {...props}
-            appData={appData}
-            dbHook={dbHook}
-            calendarHook={calendarHook}
-            cameraHook={cameraHook}
-            rootNavigation={rootNavigation}
-          />
+          <>
+            <DiaryScreen
+              {...props}
+              appData={appData}
+              dbHook={dbHook}
+              calendarHook={calendarHook}
+              cameraHook={cameraHook}
+              rootNavigation={rootNavigation}
+            />
+            <FabContainer
+              route={props.route}
+              rootNavigation={rootNavigation}
+              handleSave={handleSave}
+            />
+          </>
         )}
       </diaryNav.Screen>
 
-      <diaryNav.Screen
-        name="DiaryCamera"
+      <diaryNav.Screen name="DiaryCamera"
         options={({ navigation: diaryNavigation }) => ({
           headerShown: false,
           animation: 'none',
@@ -102,8 +171,7 @@ export function DiaryNavigation({
         )}
       </diaryNav.Screen>
 
-      <diaryNav.Screen
-        name="DiaryInput"
+      <diaryNav.Screen name="DiaryInput"
         options={({ navigation, route }) => ({
           animation: 'slide_from_left',
           header: ({ options }) => (
@@ -119,17 +187,26 @@ export function DiaryNavigation({
         })}
       >
         {(props) => (
-          <InputScreen
-            {...props}
-            appData={appData}
-            calendarHook={calendarHook}
-            cameraHook={cameraHook}
-            dbHook={dbHook}
-            diaryState={diaryState}
-          />
+          <>
+            <InputScreen
+              {...props}
+              appData={appData}
+              calendarHook={calendarHook}
+              cameraHook={cameraHook}
+              dbHook={dbHook}
+              diaryState={diaryState}
+              isSaving={isSaving}
+            />
+            <FabContainer
+              route={props.route}
+              rootNavigation={rootNavigation}
+              handleSave={handleSave}
+            />
+          </>
         )}
       </diaryNav.Screen>
     </diaryNav.Navigator>
+
   );
 }
 
@@ -228,4 +305,6 @@ export function CustomHeader({
     </View>
   );
 }
+
+// Add this new component at the bottom of the file
 

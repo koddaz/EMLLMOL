@@ -3,11 +3,9 @@ import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { useState } from "react"; // Add useCallback and useMemo
 import { View } from "react-native";
-import { FAB } from "react-native-paper";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
-import { FabGroup } from "@/app/components/fabGroup";
 
 export function DiaryScreen({
   appData,
@@ -21,14 +19,12 @@ export function DiaryScreen({
   dbHook: any,
   calendarHook: any,
   cameraHook: any,
-  rootNavigation: any,
-  navigation: any,
+  rootNavigation?: any, // Make optional since it comes from the navigator
+  navigation: any
 
 }) {
   const { theme, styles } = useAppTheme();
-
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
-  // const [showEntry, setShowEntry] = useState(false);
 
   return (
 
@@ -38,6 +34,7 @@ export function DiaryScreen({
         <View style={styles.centeredWrapper}>
           <View style={styles.centeredContent}>
             <DiaryEntry
+              navigation={navigation}
               appData={appData}
               diaryData={selectedDiaryData}
               calendarHook={calendarHook}
@@ -72,41 +69,8 @@ export function DiaryScreen({
         cameraHook={cameraHook}
       />
 
-      <View style={styles.fabContainer}>
-        <View style={styles.fabRow}>
+      
 
-          <FabGroup
-            navigation={navigation}
-            open={false}
-            onPress={() => { navigation.navigate('Diary', { screen: 'DiaryInput' }) }}
-            actions={[
-              {
-                icon: 'cog',
-                label: 'Settings',
-                onPress: () => { rootNavigation.navigate('Settings') }
-              },
-              {
-                icon: 'chart-line',
-                label: 'Statistics',
-                onPress: () => { rootNavigation.navigate('Statistics') }
-              },
-            ]}
-          />
-          {/*
-          <FAB
-            color={theme.colors.onPrimary}
-            icon="note-plus"
-            size="medium"
-            style={styles.fabSecondary}
-            onPress={() => navigation.navigate('Diary', { screen: 'DiaryInput' })}
-
-            />
-          */}
-
-        </View>
-      </View>
-      {/* 
-*/}
     </View>
   );
 }

@@ -11,7 +11,8 @@ export function InputScreen({
     dbHook,
     cameraHook,
     diaryState,
-    navigation
+    navigation,
+    isSaving,
 }: {
     appData: AppData,
     calendarHook: any,
@@ -29,70 +30,14 @@ export function InputScreen({
         setActivity: (value: string) => void,
         foodType: string,
         setFoodType: (value: string) => void
-    }
+    },
+    isSaving: boolean,
 }) {
     const { theme, styles } = useAppTheme();
-    const [isSaving, setIsSaving] = useState(false);
 
     console.log('📄 DiaryInput rendered');
 
-    const handleSave = useCallback(async () => {
-        if (isSaving) return; // Prevent double saves
-        
-        try {
-            setIsSaving(true);
-            
-            // Save photos locally if any
-            const permanentURIs = await Promise.all(
-                cameraHook.photoURIs.map((tempUri: string) => cameraHook.savePhotoLocally(tempUri))
-            );
-
-            const entryData = {
-                glucose: diaryState.glucose,
-                carbs: diaryState.carbs,
-                note: diaryState.note,
-                activity: diaryState.activity,
-                foodType: diaryState.foodType,
-            };
-
-            // Save the entry
-            await dbHook.saveDiaryEntry(entryData, permanentURIs);
-            
-            // Wait a moment for the save to complete
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            // Retrieve updated entries
-            if (dbHook.retrieveEntries) {
-                console.log('📔 Refreshing entries after save...');
-                await dbHook.retrieveEntries();
-            }
-            
-            // Clear states
-            if (cameraHook.showCamera) cameraHook.toggleCamera();
-            cameraHook.clearPhotoURIs();
-
-            diaryState.setGlucose('');
-            diaryState.setCarbs('');
-            diaryState.setNote('');
-            diaryState.setActivity('none');
-            diaryState.setFoodType('snack');
-
-            // Navigate back
-            navigation.goBack();
-            
-        } catch (error) {
-            console.error('❌ Error saving entry:', error);
-            Alert.alert('Error', 'Failed to save entry. Please try again.');
-        } finally {
-            setIsSaving(false);
-        }
-    }, [
-        cameraHook,
-        dbHook,
-        diaryState,
-        navigation,
-        isSaving
-    ]);
+    
 
     // keyboard related
     const glucoseInputRef = useRef<any>(null);
@@ -312,7 +257,7 @@ export function InputScreen({
                         icon={isSaving ? "loading" : "floppy"}
                         size="medium"
                         style={styles.fabSecondary}
-                        onPress={handleSave}
+                        //onPress={}
                         disabled={isSaving}
                         loading={isSaving}
                     />
