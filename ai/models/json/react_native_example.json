@@ -1,7 +1,0 @@
-{
-  "usage_example": {
-    "model_path": "carb_classifier.onnx",
-    "config_path": "mobile_config.json",
-    "example_code": "\n// React Native usage example\nimport { ONNX } from 'onnxjs';\n\n// Load model\nconst session = new ONNX.InferenceSession();\nawait session.loadModel('path/to/carb_classifier.onnx');\n\n// Preprocess image\nconst tensor = preprocessImage(imageUri);\n\n// Run inference\nconst output = await session.run([tensor]);\nconst predictions = output.values().next().value.data;\n\n// Get top prediction\nconst maxIndex = predictions.indexOf(Math.max(...predictions));\nconst predictedClass = classNames[maxIndex];\n            "
-  }
-}

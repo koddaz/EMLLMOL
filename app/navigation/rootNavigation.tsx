@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { Icon, IconButton } from "react-native-paper";
+import { IconButton } from "react-native-paper";
 import { AppData } from "../constants/interface/appData";
 import { useAppTheme } from "../constants/UI/theme";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { Header } from '@react-navigation/elements';
 import { useCalendar } from "../hooks/useCalendar";
 import { useCamera } from "../hooks/useCamera";
 import { useDB } from "../hooks/useDB";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
-import { DiaryNavigation } from "./diaryNav";
-import { SafeAreaView, StatusBar, View } from "react-native";
+import { DiaryNavigation, CustomHeader } from "./diaryNav";
+import { StatusBar, View } from "react-native";
 import StatNav from "../screens/Statistics/statNav";
 
 export const rootNav = createNativeStackNavigator();
@@ -58,7 +59,11 @@ export function RootNavigation({
                 screenOptions={{
                     headerShown: false,
                     animation: 'slide_from_right',
-                    
+                    headerStyle: {
+                        backgroundColor: theme.colors.primary,
+
+                    },
+                    headerTintColor: theme.colors.onPrimary,
                 }}
             >
                 <rootNav.Screen
@@ -75,6 +80,7 @@ export function RootNavigation({
                             calendarHook={calendarHook}
                             dbHook={dbHook}
                             cameraHook={cameraHook}
+                            rootNavigation={props.navigation}
                         />
                     )}
                 </rootNav.Screen>
@@ -82,19 +88,13 @@ export function RootNavigation({
                 <rootNav.Screen
                     name="Statistics"
                     options={({navigation}) => ({ 
-                        headerShown: true,
-                        title: 'Statistics',
-                        headerStyle: { backgroundColor: theme.colors.primary },
-                        headerLeft: () => (
-                            <IconButton
-                                iconColor={theme.colors.onSecondary}
-                                size={28}
-                                icon="arrow-left"
-                                mode="contained-tonal"
-                                onPress={() => navigation.goBack()}
-                                style={{
-                                    backgroundColor: theme.colors.secondary,
-                                    borderRadius: 12,
+                        header: ({ options }) => (
+                            <CustomHeader
+                                options={options}
+                                title='Statistics'
+                                leftButton={{
+                                    icon: "arrow-left",
+                                    onPress: () => navigation.goBack(),
                                 }}
                             />
                         ),
@@ -115,34 +115,17 @@ export function RootNavigation({
                 <rootNav.Screen
                     name="Settings"
                     options={({ navigation }) => ({
-                        headerShown: true,
-                        title: getSettingsTitle(),
-                        headerStyle: { backgroundColor: theme.colors.primary },
-                        headerTintColor: theme.colors.onPrimary,
-                        headerTitleStyle: { fontWeight: 'bold' },
-                        headerLeft: () => (
-                            <IconButton
-                                iconColor={theme.colors.onSecondary}
-                                size={28}
-                                icon="arrow-left"
-                                mode="contained-tonal"
-                                onPress={() => navigation.goBack()}
-                                style={{
-                                    backgroundColor: theme.colors.secondary,
-                                    borderRadius: 12,
+                        header: ({ options }) => (
+                            <CustomHeader
+                                options={options}
+                                title={getSettingsTitle()}
+                                leftButton={{
+                                    icon: "arrow-left",
+                                    onPress: () => navigation.goBack(),
                                 }}
-                            />
-                        ),
-                        headerRight: () => (
-                            <IconButton
-                                iconColor={theme.colors.onSecondary}
-                                size={28}
-                                icon={getSettingsIcon()}
-                                mode="contained-tonal"
-                                onPress={() => setSettingsEditMode(!settingsEditMode)}
-                                style={{
-                                    backgroundColor: theme.colors.secondary,
-                                    borderRadius: 12,
+                                rightButton={{
+                                    icon: getSettingsIcon(),
+                                    onPress: () => setSettingsEditMode(!settingsEditMode),
                                 }}
                             />
                         ),

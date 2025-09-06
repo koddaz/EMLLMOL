@@ -3,26 +3,27 @@ const { getDefaultConfig } = require('expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Add ONNX file support
+// Config for AI models - PyTorch/ExecuTorch and ONNX
 config.resolver.assetExts = [
   ...config.resolver.assetExts,
-  'onnx'
+  'bin', 'txt', 'json', // For TensorFlow.js models (keep for compatibility)
+  'ptl', 'pte', // For PyTorch/ExecuTorch models
+  'onnx', // For ONNX models
 ];
 
-// Configure for ONNX Runtime compatibility
-config.resolver.nodeModulesPaths = [
-  ...config.resolver.nodeModulesPaths,
-  './node_modules'
-];
+// Resolve symlinks to prevent module resolution issues
+config.resolver.unstable_enableSymlinks = true;
 
-// Add resolver for Node.js polyfills needed by ONNX Runtime
-config.resolver.alias = {
-  ...config.resolver.alias,
-  'crypto': 'react-native-crypto-js',
-  'stream': 'readable-stream',
-  'buffer': 'buffer',
-  'process': 'process/browser',
-  'util': 'util'
+// Handle Metro bundling edge cases
+config.resolver.platforms = ['ios', 'android', 'native'];
+
+// Transformer configuration to handle large files
+config.transformer.minifierConfig = {
+  ...config.transformer.minifierConfig,
+  keep_fnames: true,
+  mangle: {
+    keep_fnames: true,
+  },
 };
 
 module.exports = config;

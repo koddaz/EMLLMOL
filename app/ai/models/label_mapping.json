@@ -1,0 +1,11 @@
+{
+  "beans": 0,
+  "bread": 1,
+  "corn": 2,
+  "grains": 3,
+  "pancakes": 4,
+  "pasta": 5,
+  "pizza": 6,
+  "potato": 7,
+  "rice": 8
+}

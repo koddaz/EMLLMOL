@@ -2,7 +2,7 @@ import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View, Alert } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Alert, StyleSheet } from "react-native";
 import { Avatar, Button, Divider, FAB, IconButton, Surface, Text, TextInput } from "react-native-paper";
 
 export function InputScreen({
@@ -123,7 +123,6 @@ export function InputScreen({
                 style={[styles.textInput, { maxHeight: 100, minHeight: 100 }]}
                 returnKeyType="default"
                 textAlignVertical="top"
-                blurOnSubmit={false}
                 dense
                 disabled={isSaving}
             />
@@ -361,3 +360,40 @@ export function InputScreen({
         </View>
     );
 }
+
+
+const inputStyles = StyleSheet.create({
+    background: {
+        flex: 1,
+    },
+    
+    container: {
+        flex: 1,
+    },
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginHorizontal: 8,
+        marginVertical: 8,
+        borderRadius: 8,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 8,
+        marginHorizontal: 8,
+        marginTop: 8 },
+})
+
+export function Input() {
+
+
+    return (
+        <View style={inputStyles.background}>
+
+        </View>
+    );
+}
+        
