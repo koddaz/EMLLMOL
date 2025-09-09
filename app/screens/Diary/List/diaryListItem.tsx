@@ -29,51 +29,41 @@ export function DiaryListItem(
   };
 
   return (
-    <View style={[styles.container, {marginTop: 8}]}>
-      <Surface style={styles.diaryListItem} elevation={2}>
-        <View style={[styles.itemContent, { opacity: onPress ? 1 : 1 }]} onTouchEnd={onPress}>
-          {/* Left side - Time and meal info */}
-          <View style={styles.leftContent}>
-            <Text variant="labelMedium" style={{
-              color: theme.colors.onSurfaceVariant,
-              fontSize: 12
-            }}>
-              {formatTime(diaryData.created_at)}
-            </Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-              <MaterialCommunityIcons
-                name={getMealIcon(diaryData.meal_type || '')}
-                size={14}
-                color={theme.colors.primary}
-                style={{ marginRight: 6 }}
-              />
-              <Text variant="bodyMedium" style={{
-                color: theme.colors.onSurface,
-                fontWeight: '500',
-                textTransform: 'capitalize'
-              }}>
-                {diaryData.meal_type || 'Meal'}
-              </Text>
-              <Text variant="bodySmall" style={{
-                color: theme.colors.onSurfaceVariant,
-                marginLeft: 8
-              }}>
-                {diaryData.carbs || 0}g carbs
-              </Text>
-            </View>
-          </View>
+    <View style={styles.listItem} onTouchEnd={onPress}>
+      <View style={styles.header}>
+        <View style={styles.chip}>
+          <MaterialCommunityIcons
+            name={getMealIcon(diaryData.meal_type || '')}
+            size={16}
+            color={theme.colors.onSecondary}
+          />
+        </View>
+        <Text variant="labelSmall" style={{ flex: 1, marginLeft: 8 }}>
+          {formatTime(diaryData.created_at)}
+        </Text>
+      </View>
 
-          {/* Right side - Glucose level */}
-          <View style={styles.glucoseBadge}>
-            <Text variant="labelSmall" style={{
-              color: theme.colors.onPrimaryContainer,
-              fontWeight: 'bold'
-            }}>
-              {diaryData.glucose || '0'}
-            </Text>
+      <View style={styles.row}>
+        <View style={[styles.content, { flexDirection: 'row' }]}>
+          <View style={styles.chip}>
+            <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
+            <Text variant="bodySmall">{diaryData.glucose || '0'}</Text>
+          </View>
+          <View style={styles.chip}>
+            <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondary} />
+            <Text variant="bodySmall">{diaryData.carbs || 0}g</Text>
           </View>
         </View>
-      </Surface>
+      </View>
+      
+      <View style={styles.footer}>
+        <Text variant="bodySmall" style={{ 
+          color: theme.colors.onSecondaryContainer,
+          textTransform: 'capitalize'
+        }}>
+          {diaryData.meal_type || 'Meal'}
+        </Text>
+      </View>
     </View>
   );
 }

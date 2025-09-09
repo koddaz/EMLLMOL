@@ -1,9 +1,14 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useCallback, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, View, Alert, StyleSheet } from "react-native";
-import { Avatar, Button, Divider, FAB, IconButton, Surface, Text, TextInput } from "react-native-paper";
+import { useState, useEffect } from "react";
+import { KeyboardAvoidingView, Platform, View } from "react-native";
+import { Text } from "react-native-paper";
+import { DiaryData } from "@/app/constants/interface/diaryData";
+import { DataEntryCard } from "./components/DataEntryCard";
+import { MealSelector } from "./components/MealSelector";
+import { ActivitySelector } from "./components/ActivitySelector";
+import { PhotosCard } from "./components/PhotosCard";
+import { InputHeader } from "./components/InputHeader";
 
 export function InputScreen({
     appData,
@@ -13,12 +18,14 @@ export function InputScreen({
     diaryState,
     navigation,
     isSaving,
+    route,
 }: {
     appData: AppData,
     calendarHook: any,
     dbHook: any,
     cameraHook: any,
     navigation: any,
+    route: any,
     diaryState: {
         glucose: string,
         setGlucose: (value: string) => void,
@@ -34,245 +41,33 @@ export function InputScreen({
     isSaving: boolean,
 }) {
     const { theme, styles } = useAppTheme();
+    const [editingEntry, setEditingEntry] = useState<DiaryData | null>(null);
 
     console.log('📄 DiaryInput rendered');
 
-    
+    // Check if we're editing an existing entry
+    useEffect(() => {
+        const diaryData = route.params?.diaryData as DiaryData;
+        if (diaryData) {
+            console.log('📝 Editing entry:', diaryData.id);
+            setEditingEntry(diaryData);
 
-    // keyboard related
-    const glucoseInputRef = useRef<any>(null);
-    const carbsInputRef = useRef<any>(null);
-    const noteInputRef = useRef<any>(null);
+            // Populate form with existing data
+            diaryState.setGlucose(diaryData.glucose?.toString() || '');
+            diaryState.setCarbs(diaryData.carbs?.toString() || '');
+            diaryState.setNote(diaryData.note || '');
+            diaryState.setActivity(diaryData.activity_level || 'none');
+            diaryState.setFoodType(diaryData.meal_type || 'snack');
 
-    const renderNoteCard = () => (
-        <View style={styles.wrapper}>
-            <View style={[styles.cardHeader, { justifyContent: 'space-between' }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <MaterialCommunityIcons name="note-text" size={20} color={theme.colors.primary} />
-                    <Text variant="titleMedium" style={styles.cardTitle}>
-                        Notes
-                    </Text>
-                </View>
-            </View>
-            <TextInput
-                ref={noteInputRef}
-                mode="outlined"
-                value={diaryState.note}
-                onChangeText={diaryState.setNote}
-                outlineColor={theme.colors.outlineVariant}
-                activeOutlineColor={theme.colors.primary}
-                textColor={theme.colors.onSurface}
-                placeholder="Add any notes about your meal or how you're feeling..."
-                multiline
-                numberOfLines={3}
-                style={[styles.textInput, { maxHeight: 100, minHeight: 100 }]}
-                returnKeyType="default"
-                textAlignVertical="top"
-                dense
-                disabled={isSaving}
-            />
-        </View>
-    );
+            // Set camera URIs if available
+            if (diaryData.uri_array && diaryData.uri_array.length > 0) {
+                cameraHook.setPhotoURIs(diaryData.uri_array);
+            }
+        }
+    }, [route.params]);
 
-    const renderInputCard = () => (
-        <View style={styles.wrapper}>
-            <View style={styles.row}>
-                <View style={{ flex: 1, }}>
-                    <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="blood-bag" size={20} color={theme.colors.primary} />
-                        <Text variant="titleMedium" style={styles.cardTitle}>
-                            Blood Glucose
-                        </Text>
-                    </View>
-                    <TextInput
-                        ref={glucoseInputRef}
-                        mode="outlined"
-                        value={diaryState.glucose}
-                        onChangeText={(text) => diaryState.setGlucose(text)}
-                        outlineColor={theme.colors.outlineVariant}
-                        activeOutlineColor={theme.colors.primary}
-                        textColor={theme.colors.onSurface}
-                        placeholder="5.5"
-                        keyboardType="decimal-pad"
-                        returnKeyType="next"
-                        onSubmitEditing={() => carbsInputRef.current?.focus()}
-                        style={styles.textInput}
-                        right={<TextInput.Affix text={appData.settings.glucose} />}
-                        dense
-                        disabled={isSaving}
-                    />
-                </View>
-                <View style={{ flex: 1 }}>
-                    <View style={styles.cardHeader}>
-                        <MaterialCommunityIcons name="food" size={20} color={theme.colors.primary} />
-                        <Text variant="titleMedium" style={styles.cardTitle}>
-                            Carbohydrates
-                        </Text>
-                    </View>
-                    <TextInput
-                        ref={carbsInputRef}
-                        mode="outlined"
-                        value={diaryState.carbs}
-                        onChangeText={(text) => diaryState.setCarbs(text)}
-                        outlineColor={theme.colors.outlineVariant}
-                        activeOutlineColor={theme.colors.primary}
-                        textColor={theme.colors.onSurface}
-                        placeholder="60"
-                        keyboardType="numeric"
-                        returnKeyType="next"
-                        onSubmitEditing={() => {
-                            noteInputRef.current?.focus();
-                        }}
-                        style={styles.textInput}
-                        right={<TextInput.Affix text="g" />}
-                        dense
-                        disabled={isSaving}
-                    />
-                </View>
-            </View>
-        </View>
-    );
 
-    const renderMealSelector = () => (
-        <View style={styles.wrapper}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="food-fork-drink" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Meal
-                </Text>
-            </View>
-            <View style={styles.chipContainer}>
-                {dbHook.foodOptions.map((option: any) => (
-                    <Button
-                        key={option}
-                        mode={diaryState.foodType === option ? "contained" : "outlined"}
-                        onPress={() => diaryState.setFoodType(option)}
-                        style={[
-                            styles.chip,
-                            diaryState.foodType === option && { backgroundColor: theme.colors.primary }
-                        ]}
-                        labelStyle={{
-                            fontSize: 12,
-                            color: diaryState.foodType === option ? theme.colors.onPrimary : theme.colors.onSurface
-                        }}
-                        compact
-                        disabled={isSaving}
-                    >
-                        {option}
-                    </Button>
-                ))}
-            </View>
-        </View>
-    );
 
-    const renderActivitySelector = () => (
-        <View style={styles.wrapper}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="run-fast" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Activity
-                </Text>
-            </View>
-            <View style={styles.chipContainer}>
-                {dbHook.activityOptions.map((option: any) => (
-                    <Button
-                        key={option}
-                        mode={diaryState.activity === option ? "contained" : "outlined"}
-                        onPress={() => diaryState.setActivity(option)}
-                        style={[
-                            styles.chip,
-                            diaryState.activity === option && { backgroundColor: theme.colors.secondary }
-                        ]}
-                        labelStyle={{
-                            fontSize: 12,
-                            color: diaryState.activity === option ? theme.colors.onSecondary : theme.colors.onSurface
-                        }}
-                        compact
-                        disabled={isSaving}
-                    >
-                        {option}
-                    </Button>
-                ))}
-            </View>
-        </View>
-    );
-
-    const renderPhotosCard = () => (
-        <View style={styles.wrapper}>
-            <View style={styles.cardHeader}>
-                <MaterialCommunityIcons name="camera" size={20} color={theme.colors.primary} />
-                <Text variant="titleMedium" style={styles.cardTitle}>
-                    Photos
-                </Text>
-            </View>
-
-            {cameraHook.photoURIs.length > 0 ? (
-                <ScrollView horizontal style={styles.photoScroll}>
-                    {cameraHook.photoURIs.map((uri: string, index: any) => (
-                        <View key={index} style={styles.photoItem}>
-                            <Avatar.Image size={60} source={{ uri }} />
-                            <IconButton
-                                icon="close"
-                                size={16}
-                                onPress={() => cameraHook.removePhotoURI(index)}
-                                style={styles.photoDelete}
-                                iconColor={theme.colors.onErrorContainer}
-                                disabled={isSaving}
-                            />
-                        </View>
-                    ))}
-                </ScrollView>
-            ) : (
-                <View style={{}}>
-                    <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
-                        No photos added yet
-                    </Text>
-                </View>
-            )}
-        </View>
-    );
-
-    const renderHeaderCard = () => (
-        <View style={styles.header}>
-            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                <MaterialCommunityIcons name="note" size={30} color={theme.colors.onPrimaryContainer} />
-                <Text variant="headlineSmall" style={{ color: theme.colors.onPrimaryContainer }}>
-                    {calendarHook.formatTime(new Date())}
-                </Text>
-            </View>
-            <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                <Text>
-                    {calendarHook.formatDate(new Date())}
-                </Text>
-            </View>
-        </View>
-    );
-
-    const renderFAB = () => (
-        <View style={styles.fabContainer}>
-            <View style={styles.fabRow}>
-                <View>
-                    <FAB
-                        color={theme.colors.onPrimary}
-                        icon={isSaving ? "loading" : "floppy"}
-                        size="medium"
-                        style={styles.fabSecondary}
-                        //onPress={}
-                        disabled={isSaving}
-                        loading={isSaving}
-                    />
-                    <FAB
-                        color={theme.colors.onPrimary}
-                        icon="camera-plus"
-                        size="medium"
-                        style={styles.fabSecondary}
-                        onPress={() => navigation.navigate('DiaryCamera')}
-                        disabled={isSaving}
-                    />
-                </View>
-            </View>
-        </View>
-    );
 
     return (
         <View style={styles.background}>
@@ -281,64 +76,47 @@ export function InputScreen({
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                 keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
             >
-                {renderHeaderCard()}
+                <InputHeader 
+                    editingEntry={editingEntry} 
+                    calendarHook={calendarHook} 
+                />
                 {dbHook.error && (
-                    <View style={styles.content}>
-                        <Surface style={[styles.container, { backgroundColor: theme.colors.errorContainer }]} elevation={2}>
-                            <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
-                                {dbHook.error}
-                            </Text>
-                        </Surface>
+                    <View style={styles.container}>
+                        <View style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
+                            <View style={styles.content}>
+                                <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                                    {dbHook.error}
+                                </Text>
+                            </View>
+                        </View>
                     </View>
                 )}
-                {renderInputCard()}
-                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                {renderNoteCard()}
-                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                {renderMealSelector()}
-                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                {renderActivitySelector()}
-                <Divider style={{ borderWidth: 0.1, marginTop: 12 }} />
-                {renderPhotosCard()}
-                {renderFAB()}
+                <View style={styles.container}>
+                    <DataEntryCard 
+                        appData={appData} 
+                        diaryState={diaryState} 
+                        isSaving={isSaving} 
+                    />
+                    <MealSelector 
+                        dbHook={dbHook} 
+                        diaryState={{ foodType: diaryState.foodType, setFoodType: diaryState.setFoodType }} 
+                        isSaving={isSaving} 
+                    />
+                    <ActivitySelector 
+                        dbHook={dbHook} 
+                        diaryState={{ activity: diaryState.activity, setActivity: diaryState.setActivity }} 
+                        isSaving={isSaving} 
+                    />
+                    <PhotosCard 
+                        cameraHook={cameraHook} 
+                        isSaving={isSaving} 
+                    />
+                </View>
+
             </KeyboardAvoidingView>
         </View>
     );
 }
 
 
-const inputStyles = StyleSheet.create({
-    background: {
-        flex: 1,
-    },
-    
-    container: {
-        flex: 1,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        marginHorizontal: 8,
-        marginVertical: 8,
-        borderRadius: 8,
-    },
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        paddingVertical: 8,
-        marginHorizontal: 8,
-        marginTop: 8 },
-})
 
-export function Input() {
-
-
-    return (
-        <View style={inputStyles.background}>
-
-        </View>
-    );
-}
-        

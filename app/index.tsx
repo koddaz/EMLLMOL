@@ -1,7 +1,7 @@
 import AuthScreen from '@/app/api/supabase/auth/authScreen';
 import { supabase } from '@/app/api/supabase/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { NavigationContainer } from '@react-navigation/native';
+import { createStaticNavigation, NavigationContainer } from '@react-navigation/native';
 import { useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useState, useCallback } from "react";
 import { AppState, SafeAreaView, Text, View } from "react-native";
@@ -13,6 +13,7 @@ import { AppData } from './constants/interface/appData';
 import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
 import { RootNavigation } from './navigation/rootNavigation';
+import { TabNavigation } from './navigation/tabNavigation';
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -21,6 +22,7 @@ AppState.addEventListener('change', (state) => {
     supabase.auth.stopAutoRefresh()
   }
 })
+// Navigation will be created dynamically with appData
 
 export default function Index() {
   const { theme, styles } = useAppTheme();
@@ -38,7 +40,7 @@ export default function Index() {
         .select('*')
         .eq('user_id', userId)  // FIXED: Changed from 'user_id' to 'userId'
         .order('created_at', { ascending: false });
-      
+
       if (error) {
         console.error('❌ Failed to load diary entries:', error);
         return [];
@@ -90,12 +92,12 @@ export default function Index() {
         .select(`username, full_name, avatar_url`)
         .eq('id', userId)
         .single();
-      
+
       if (error && error.code !== 'PGRST116') {
         console.error('❌ Profile error:', error);
         return null;
       }
-      
+
       if (data) {
         return {
           username: data.username,
@@ -103,7 +105,7 @@ export default function Index() {
           avatarUrl: data.avatar_url
         };
       }
-      
+
       return null;
     } catch (err) {
       console.error('Profile fetch error:', err);
@@ -116,11 +118,11 @@ export default function Index() {
     console.log('🚀 Initializing app...');
     setIsLoading(true);
     setError(null);
-    
+
     try {
       // Get session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
+
       if (sessionError) {
         console.error('Session error:', sessionError);
         setError(sessionError.message);
@@ -148,7 +150,7 @@ export default function Index() {
 
       // User is authenticated - fetch their data
       console.log('👤 User authenticated:', session.user.email);
-      
+
       // Fetch profile and diary entries in parallel
       const [profile, diaryEntries] = await Promise.all([
         fetchProfile(session.user.id),
@@ -176,7 +178,7 @@ export default function Index() {
   // Refresh entries function that can be passed down
   const refreshEntries = useCallback(async () => {
     if (!appData?.session?.user?.id) return;
-    
+
     const entries = await fetchDiaryEntries(appData.session.user.id);
     setAppData(prev => prev ? { ...prev, diaryEntries: entries } : null);
   }, [appData?.session?.user?.id, fetchDiaryEntries]);
@@ -190,7 +192,7 @@ export default function Index() {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log('🔄 Auth state changed:', event);
-      
+
       if (event === 'SIGNED_OUT') {
         // Clear user data but keep settings
         const settings = await loadSettings();
@@ -215,13 +217,16 @@ export default function Index() {
   // Loading state
   if (isLoading) {
     return (
-      <SafeAreaProvider>
-        <PaperProvider theme={customTheme}>
-          <View style={styles.background}>
-            <LoadingScreen />
-          </View>
-        </PaperProvider>
-      </SafeAreaProvider>
+
+      
+        <SafeAreaProvider>
+          <PaperProvider theme={customTheme}>
+            <View style={styles.background}>
+              <LoadingScreen />
+            </View>
+          </PaperProvider>
+        </SafeAreaProvider>
+        
     );
   }
 
@@ -244,16 +249,15 @@ export default function Index() {
 
   // Main render
   return (
+
+
     <SafeAreaProvider>
       <GestureHandlerRootView>
         <PaperProvider theme={customTheme}>
           <SafeAreaView style={{ flex: 1 }}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
-                <RootNavigation 
-                  appData={appData} 
-                  setAppData={setAppData} 
-                />
+                <TabNavigation appData={appData} setAppData={setAppData} />
               </NavigationContainer>
             ) : (
               <AuthScreen />
@@ -262,5 +266,7 @@ export default function Index() {
         </PaperProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>
+
   );
+
 }

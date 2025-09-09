@@ -169,6 +169,7 @@ export function useCamera(appData: AppData) {
     capturePhoto,
     removePhotoURI,
     clearPhotoURIs,
+    setPhotoURIs,
     photoURIs,
 
     // Functions to toggle flash

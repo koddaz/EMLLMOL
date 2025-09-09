@@ -1,56 +1,92 @@
 import { useState } from "react";
 import { FAB, Portal } from "react-native-paper";
 import { useAppTheme } from "../constants/UI/theme";
+import { useNavigation } from "../hooks/useNavigation";
 
-
-
-export function FabContainer({ route, rootNavigation, handleSave } : any ) {
+export function FabContainer({ route, handleSave, diaryState } : any ) {
+  const { theme } = useAppTheme();
+  const { navigateToTab } = useNavigation();
   const [open, setOpen] = useState(false);
-  const isInputScreen = route.name === 'DiaryInput';
+  const isInputScreen = route?.name === 'DiaryInput';
+  const editingEntryId = route?.params?.diaryData?.id;
+  
+  // Check if required fields are filled for save button
+  const canSave = diaryState?.glucose?.trim() && diaryState?.carbs?.trim();
 
   if (route.name === 'DiaryCamera') {
     return null;
   }
 
-  const actions = isInputScreen
-    ? [
-        {
-          icon: 'camera',
-          label: 'Take Photo',
-          onPress: () => rootNavigation.navigate('Diary', { screen: 'DiaryCamera' })
-        },
-
-      ]
-    : [
-        {
-          icon: 'cog',
-          label: 'Settings',
-          onPress: () => rootNavigation.navigate('Settings')
-        },
-        {
-          icon: 'chart-line',
-          label: 'Statistics',
-          onPress: () => rootNavigation.navigate('Statistics')
-        },
-      ];
-
-  return (
-    <Portal>
-      <FAB.Group
-        open={open}
-        visible
-        backdropColor={'transparent'}
-        icon={open ? 'close' : isInputScreen ? 'content-save' : 'menu'}
-        actions={actions}
-        onStateChange={({open}) => setOpen(open)}
-        onPress={() => {
-          if (isInputScreen) {
-            handleSave();
-          } else {
-            rootNavigation.navigate('Diary', { screen: 'DiaryInput' });
-          }
-        }}
-      />
-    </Portal>
-  );
+  if (isInputScreen) {
+    // Input screen: Large save button + small camera button (always open)
+    return (
+      <Portal>
+        <FAB.Group
+          open={true}
+          visible
+          backdropColor={'transparent'}
+          icon={'content-save'}
+          actions={[
+            {
+              icon: 'camera',
+              label: 'Take Photo',
+              onPress: () => navigateToTab('Diary', 'DiaryCamera')
+            }
+          ]}
+          onStateChange={() => {}} // Prevent state changes
+          onPress={() => {
+            if (canSave) {
+              handleSave(editingEntryId);
+            }
+          }}
+          fabStyle={{
+            opacity: canSave ? 1 : 0.5
+          }}
+        />
+      </Portal>
+    );
+  } else {
+    // Main screen: Menu button that only toggles + 3 action buttons
+    return (
+      <Portal>
+        <FAB.Group
+          open={open}
+          visible
+          backdropColor={'transparent'}
+          icon={open ? 'close' : 'menu'}
+          actions={[
+            {
+              icon: 'cog',
+              label: 'Settings',
+              onPress: () => {
+                setOpen(false);
+                navigateToTab('Settings');
+              }
+            },
+            {
+              icon: 'chart-line',
+              label: 'Statistics',
+              onPress: () => {
+                setOpen(false);
+                navigateToTab('Statistics');
+              }
+            },
+            {
+              icon: 'plus',
+              label: 'Add Entry',
+              onPress: () => {
+                setOpen(false);
+                navigateToTab('Diary', 'DiaryInput');
+              }
+            }
+          ]}
+          onStateChange={({open}) => setOpen(open)}
+          onPress={() => {
+            // Menu button only toggles the FAB group
+            setOpen(!open);
+          }}
+        />
+      </Portal>
+    );
+  }
 }

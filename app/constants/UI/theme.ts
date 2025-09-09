@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { MD3LightTheme as DefaultTheme, useTheme } from 'react-native-paper';
 import { customStyles } from './styles';
+import { mainStyle } from '@/app/layout';
 
 
 
@@ -9,6 +10,7 @@ export function useAppTheme() {
 
   // Memoize styles to prevent recreation on every render
   const styles = useMemo(() => customStyles(customTheme), [theme]);
+
 
   return { theme, styles };
 }

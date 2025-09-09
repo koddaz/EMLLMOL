@@ -1,120 +1,182 @@
 import { StyleSheet } from "react-native";
 import { MD3Theme } from "react-native-paper";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "react-native/Libraries/NewAppScreen";
-
-
 
 export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
-
+    // LAYOUT COMPONENTS
     background: {
         flex: 1,
         backgroundColor: theme.colors.background,
     },
     container: {
         flex: 1,
-        backgroundColor: theme.colors.surface,
-
-    },
-    wrapper: {
-        marginHorizontal: 16,
-        marginVertical: 8,
-        backgroundColor: Colors.transparent,
-
-    },
-    plaincontainer: {
-        backgroundColor: Colors.transparent,
-
-    },
-    errorcontainer: {
-
         paddingHorizontal: 8,
-        backgroundColor: theme.colors.errorContainer
+        backgroundColor: 'transparent'
     },
+    topContainer: {
+        flexDirection: 'row',
+        padding: 8,
+        borderBottomEndRadius: 12,
+        borderBottomStartRadius: 12,
+        borderTopWidth: 0,
+        borderWidth: 1,
+        backgroundColor: theme.colors.secondaryContainer,
+        alignItems: 'center',
+        minHeight: 56,
+        marginBottom: 16,
+    },
+
+    // STRUCTURED COMPONENTS
+    listItem: {
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        backgroundColor: theme.colors.surface,
+        marginVertical: 4,
+    },
+    box: {
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        backgroundColor: theme.colors.surface,
+        marginBottom: 8,
+    },
+    header: {
+        borderTopEndRadius: 12,
+        borderTopStartRadius: 12,
+        padding: 8,
+        alignItems: 'center',
+        flexDirection: 'row',
+        backgroundColor: theme.colors.secondaryContainer,
+    },
+    content: {
+        padding: 8,
+        backgroundColor: theme.colors.surface,
+    },
+    footer: {
+        borderBottomEndRadius: 12,
+        borderBottomStartRadius: 12,
+        padding: 8,
+        flexDirection: 'row',
+        backgroundColor: theme.colors.secondaryContainer,
+    },
+
+    // INTERACTIVE ELEMENTS
     row: {
         flexDirection: 'row',
-        // justifyContent: 'space-between',
-        alignItems: 'center'
-    },
-    centeredContainer: {
-        flex: 1,
-        justifyContent: 'center',
-        alignContent: 'center',
         alignItems: 'center',
     },
-    section: {
-        marginBottom: 8, // or whatever spacing you want between cards/sections
+    chip: {
+        flexDirection: 'row',
+        backgroundColor: theme.colors.secondary,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        marginRight: 4,
+        gap: 4,
     },
+    chipContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: 4,
+        marginBottom: 8
+    },
+    iconButton: {
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: 8,
+        margin: 0,
+        padding: 4,
+    },
+
+    // LOADING STATES
+    loadingContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: theme.colors.background,
+    },
+
+    // CARD COMPONENTS
+    card: {
+        borderRadius: 12,
+        backgroundColor: theme.colors.surface,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        overflow: 'hidden',
+    },
+    cardTitle: {
+        color: theme.colors.onSecondaryContainer,
+        fontWeight: '600',
+        flex: 1,
+    },
+
+    // ACTION BUTTONS
+    actionContainer: {
+        flexDirection: 'row',
+        padding: 8,
+        gap: 8,
+    },
+
+    // IMAGE AND MEDIA
+    imageContainer: {
+        borderRadius: 12,
+        overflow: 'hidden',
+        backgroundColor: theme.colors.surfaceVariant,
+    },
+    imageOverlay: {
+        position: 'absolute',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+        borderRadius: 12,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+    },
+
+    // SPACING UTILITIES
+    marginVertical: {
+        marginVertical: 8,
+    },
+
+    // INPUT STYLES
     textInput: {
         borderRadius: 8,
         fontSize: 16,
         paddingHorizontal: 12,
     },
-
-    // MENU WITH FABS
-    shutterButton: {
-        backgroundColor: 'transparent',
-        borderColor: theme.colors.secondary,
-        borderWidth: 4,
-        borderRadius: 100,
-        padding: 24
-    },
-    photoRow: {
-        flexDirection: 'row',
-
-        
-    },
-    cameraOptions: {
-
-        backgroundColor: theme.colors.surface,
-        justifyContent: 'center',
-        alignItems: 'center',
-
+    selectorLabel: {
+        color: theme.colors.onSurfaceVariant,
+        marginBottom: 8,
     },
 
-    fabSecondary: {
-        backgroundColor: theme.colors.secondary,
-        borderColor: theme.colors.outline,
-        borderWidth: 1,
-        marginLeft: 8,
+    // PHOTO COMPONENTS
+    photoScroll: {
         marginTop: 8,
     },
-    fab: {
-        backgroundColor: theme.colors.primary,
-        borderColor: theme.colors.outline,
-        borderWidth: 1,
-        marginLeft: 16,
-        marginTop: 8,
-    },
-    fabContainer: {
-        position: 'absolute',
-        bottom: '7.5%',
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-    },
-    fabRow: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        marginRight: 32,
-    },
-    fabActionRow: {
+    photoItem: {
         flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+        marginRight: 12,
+        position: 'relative',
+    },
+    photoDelete: {
+        position: 'absolute',
+        top: -8,
+        right: -8,
+        backgroundColor: theme.colors.errorContainer,
+        width: 24,
+        height: 24,
     },
 
-
+    // OVERLAY COMPONENTS
     centeredWrapper: {
         position: 'absolute',
         top: 0,
         left: 0,
         right: 0,
         bottom: 0,
-        //justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: 'rgba(0,0,0,0.5)',
         zIndex: 100
@@ -126,27 +188,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         width: '100%',
         backgroundColor: 'transparent',
     },
-    surface: {
-        backgroundColor: theme.colors.surface,
-        padding: 16,
-        borderRadius: 8,
-        borderWidth: 1,
-        borderColor: theme.colors.error
-    },
 
-    // DIARY ENTRY:
-    entryRow: {
-        flexDirection: 'row', 
-        backgroundColor: theme.colors.primary, 
-        borderRadius: 16, 
-        padding: 8, 
-        alignItems: 'center', 
-        marginTop: 8
-    },
-
-
-    // CALENDAR STYLES - Smaller and more compact
-
+    // CALENDAR STYLES
     calendarNavigationContainer: {
         backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
@@ -209,7 +252,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         padding: 0,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: theme.colors.surface, // subtle highlight for button
+        backgroundColor: theme.colors.surface,
     },
     calendarDayContent: {
         width: 36,
@@ -220,7 +263,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 18,
-        backgroundColor: theme.colors.surface, // or transparent if you prefer
+        backgroundColor: theme.colors.surface,
     },
     calendarDayLabel: {
         fontSize: 14,
@@ -231,127 +274,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         color: theme.colors.onSurface,
     },
 
-    // INPUT STYLES:
-
-    header: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        padding: 8,
-        borderBottomWidth: 1,
-        borderBottomColor: theme.colors.outline,
-        backgroundColor: theme.colors.primaryContainer,
+    // LEGACY SUPPORT
+    plaincontainer: {
+        backgroundColor: Colors.transparent,
     },
-    headerContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    closeButton: {
-        margin: 0,
-    },
-    content: {
-        padding: 16,
-        gap: 16,
-    },
-    card: {
-        
-        borderRadius: 12,
-        backgroundColor: theme.colors.primaryContainer,
-        borderWidth: 1,
-        borderColor: theme.colors.onSecondaryContainer
-    },
-    cardHeader: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 4,
-    },
-    cardTitle: {
-        marginLeft: 8,
-        color: theme.colors.onSurface,
-        flex: 1,
-    },
-
-    selectorLabel: {
-        color: theme.colors.onSurfaceVariant,
-        marginBottom: 8,
-    },
-    chipContainer: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-        marginTop: 4,
-        marginBottom: 8
-    },
-    chip: {
-        borderRadius: 20,
-        minWidth: 70,
-    },
-
-
-
-    photoScroll: {
-        marginTop: 8,
-    },
-    photoItem: {
-        flex: 1,
-        marginRight: 12,
-        position: 'relative',
-    },
-    photoDelete: {
-        position: 'absolute',
-        top: -8,
-        right: -8,
-        backgroundColor: theme.colors.errorContainer,
-        width: 24,
-        height: 24,
-    },
-    emptyPhotos: {
-        alignItems: 'center',
-        paddingVertical: 24,
-    },
-    actionContainer: {
-        flexDirection: 'row',
-        padding: 20,
-        gap: 12,
-        backgroundColor: theme.colors.surface,
-        borderTopWidth: 1,
-        borderTopColor: theme.colors.outlineVariant,
-    },
-    cancelButton: {
-        flex: 1,
-    },
-    saveButton: {
-        flex: 2,
-    },
-
-    // DIARY LIST ITEM:
-
-    diaryListItem: {
-        borderRadius: 8,
-        backgroundColor: theme.colors.surface,
-        borderLeftWidth: 3,
-        borderLeftColor: theme.colors.primary,
-        shadowColor: theme.colors.shadow,
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 2,
-        elevation: 2,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-    },
-    itemContent: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-    },
-    leftContent: {
-        flex: 1,
-    },
-    glucoseBadge: {
-        backgroundColor: theme.colors.primaryContainer,
-        paddingHorizontal: 8,
-        paddingVertical: 4,
-        borderRadius: 25,
-        minWidth: 50,
-        alignItems: 'center',
-    }
 });

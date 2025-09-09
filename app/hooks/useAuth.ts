@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import { Linking } from "react-native";
 import { supabase } from "../api/supabase/supabase";
 
-export function useAuth(session?: Session | null) {
+// Global flag to ensure deep link listeners are only set up once
+let deepLinkListenersSetup = false;
+
+export function useAuth(session?: Session | null, enableDeepLinkHandling: boolean = false) {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
@@ -14,8 +17,13 @@ export function useAuth(session?: Session | null) {
     // Use custom scheme for both development and production
     const redirectTo = 'com.koddaz.emllmol://auth/callback';
 
-    // Handle deep link authentication
+    // Handle deep link authentication - only set up when explicitly enabled
     useEffect(() => {
+        if (!enableDeepLinkHandling || deepLinkListenersSetup) {
+            return;
+        }
+        
+        deepLinkListenersSetup = true;
         let isProcessing = false;
 
         const handleDeepLink = async (url: string) => {
@@ -41,7 +49,7 @@ export function useAuth(session?: Session | null) {
                     }
                 } catch (error) {
                     console.error('Error creating session from URL:', error);
-                    setError('Authentication failed. Please try again.');
+                    // Don't set error state here since it might not be the right hook instance
                 } finally {
                     isProcessing = false;
                 }
@@ -74,6 +82,7 @@ export function useAuth(session?: Session | null) {
             console.log('Cleaning up deep link listeners');
             subscription?.remove();
             isProcessing = false;
+            deepLinkListenersSetup = false;
         };
     }, []);
 

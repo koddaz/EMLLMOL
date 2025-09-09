@@ -24,7 +24,7 @@ export default function AuthScreen() {
     const [showTerms, setShowTerms] = useState(false);
     const [showInformation, setShowInformation] = useState(false);
 
-    const { signIn, signUp, error, setError } = useAuth();
+    const { signIn, signUp, error, setError } = useAuth(null, true); // Enable deep link handling for auth screen
 
     // Handle successful authentication
     useEffect(() => {

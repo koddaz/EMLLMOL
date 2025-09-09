@@ -1,0 +1,138 @@
+import { AppData } from "@/app/constants/interface/appData";
+import { useAppTheme } from "@/app/constants/UI/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import { View } from "react-native";
+import { Button, Text, TextInput } from "react-native-paper";
+
+interface ProfileSettingsCardProps {
+    appData: AppData;
+    setShowSuccessMessage: (value: boolean) => void;
+    editMode: boolean;
+    setEditMode: (mode: boolean) => void;
+    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
+    authHook: any;
+}
+
+export function ProfileSettingsCard({
+    appData,
+    setShowSuccessMessage,
+    editMode,
+    setEditMode,
+    setCurrentSection,
+    authHook
+}: ProfileSettingsCardProps) {
+    const { theme, styles } = useAppTheme();
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [username, setUsername] = useState(appData?.profile?.username || '');
+    const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
+    const [avatarUrl, setAvatarUrl] = useState(appData?.profile?.avatarUrl || '');
+
+    useEffect(() => {
+        setCurrentSection('profile');
+    }, []);
+
+    const handleUpdateProfile = async () => {
+        if (!username || !fullName) return;
+
+        try {
+            setIsLoading(true);
+            setError(null);
+            await authHook.updateProfile(username, fullName, avatarUrl);
+            setEditMode(false);
+            setShowSuccessMessage(true);
+            console.log('Profile updated successfully');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            setError('Failed to update profile. Please try again later.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (editMode && isLoading) {
+            handleUpdateProfile();
+        }
+    }, [editMode]);
+
+    return (
+        <View style={styles.container}>
+            {error && (
+                <View style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
+                    <View style={styles.content}>
+                        <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                            {error}
+                        </Text>
+                    </View>
+                </View>
+            )}
+            <View style={styles.box}>
+                <View style={styles.header}>
+                    <MaterialCommunityIcons name="account-details" size={20} color={theme.colors.onSecondaryContainer} />
+                    <Text variant="titleMedium" style={{ marginLeft: 8 }}>
+                        Personal Information
+                    </Text>
+                </View>
+                <View style={styles.content}>
+                    <TextInput
+                        mode="outlined"
+                        value={appData?.session?.user.email || ''}
+                        label="Email"
+                        disabled
+                        left={<TextInput.Icon icon="email" />}
+                        style={[styles.textInput, { marginBottom: 8 }]}
+                        dense
+                    />
+                    <TextInput
+                        mode="outlined"
+                        value={username}
+                        onChangeText={setUsername}
+                        label="Username"
+                        editable={editMode}
+                        left={<TextInput.Icon icon="account" />}
+                        style={[styles.textInput, { marginBottom: 8 }]}
+                        dense
+                    />
+                    <TextInput
+                        mode="outlined"
+                        value={fullName}
+                        onChangeText={setFullName}
+                        label="Full Name"
+                        editable={editMode}
+                        left={<TextInput.Icon icon="account-details" />}
+                        style={styles.textInput}
+                        dense
+                    />
+                </View>
+                <View style={styles.footer}></View>
+            </View>
+            {editMode && (
+                <View style={styles.row}>
+                    <Button
+                        mode="outlined"
+                        onPress={() => setEditMode(false)}
+                        style={[styles.chip, { flex: 1, marginRight: 4 }]}
+                        icon="close"
+                        compact
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        mode="contained"
+                        onPress={handleUpdateProfile}
+                        style={[styles.chip, { flex: 2, marginLeft: 4 }]}
+                        icon="content-save"
+                        loading={isLoading}
+                        disabled={!username || !fullName}
+                        compact
+                    >
+                        Save Changes
+                    </Button>
+                </View>
+            )}
+        </View>
+    );
+}

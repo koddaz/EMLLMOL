@@ -57,122 +57,54 @@ export function DiaryList(
       : '0';
 
     return (
-      <Surface style={{
-        backgroundColor: theme.colors.secondaryContainer,
-        borderBottomStartRadius: 8,
-        borderBottomEndRadius: 8,
+      <View style={styles.topContainer}>
 
-      }} elevation={4}>
-        <View style={styles.row}>
-          <View style={{ paddingHorizontal: 16 }}>
-            <MaterialCommunityIcons name="chart-line" size={40} color={theme.colors.onSecondaryContainer} />
-          </View>
-          <View>
-            <View style={[styles.cardHeader, { marginBottom: 6 }]}>
-
-              <Text variant="labelLarge">
-                Daily Summary: {calendarHook.selectedDate.toLocaleDateString('en-EU', {
-                  month: 'numeric',
-                  day: 'numeric',
-                  year: 'numeric'
-                })}
-              </Text>
-            </View>
-
-            <View style={[styles.chipContainer, { gap: 4, flexWrap: 'wrap' }]}>
-              <Surface style={[
-                styles.chip,
-                {
-                  alignItems: 'center',
-                  backgroundColor: theme.colors.primaryContainer,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  minWidth: 60
-                }
-              ]}>
-
-                <Text variant="labelMedium" style={{
-                  color: theme.colors.onPrimaryContainer,
-                  fontWeight: '600',
-
-                }}>
-                  {filteredEntries.length}
-                </Text>
-                <Text variant="labelSmall" style={{ color: theme.colors.onPrimaryContainer, fontSize: 9 }}>
-                  Entries
-                </Text>
-              </Surface>
-
-              <Surface style={[
-                styles.chip,
-                {
-                  alignItems: 'center',
-                  backgroundColor: theme.colors.secondaryContainer,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  minWidth: 60
-                }
-              ]}>
-
-                <Text variant="labelMedium" style={{
-                  color: theme.colors.onSecondaryContainer,
-                  fontWeight: '600',
-                  fontSize: 11
-                }}>
-                  {totalCarbs}g
-                </Text>
-                <Text variant="labelSmall" style={{ color: theme.colors.onSecondaryContainer, fontSize: 9 }}>
-                  Carbs
-                </Text>
-              </Surface>
-
-              <Surface style={[
-                styles.chip,
-                {
-                  alignItems: 'center',
-                  backgroundColor: theme.colors.tertiaryContainer,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  minWidth: 60
-                }
-              ]}>
-
-                <Text variant="labelMedium" style={{
-                  color: theme.colors.onTertiaryContainer,
-                  fontWeight: '600',
-
-                }}>
-                  {avgGlucose}
-                </Text>
-                <Text variant="labelSmall" style={{ color: theme.colors.onTertiaryContainer, fontSize: 9 }}>
-                  Avg BG
-                </Text>
-              </Surface>
-            </View>
-          </View>
+        <View style={styles.chip}>
+          <MaterialCommunityIcons name="chart-line" size={24} color={theme.colors.onSecondary} />
         </View>
-      </Surface>
+        
+        <Text variant="labelLarge" style={{ flex: 1, marginLeft: 8 }}>
+          Daily Summary: {calendarHook.selectedDate.toLocaleDateString('en-EU', {
+            month: 'numeric',
+            day: 'numeric',
+            year: 'numeric'
+          })}
+        </Text>
+
+          <View style={styles.chip}>
+            <MaterialCommunityIcons name="note-multiple" size={16} color={theme.colors.onSecondary} />
+            <Text variant="bodySmall">{filteredEntries.length}</Text>
+          </View>
+
+          <View style={styles.chip}>
+            <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondary} />
+            <Text variant="bodySmall">{totalCarbs}g</Text>
+          </View>
+
+          <View style={styles.chip}>
+            <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
+            <Text variant="bodySmall">{avgGlucose}</Text>
+          </View>
+      
+
+      </View>
     );
   };
 
   const renderEmptyState = () => (
-    <View style={[styles.background, { justifyContent: 'center', alignItems: 'center' }]}>
-      <View style={{ paddingHorizontal: 8}}>
-      <Surface style={styles.card} elevation={1}>
-        <View style={{ alignItems: 'center', paddingVertical: 32 }}>
+    <View style={styles.container}>
+      <View style={styles.box}>
+        <View style={styles.header}>
           <MaterialCommunityIcons
             name="clipboard-plus"
-            size={64}
-            color={theme.colors.onSurfaceVariant}
-            style={{ marginBottom: 16 }}
+            size={24}
+            color={theme.colors.onSecondaryContainer}
           />
-          <Text variant="titleMedium" style={{
-            color: theme.colors.onSurface,
-            marginBottom: 8,
-            textAlign: 'center'
-          }}>
+          <Text variant="titleMedium" style={{ marginLeft: 8 }}>
             No entries yet
           </Text>
+        </View>
+        <View style={styles.content}>
           <Text variant="bodyMedium" style={{
             color: theme.colors.onSurfaceVariant,
             textAlign: 'center',
@@ -181,7 +113,7 @@ export function DiaryList(
             Start tracking your glucose and meals by tapping the + button below
           </Text>
         </View>
-      </Surface>
+        <View style={styles.footer}></View>
       </View>
     </View>
   );
@@ -190,10 +122,8 @@ export function DiaryList(
     return (
       <GestureDetector gesture={panGesture}>
         <View style={styles.background}>
-
           {renderStats()}
           {renderEmptyState()}
-
         </View>
       </GestureDetector>
     );
@@ -201,10 +131,9 @@ export function DiaryList(
 
   return (
     <GestureDetector gesture={panGesture}>
-      <View style={[styles.background]}>
-
+      <View style={styles.background}>
         {renderStats()}
-        <View style={{ flex: 1, paddingHorizontal: 8}}>
+        <View style={styles.container}>
           <FlatList
             data={filteredEntries}
             keyExtractor={(item) => item.id.toString()}

@@ -7,7 +7,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 
 export default function DiaryCalendar(
-    { calendarHook, 
+    { calendarHook,
         dbHook,
     }: {
         calendarHook: any,
@@ -18,35 +18,35 @@ export default function DiaryCalendar(
 
     return (
         <>
-            
-                {calendarHook.showCalendar && (
-                    <Surface
-                        style={[
-                            styles.plaincontainer,
-                            {
-                                borderBottomLeftRadius: 8,
-                                borderBottomRightRadius: 8,
-                                backgroundColor: theme.colors.primary,
-                                elevation: 4,
-                                shadowColor: 'transparent', // Remove shadow on iOS
-                            },
-                        ]}
-                        elevation={4}
-                    >
 
-                        <View style={{gap: 0}}>
-                            <CalendarNavigation currentMonth={calendarHook.currentMonth} navigateMonth={calendarHook.navigateMonth} />
-                            <CalendarGrid diaryEntries={dbHook.diaryEntries} calendarHook={calendarHook} />
-                        </View>
+            {calendarHook.showCalendar && (
+                <Surface
+                    style={[
+                        styles.plaincontainer,
+                        {
+                            borderBottomLeftRadius: 8,
+                            borderBottomRightRadius: 8,
+                            backgroundColor: theme.colors.primary,
+                            elevation: 4,
+                            shadowColor: 'transparent', // Remove shadow on iOS
+                        },
+                    ]}
+                    elevation={4}
+                >
 
-
+                    <View style={{ gap: 0 }}>
+                        <CalendarNavigation currentMonth={calendarHook.currentMonth} navigateMonth={calendarHook.navigateMonth} />
+                        <CalendarGrid diaryEntries={dbHook.diaryEntries} calendarHook={calendarHook} />
+                    </View>
 
 
-                    </Surface>
-                    
-                )}
 
-         
+
+                </Surface>
+
+            )}
+
+
 
         </>
     );

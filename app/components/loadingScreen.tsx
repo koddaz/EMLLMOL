@@ -1,125 +1,69 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React from 'react';
-import { Dimensions, Image, StyleSheet, View } from 'react-native';
-import { ActivityIndicator, Surface, useTheme, Text } from 'react-native-paper';
+import { Dimensions, Image, View } from 'react-native';
+import { ActivityIndicator, Text } from 'react-native-paper';
+import { useAppTheme } from '../constants/UI/theme';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 export function LoadingScreen() {
-  const theme = useTheme();
+  const { theme, styles } = useAppTheme();
 
   return (
-    <View style={[loadingStyles.container, { backgroundColor: theme.colors.primary, alignContent: 'center', justifyContent: 'center' }]}>
-      {/* Logo Section */}
-      <View style={loadingStyles.logoContainer}>
-        <Image
-          style={loadingStyles.logo}
-          source={require('../../assets/images/logo.png')}
-          resizeMode="contain"
-        />
-      </View>
-
-      {/* Loading Content */}
-      <View style={[loadingStyles.contentContainer]}>
-        
-        <View style={loadingStyles.loadingBody}>
-          <ActivityIndicator 
-            size="large" 
-            animating={true} 
-            color={theme.colors.onPrimary}
-            style={loadingStyles.spinner}
+    <View style={[styles.background, { backgroundColor: theme.colors.primary }]}>
+      <View style={styles.loadingContainer}>
+        {/* Logo Section */}
+        <View style={styles.marginVertical}>
+          <Image
+            style={{
+              width: width * 0.6,
+              height: width * 0.6,
+              marginBottom: 32,
+            }}
+            source={require('../../assets/images/logo.png')}
+            resizeMode="contain"
           />
-          <Text variant="bodyMedium" style={[loadingStyles.loadingText, { color: theme.colors.onPrimary }]}>
-            Please wait while we prepare your data...
-          </Text>
         </View>
-      </View>
 
-      {/* Status Section */}
-      <View style={[loadingStyles.statusContainer, { backgroundColor: theme.colors.secondary }]}>
-        <MaterialCommunityIcons 
-          name="shield-check" 
-          size={24} 
-          color={theme.colors.onSecondary}
-          style={loadingStyles.statusIcon}
-        />
-        <Text variant="bodyMedium" style={[loadingStyles.statusText, { color: theme.colors.onSecondary }]}>
-          Your health data is encrypted and stored securely
-        </Text>
+        {/* Loading Content */}
+        <View style={styles.box}>
+          <View style={styles.content}>
+            <ActivityIndicator 
+              size="large" 
+              animating={true} 
+              color={theme.colors.primary}
+              style={{ marginBottom: 16 }}
+            />
+            <Text variant="bodyMedium" style={{
+              color: theme.colors.onSurface,
+              textAlign: 'center'
+            }}>
+              Please wait while we prepare your data...
+            </Text>
+          </View>
+        </View>
+
+        {/* Status Section */}
+        <View style={[styles.box, { backgroundColor: theme.colors.secondaryContainer, marginTop: 16 }]}>
+          <View style={styles.content}>
+            <View style={styles.row}>
+              <MaterialCommunityIcons 
+                name="shield-check" 
+                size={24} 
+                color={theme.colors.onSecondaryContainer}
+                style={{ marginRight: 8 }}
+              />
+              <Text variant="bodyMedium" style={{
+                color: theme.colors.onSecondaryContainer,
+                flex: 1
+              }}>
+                Your health data is encrypted and stored securely
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
     </View>
   );
 }
 
-const loadingStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  logoContainer: {
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    marginBottom: 8,
-  },
-  logo: {
-    width: width * 0.75,
-    height: width * 0.75,
-    marginBottom: 4,
-  },
-  appSubtitle: {
-    textAlign: 'center',
-    opacity: 0.8,
-    marginBottom: 8,
-  },
-  contentContainer: {
-    marginHorizontal: 8,
-    marginBottom: 8,
-    borderRadius: 8,
-    overflow: 'hidden',
-
-  },
-  loadingHeader: {
-    paddingVertical: 8,
-    paddingHorizontal: 8,
-    alignItems: 'center',
-  },
-  loadingIcon: {
-    alignSelf: 'center',
-    marginBottom: 4,
-  },
-  loadingTitle: {
-    textAlign: 'center',
-    fontWeight: '600',
-    marginBottom: 4,
-  },
-  loadingSubtitle: {
-    textAlign: 'center',
-    opacity: 0.8,
-    marginBottom: 8,
-  },
-  loadingBody: {
-    gap: 8,
-    padding: 8,
-    alignItems: 'center',
-  },
-  spinner: {
-    marginBottom: 4,
-  },
-  loadingText: {
-    textAlign: 'center',
-    opacity: 0.8,
-  },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginHorizontal: 8,
-    padding: 8,
-    borderRadius: 8,
-  },
-  statusIcon: {
-    marginRight: 4,
-  },
-  statusText: {
-    flex: 1,
-    opacity: 0.8,
-  },
-});

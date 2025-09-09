@@ -1,16 +1,16 @@
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useState } from "react";
-import { IconButton } from "react-native-paper";
+import { StatusBar, View } from "react-native";
 import { AppData } from "../constants/interface/appData";
 import { useAppTheme } from "../constants/UI/theme";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { Header } from '@react-navigation/elements';
 import { useCalendar } from "../hooks/useCalendar";
 import { useCamera } from "../hooks/useCamera";
 import { useDB } from "../hooks/useDB";
+import { useNavigation } from "../hooks/useNavigation";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
-import { DiaryNavigation, CustomHeader } from "./diaryNav";
-import { StatusBar, View } from "react-native";
-import StatNav from "../screens/Statistics/statNav";
+import { StatisticsScreen } from "../screens/Statistics/statisticsScreen";
+import { TopBar } from "./components/topBar";
+import { DiaryNavigation } from "./diaryNavigation";
 
 export const rootNav = createNativeStackNavigator();
 
@@ -31,16 +31,9 @@ export function RootNavigation({
     const dbHook = useDB(appData);
     const calendarHook = useCalendar(appData);
     const cameraHook = useCamera(appData);
+    const navHook = useNavigation();
 
-    // Settings helper functions
-    const getSettingsTitle = () => {
-        switch (settingsSection) {
-            case 'profile': return 'Profile';
-            case 'preferences': return 'Preferences';
-            case 'account': return 'Account';
-            default: return 'Settings';
-        }
-    };
+
 
     const getSettingsIcon = () => {
         switch (settingsSection) {
@@ -57,7 +50,7 @@ export function RootNavigation({
             <rootNav.Navigator
                 initialRouteName="Diary"
                 screenOptions={{
-                    headerShown: false,
+
                     animation: 'slide_from_right',
                     headerStyle: {
                         backgroundColor: theme.colors.primary,
@@ -66,11 +59,14 @@ export function RootNavigation({
                     headerTintColor: theme.colors.onPrimary,
                 }}
             >
+
+                
+
                 <rootNav.Screen
                     name="Diary"
-                    options={{ 
+                    options={{
                         headerShown: false,
-                        
+
                     }}
                 >
                     {(props) => (
@@ -80,34 +76,36 @@ export function RootNavigation({
                             calendarHook={calendarHook}
                             dbHook={dbHook}
                             cameraHook={cameraHook}
-                            rootNavigation={props.navigation}
+                            
                         />
                     )}
                 </rootNav.Screen>
 
                 <rootNav.Screen
                     name="Statistics"
-                    options={({navigation}) => ({ 
+                    options={({ navigation }) => ({
                         header: ({ options }) => (
-                            <CustomHeader
+                            <TopBar
+                                showLogo={true}
                                 options={options}
-                                title='Statistics'
                                 leftButton={{
-                                    icon: "arrow-left",
-                                    onPress: () => navigation.goBack(),
+                                    icon: "chevron-left",
+                                    onPress: () => {
+                                        navHook.goBack();
+                                    },
                                 }}
                             />
+
                         ),
-                        
+
                     })}
                 >
                     {(props) => (
-                        <StatNav
+                        <StatisticsScreen
                             {...props}
                             appData={appData}
                             calendarHook={calendarHook}
                             dbHook={dbHook}
-                            
                         />
                     )}
                 </rootNav.Screen>
@@ -116,18 +114,17 @@ export function RootNavigation({
                     name="Settings"
                     options={({ navigation }) => ({
                         header: ({ options }) => (
-                            <CustomHeader
+                            <TopBar
+                                showLogo={true}
                                 options={options}
-                                title={getSettingsTitle()}
                                 leftButton={{
-                                    icon: "arrow-left",
-                                    onPress: () => navigation.goBack(),
-                                }}
-                                rightButton={{
-                                    icon: getSettingsIcon(),
-                                    onPress: () => setSettingsEditMode(!settingsEditMode),
+                                    icon: "chevron-left",
+                                    onPress: () => {
+                                        navHook.goBack();
+                                    },
                                 }}
                             />
+
                         ),
                     })}
                 >
@@ -140,6 +137,7 @@ export function RootNavigation({
                             currentSection={settingsSection}
                             setCurrentSection={setSettingsSection}
                             setAppData={setAppData}
+                            authHook={navHook}
                         />
                     )}
                 </rootNav.Screen>

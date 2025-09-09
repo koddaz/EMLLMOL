@@ -20,7 +20,7 @@ export function DiaryScreen({
   calendarHook: any,
   cameraHook: any,
   rootNavigation?: any, // Make optional since it comes from the navigator
-  navigation: any
+  navigation?: any
 
 }) {
   const { theme, styles } = useAppTheme();
@@ -50,7 +50,7 @@ export function DiaryScreen({
         top: 0,
         left: 0,
         right: 0,
-        zIndex: 1000,
+        zIndex: 5,
         // overflow: 'hidden',
       }}>
         <DiaryCalendar

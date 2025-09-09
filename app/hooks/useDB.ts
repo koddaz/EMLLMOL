@@ -152,6 +152,78 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     }
   };
 
+  const updateDiaryEntry = async (entryId: string, formData: {
+    glucose: string;
+    carbs: string;
+    note: string;
+    activity: string;
+    foodType: string;
+  }, photoURIs: string[] = []) => {
+    if (!appData?.session?.user?.id) {
+      setError('No user session available');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Validation
+      if (!formData.glucose.trim()) {
+        setError('Glucose level is required');
+        return;
+      }
+
+      if (!formData.carbs.trim()) {
+        setError('Carbs amount is required');
+        return;
+      }
+
+      const updateData = {
+        glucose: parseFloat(formData.glucose),
+        carbs: parseFloat(formData.carbs),
+        insulin: 0, // Default value, adjust as needed
+        note: formData.note || null,
+        activity_level: formData.activity,
+        meal_type: formData.foodType,
+        uri_array: photoURIs.length > 0 ? photoURIs : null,
+      };
+
+      console.log('📝 Updating diary entry:', entryId, updateData);
+      const { data, error } = await supabase
+        .from('entries')
+        .update(updateData)
+        .eq('id', entryId)
+        .eq('user_id', appData.session.user.id)
+        .select();
+      
+      if (error) {
+        console.error('❌ Failed to update diary entry:', error);
+        setError('Failed to update diary entry: ' + error.message);
+        return;
+      }
+
+      console.log('✅ Entry updated successfully:', data);
+      
+      // Refresh entries after updating
+      await retrieveEntries();
+      console.log('✅ Entries refreshed successfully');
+
+      // Clear form
+      setGlucose("");
+      setCarbs("");
+      setNote("");
+      setActivity("none");
+      setFoodType("snack");
+
+    } catch (error) {
+      console.error('❌ Failed to update diary entry:', error);
+      setError('Failed to update diary entry');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const removeEntry = async (entryId: string) => {
     if (!appData?.session?.user?.id) {
       setError('No user session available');
@@ -188,6 +260,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
 
   return {
     saveDiaryEntry,
+    updateDiaryEntry,
     retrieveEntries,
     removeEntry,
     isLoading,

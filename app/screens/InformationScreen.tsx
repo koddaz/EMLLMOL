@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import React, { useEffect, useState } from 'react';
-import { Dimensions, ScrollView, StyleSheet, View } from 'react-native';
-import { Button, Surface, Text, useTheme } from 'react-native-paper';
+import { Dimensions, ScrollView, View } from 'react-native';
+import { IconButton, Text } from 'react-native-paper';
+import { useAppTheme } from '../constants/UI/theme';
 import { appInformation } from '../../assets/docs/appInformation';
 
 const { width, height } = Dimensions.get('window');
@@ -11,7 +12,7 @@ interface InformationScreenProps {
 }
 
 export function InformationScreen({ onClose }: InformationScreenProps) {
-  const theme = useTheme();
+  const { theme, styles } = useAppTheme();
   const [appInfo, setAppInfo] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,91 +33,68 @@ export function InformationScreen({ onClose }: InformationScreenProps) {
 
   if (isLoading) {
     return (
-      <View style={[infoStyles.container, { backgroundColor: theme.colors.primary }]}>
-        <Surface style={[infoStyles.loadingContainer, { backgroundColor: theme.colors.surface }]}>
-          <Text style={{ color: theme.colors.onSurface }}>Loading information...</Text>
-        </Surface>
+      <View style={styles.background}>
+        <View style={styles.loadingContainer}>
+          <View style={styles.box}>
+            <View style={styles.content}>
+              <Text variant="bodyMedium" style={{ 
+                color: theme.colors.onSurfaceVariant,
+                textAlign: 'center'
+              }}>
+                Loading information...
+              </Text>
+            </View>
+          </View>
+        </View>
       </View>
     );
   }
 
   return (
-    <View style={[infoStyles.container, { backgroundColor: theme.colors.primary }]}>
+    <View style={styles.background}>
       {/* Header */}
-      <Surface style={[infoStyles.header, { backgroundColor: theme.colors.secondary }]}>
+      <View style={styles.topContainer}>
         <MaterialCommunityIcons
           name="information-outline"
-          size={24}
-          color={theme.colors.onSecondary}
+          size={20}
+          color={theme.colors.onSecondaryContainer}
         />
-        <Text variant="headlineSmall" style={[infoStyles.headerTitle, { color: theme.colors.onSecondary }]}>
+        <Text variant="titleMedium" style={{
+          color: theme.colors.onSecondaryContainer,
+          fontWeight: '600',
+          flex: 1,
+          marginLeft: 8
+        }}>
           App Information
         </Text>
-        <Button
-          mode="contained"
-          onPress={onClose}
-          style={[infoStyles.closeButton, { backgroundColor: theme.colors.onSecondary }]}
-          labelStyle={{ color: theme.colors.secondary }}
+        <IconButton
           icon="close"
-          compact
-        >
-          Close
-        </Button>
-      </Surface>
+          size={20}
+          iconColor={theme.colors.onSecondaryContainer}
+          style={styles.iconButton}
+          onPress={onClose}
+        />
+      </View>
 
       {/* Content */}
-      <ScrollView style={infoStyles.scrollView} showsVerticalScrollIndicator={false}>
-        <Surface style={[infoStyles.contentContainer, { backgroundColor: 'rgba(255, 255, 255, 0.1)' }]}>
-          <Text variant="bodyMedium" style={[infoStyles.contentText, { color: theme.colors.onPrimary }]}>
-            {appInfo}
-          </Text>
-        </Surface>
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.box}>
+          <View style={styles.content}>
+            <Text variant="bodyMedium" style={{
+              color: theme.colors.onSurface,
+              lineHeight: 20,
+              textAlign: 'left'
+            }}>
+              {appInfo}
+            </Text>
+          </View>
+        </View>
       </ScrollView>
     </View>
   );
 }
 
-const infoStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginHorizontal: 8,
-    marginVertical: 8,
-    borderRadius: 8,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-    marginHorizontal: 8,
-    marginTop: 8,
-    borderRadius: 8,
-    gap: 8,
-  },
-  headerTitle: {
-    flex: 1,
-    fontWeight: '600',
-  },
-  closeButton: {
-    borderRadius: 8,
-  },
-  scrollView: {
-    flex: 1,
-    marginHorizontal: 8,
-    marginVertical: 8,
-  },
-  contentContainer: {
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 8,
-  },
-  contentText: {
-    lineHeight: 20,
-    textAlign: 'left',
-  },
-});
