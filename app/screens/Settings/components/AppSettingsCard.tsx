@@ -59,10 +59,12 @@ export function AppSettingsCard({
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.box}>
+        
+            <View style={[styles.box, {borderBottomWidth: 0, borderTopWidth: 0}]}>
                 <View style={styles.header}>
-                    <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.onSecondaryContainer} />
+                    <View style={styles.chip}>
+                    <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.onSecondary} />
+                    </View>
                     <Text variant="titleMedium" style={{ marginLeft: 8 }}>
                         Measurement Units
                     </Text>
@@ -119,8 +121,8 @@ export function AppSettingsCard({
                         ]}
                     />
                 </View>
-                <View style={styles.footer}></View>
+                
             </View>
-        </View>
+        
     );
 }

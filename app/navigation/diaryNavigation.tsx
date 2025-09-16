@@ -3,13 +3,14 @@ import { useAppTheme } from "../constants/UI/theme";
 import { AppData } from "../constants/interface/appData";
 
 import { Alert, View } from "react-native";
-import { InputScreen } from "../screens/Diary/Input/inputScreen";
+import { InputScreen, InputScreen2 } from "../screens/Diary/Input/inputScreen";
 
 import { useNavigationState } from '@react-navigation/native';
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 import { AICameraScreen } from "../ai";
 import { useNavigation } from '../hooks/useNavigation';
 import { DiaryScreen } from "../screens/Diary/diaryScreen";
+import { DiaryData } from "../constants/interface/diaryData";
 
 const diaryNav = createNativeStackNavigator();
 
@@ -26,26 +27,27 @@ export function DiaryNavigation({
 }) {
   const { theme, styles } = useAppTheme();
   const { goBack } = useNavigation();
-  
+
+
   // Get current route name for FAB
   const navigationState = useNavigationState(state => state);
   const currentRoute = navigationState?.routes?.[navigationState?.index ?? 0];
 
   const [isSaving, setIsSaving] = useState(false);
-  const diaryState = {
-    glucose: dbHook.glucose,
-    setGlucose: dbHook.setGlucose,
-    carbs: dbHook.carbs,
-    setCarbs: dbHook.setCarbs,
-    note: dbHook.note,
-    setNote: dbHook.setNote,
-    activity: dbHook.activity,
-    setActivity: dbHook.setActivity,
-    foodType: dbHook.foodType,
-    setFoodType: dbHook.setFoodType,
-    foodOptions: dbHook.foodOptions,
-    activityOptions: dbHook.activityOptions
-  };
+
+  const [diaryData, setDiaryData] = useState<DiaryData>({
+    id: '',
+    created_at: new Date(),
+    glucose: 0,
+    carbs: 0,
+    insulin: 0,
+    meal_type: '',
+    activity_level: '',
+    note: '',
+    uri_array: []
+  });
+
+
 
   const handleSave = useCallback(async (editingEntryId?: string) => {
     if (isSaving) return; // Prevent double saves
@@ -59,11 +61,11 @@ export function DiaryNavigation({
       );
 
       const entryData = {
-        glucose: diaryState.glucose,
-        carbs: diaryState.carbs,
-        note: diaryState.note,
-        activity: diaryState.activity,
-        foodType: diaryState.foodType,
+        glucose: dbHook.glucose,
+        carbs: dbHook.carbs,
+        note: dbHook.note,
+        activity: dbHook.activity,
+        foodType: dbHook.foodType,
       };
 
       // Save or update the entry
@@ -88,11 +90,11 @@ export function DiaryNavigation({
       if (cameraHook.showCamera) cameraHook.toggleCamera();
       cameraHook.clearPhotoURIs();
 
-      diaryState.setGlucose('');
-      diaryState.setCarbs('');
-      diaryState.setNote('');
-      diaryState.setActivity('none');
-      diaryState.setFoodType('snack');
+      dbHook.setGlucose('');
+      dbHook.setCarbs('');
+      dbHook.setNote('');
+      dbHook.setActivity('none');
+      dbHook.setFoodType('snack');
 
       // Navigate back
       goBack();
@@ -106,7 +108,6 @@ export function DiaryNavigation({
   }, [
     cameraHook,
     dbHook,
-    diaryState,
     isSaving
   ]);
 
@@ -124,85 +125,85 @@ export function DiaryNavigation({
           contentStyle: { backgroundColor: theme.colors.background },
         }}
       >
-      {/* Wrap all screen components with fragments to include FAB */}
-      <diaryNav.Screen name="MainDiary"
-        
-        options={({ navigation: diaryNavigation, route }) => ({
-          headerShown: false,
-        })}
-      >
-        {(props) => (
-          <DiaryScreen
-            {...props}
-            appData={appData}
-            dbHook={dbHook}
-            calendarHook={calendarHook}
-            cameraHook={cameraHook}
-          />
-        )}
-      </diaryNav.Screen>
+        {/* Wrap all screen components with fragments to include FAB */}
+        <diaryNav.Screen name="MainDiary"
 
-      <diaryNav.Screen name="DiaryCamera"
-        options={({ navigation: diaryNavigation }) => ({
-          headerShown: false,
-          animation: 'none',
-        })}
-      >
-        {(props) => (
-          <AICameraScreen
-            {...props}
-            cameraHook={cameraHook}
-            dbHook={dbHook}
-            appData={appData}
-          />
-        )}
-      </diaryNav.Screen>
+          options={({ navigation: diaryNavigation, route }) => ({
+            headerShown: false,
+          })}
+        >
+          {(props) => (
+            <DiaryScreen
+              {...props}
+              appData={appData}
+              dbHook={dbHook}
+              calendarHook={calendarHook}
+              cameraHook={cameraHook}
+            />
+          )}
+        </diaryNav.Screen>
 
-      <diaryNav.Screen name="DiaryInput"
-        options={({ navigation, route }) => ({
-          headerShown: false,
-          animation: 'slide_from_left',
-          /* header: ({ options }) => (
-             <TopHeader
-              showLogo={true}
-              options={options}
-              leftButton={{
-                icon: "chevron-left",
-                onPress: () => {
-                  // Clear form state when going back without saving
-                  diaryState.setGlucose('');
-                  diaryState.setCarbs('');
-                  diaryState.setNote('');
-                  diaryState.setActivity('none');
-                  diaryState.setFoodType('snack');
-                  
-                  // Clear camera photos
-                  if (cameraHook.showCamera) cameraHook.toggleCamera();
-                  cameraHook.clearPhotoURIs();
-                  
-                  goBack();
-                },
-              }}
-            /> 
-          ),*/
-        })}
-      >
-        {(props) => (
-          <InputScreen
-            {...props}
-            appData={appData}
-            calendarHook={calendarHook}
-            cameraHook={cameraHook}
-            dbHook={dbHook}
-            diaryState={diaryState}
-            isSaving={isSaving}
-            route={props.route}
-          />
-        )}
-      </diaryNav.Screen>
-    </diaryNav.Navigator>
-    
-    {/* <FabContainer
+        <diaryNav.Screen name="DiaryCamera"
+          options={({ navigation: diaryNavigation }) => ({
+            headerShown: false,
+            animation: 'none',
+          })}
+        >
+          {(props) => (
+            <AICameraScreen
+              {...props}
+              cameraHook={cameraHook}
+              dbHook={dbHook}
+              appData={appData}
+            />
+          )}
+        </diaryNav.Screen>
+
+        <diaryNav.Screen name="DiaryInput"
+          options={({ navigation, route }) => ({
+            headerShown: false,
+            animation: 'slide_from_left',
+            /* header: ({ options }) => (
+               <TopHeader
+                showLogo={true}
+                options={options}
+                leftButton={{
+                  icon: "chevron-left",
+                  onPress: () => {
+                    // Clear form state when going back without saving
+                    diaryState.setGlucose('');
+                    diaryState.setCarbs('');
+                    diaryState.setNote('');
+                    diaryState.setActivity('none');
+                    diaryState.setFoodType('snack');
+                    
+                    // Clear camera photos
+                    if (cameraHook.showCamera) cameraHook.toggleCamera();
+                    cameraHook.clearPhotoURIs();
+                    
+                    goBack();
+                  },
+                }}
+              /> 
+            ),*/
+          })}
+        >
+          {(props) => (
+            <InputScreen
+              {...props}
+              diaryData={diaryData}
+              appData={appData}
+              calendarHook={calendarHook}
+              cameraHook={cameraHook}
+              dbHook={dbHook}
+              onSave={handleSave}
+              route={props.route}
+            />
+          )}
+        </diaryNav.Screen>
+      </diaryNav.Navigator>
+
+      {/* <FabContainer
       route={currentRoute}
       handleSave={handleSave}
       diaryState={diaryState}

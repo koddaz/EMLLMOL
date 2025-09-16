@@ -1,6 +1,6 @@
 export interface DiaryData {
 
-    id: string;
+    id?: string;
     created_at: Date;
     glucose: number;
     carbs: number;

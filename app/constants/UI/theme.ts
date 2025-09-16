@@ -19,24 +19,36 @@ export const customTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-
-    primary: "#7BDFF2", // non-photo blue
+    primary: "#3D3B8E", // deep purple-blue
     onPrimary: "#FFFFFF",
-    primaryContainer: "#B2F7EF",
-    onPrimaryContainer: "#003340",
-
-    secondary: "#F2B5D4", // lavender pink
+    primaryContainer: "#6883BA", // lighter blue
+    onPrimaryContainer: "#FFFFFF",
+    secondary: "#E072A4", // bright pink
     onSecondary: "#FFFFFF",
-    secondaryContainer: "#F7D6E0",
-    onSecondaryContainer: "#3B1020",
-
-    background: "#EFF7F6", // mint cream
-    onBackground: "#1E1E1E",
+    secondaryContainer: "#F9F9F9", // light gray/white
+    onSecondaryContainer: "#3D3B8E",
+    background: "#F9F9F9", // light background
+    onBackground: "#3D3B8E",
     surface: "#FFFFFF",
-    onSurface: "#1E1E1E",
-
-    // you can add custom roles if you want
-    customBlue: "#B2F7EF",
-    customPink: "#F7D6E0"
+    onSurface: "#3D3B8E",
+    surfaceVariant: "#F9F9F9", // light backgrounds for subtle variations
+    onSurfaceVariant: "#3D3B8E",
+    outline: "#E0E0E0", // subtle borders and dividers
+    // Custom color roles following the guide
+    customBlue: "#6883BA", // info elements, neutral badges
+    customPink: "#E072A4", // error states, delete actions
+    customGreen: "#B0E298", // success states, positive feedback
+    customDark: "#3D3B8E", // high contrast text, emphasis
+    customLight: "#F9F9F9", // subtle backgrounds, disabled states
+    customWarning: "#F39C12", // warning states
+    // Semantic colors for better organization
+    success: "#B0E298",
+    onSuccess: "#3D3B8E",
+    error: "#E072A4", 
+    onError: "#FFFFFF",
+    warning: "#F39C12",
+    onWarning: "#3D3B8E",
+    info: "#6883BA",
+    onInfo: "#FFFFFF"
   }
 };

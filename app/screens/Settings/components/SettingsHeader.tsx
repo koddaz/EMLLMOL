@@ -26,13 +26,7 @@ export function SettingsHeader({ editMode, setEditMode }: SettingsHeaderProps) {
                 style={{ margin: 0 }}
                 onPress={() => console.log('Info pressed')}
             />
-            <IconButton
-                icon="pencil"
-                size={20}
-                iconColor={theme.colors.onSecondaryContainer}
-                style={{ margin: 0 }}
-                onPress={() => setEditMode(!editMode)}
-            />
+
             <IconButton
                 icon="shield-account"
                 size={20}

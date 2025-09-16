@@ -67,6 +67,7 @@ export function DiaryScreen({
         calendarHook={calendarHook}
         dbHook={dbHook}
         cameraHook={cameraHook}
+        navigation={navigation}
       />
 
       

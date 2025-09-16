@@ -22,11 +22,9 @@ export default function DiaryCalendar(
             {calendarHook.showCalendar && (
                 <Surface
                     style={[
-                        styles.plaincontainer,
+                        
                         {
-                            borderBottomLeftRadius: 8,
-                            borderBottomRightRadius: 8,
-                            backgroundColor: theme.colors.primary,
+                            backgroundColor: 'transparent',
                             elevation: 4,
                             shadowColor: 'transparent', // Remove shadow on iOS
                         },

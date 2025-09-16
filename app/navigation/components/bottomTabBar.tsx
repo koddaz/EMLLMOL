@@ -17,10 +17,11 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
       navigationState={state}
       safeAreaInsets={insets}
       style={{
+        height: 100,
         backgroundColor: theme.colors.surface,
         elevation: 8,
       }}
-      activeColor={theme.colors.primary}
+      activeColor={theme.colors.secondary}
       inactiveColor={theme.colors.onSurface}
       onTabPress={({ route, preventDefault }) => {
         const event = navigation.emit({

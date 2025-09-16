@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { MD3Theme } from "react-native-paper";
-import { Colors } from "react-native/Libraries/NewAppScreen";
+
 
 export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
@@ -14,52 +14,66 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         paddingHorizontal: 8,
         backgroundColor: 'transparent'
     },
-    topContainer: {
+
+
+    topContainerWrapper: {
         flexDirection: 'row',
-        padding: 8,
-        borderBottomEndRadius: 12,
-        borderBottomStartRadius: 12,
-        borderTopWidth: 0,
+        alignItems: 'stretch', // Makes both children same height
+        margin: 8,
+        gap: 8, // Space between chip and main container
+    },
+
+    topContainerChip: {
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: 12,
         borderWidth: 1,
-        backgroundColor: theme.colors.secondaryContainer,
+        borderColor: theme.colors.outline,
         alignItems: 'center',
-        minHeight: 56,
-        marginBottom: 16,
+        justifyContent: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        minWidth: 56, // Ensures consistent width
+    },
+
+    topContainer: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingEnd: 8,
+        paddingStart: 16,
+        paddingVertical: 8,
+        backgroundColor: theme.colors.primaryContainer,
+        borderRadius: 12,
+        elevation: 4,
     },
 
     // STRUCTURED COMPONENTS
     listItem: {
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: theme.colors.outline,
-        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.outline, // subtle borders
+        backgroundColor: theme.colors.surface, // card surfaces
         marginVertical: 4,
     },
     box: {
-        borderRadius: 12,
         borderWidth: 1,
-        borderColor: theme.colors.outline,
-        backgroundColor: theme.colors.surface,
-        marginBottom: 8,
+        borderColor: theme.colors.outline, // subtle borders
+        backgroundColor: theme.colors.surface, // card surfaces
+        marginBottom: 4,
     },
     header: {
-        borderTopEndRadius: 12,
-        borderTopStartRadius: 12,
-        padding: 8,
-        alignItems: 'center',
         flexDirection: 'row',
-        backgroundColor: theme.colors.secondaryContainer,
+        alignItems: 'center',
+        padding: 8,
+        backgroundColor: theme.colors.primaryContainer // selected items/highlighted sections
     },
     content: {
         padding: 8,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.surface, // card surfaces
     },
     footer: {
-        borderBottomEndRadius: 12,
-        borderBottomStartRadius: 12,
-        padding: 8,
         flexDirection: 'row',
-        backgroundColor: theme.colors.secondaryContainer,
+        backgroundColor: theme.colors.secondaryContainer, // subtle backgrounds
     },
 
     // INTERACTIVE ELEMENTS
@@ -69,14 +83,38 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
     chip: {
         flexDirection: 'row',
-        backgroundColor: theme.colors.secondary,
-        borderRadius: 16,
+        backgroundColor: theme.colors.primaryContainer, // info badges/chips
+        borderRadius: 8,
         borderWidth: 1,
         borderColor: theme.colors.outline,
         alignItems: 'center',
         paddingHorizontal: 8,
         paddingVertical: 4,
-        marginRight: 4,
+        margin: 2,
+        gap: 4,
+    },
+    chipSecondary: {
+        flexDirection: 'row',
+        backgroundColor: theme.colors.secondaryContainer, // subtle chip backgrounds
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        margin: 2,
+        gap: 4,
+    },
+    chipSuccess: {
+        flexDirection: 'row',
+        backgroundColor: theme.colors.surfaceVariant,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: theme.colors.outline,
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        margin: 2,
         gap: 4,
     },
     chipContainer: {
@@ -87,10 +125,22 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         marginBottom: 8
     },
     iconButton: {
-        backgroundColor: theme.colors.primaryContainer,
+        backgroundColor: theme.colors.primaryContainer, // secondary action buttons
         borderRadius: 8,
         margin: 0,
         padding: 4,
+    },
+    primaryButton: {
+        backgroundColor: theme.colors.primary, // main action buttons
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+    },
+    secondaryButton: {
+        backgroundColor: theme.colors.secondary, // accent/alternative actions
+        borderRadius: 8,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
     },
 
     // LOADING STATES
@@ -145,7 +195,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     textInput: {
         borderRadius: 8,
         fontSize: 16,
-        paddingHorizontal: 12,
+        paddingHorizontal: 8,
     },
     selectorLabel: {
         color: theme.colors.onSurfaceVariant,
@@ -191,24 +241,25 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
     // CALENDAR STYLES
     calendarNavigationContainer: {
-        backgroundColor: theme.colors.secondaryContainer,
+        backgroundColor: theme.colors.surface,
         flexDirection: 'row',
-        padding: 8,
+        //padding: 8,
         alignItems: 'center',
-        borderTopEndRadius: 16,
-        borderTopStartRadius: 16,
-        marginHorizontal: 8,
+
+        //marginHorizontal: 8,
     },
     calendarContainer: {
         backgroundColor: theme.colors.surface,
         borderRadius: 16,
         marginBottom: 16,
-        marginHorizontal: 8,
+        borderBottomWidth: 1,
+        borderColor: theme.colors.outline
+        // marginHorizontal: 8,
     },
     weekdayRow: {
-        backgroundColor: theme.colors.secondaryContainer,
+        backgroundColor: theme.colors.surfaceVariant,
         flexDirection: 'row',
-        paddingHorizontal: 4,
+        // paddingHorizontal: 4,
     },
     weekdayHeader: {
         backgroundColor: 'transparent',
@@ -220,8 +271,9 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: theme.colors.secondaryContainer,
         flexDirection: 'row',
         paddingHorizontal: 4,
-        borderBottomEndRadius: 16,
-        borderBottomStartRadius: 16,
+        borderBottomWidth: 1,
+        borderColor: theme.colors.outline
+
     },
     calendarGrid: {
         backgroundColor: 'transparent',
@@ -274,8 +326,15 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         color: theme.colors.onSurface,
     },
 
-    // LEGACY SUPPORT
-    plaincontainer: {
-        backgroundColor: Colors.transparent,
-    },
+    // PICKER
+
+    boxPicker: {
+        borderWidth: 1,
+        borderColor: theme.colors.outlineVariant, // subtle borders
+        backgroundColor: theme.colors.surface, // card surfaces
+        marginBottom: 4,
+        borderRadius: 4,
+        padding: 8,
+    }
+
 });

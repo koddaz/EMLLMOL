@@ -32,7 +32,7 @@ export function TopBar({
         {...options}
         title={title}
         headerStyle={{
-          backgroundColor: theme.colors.primary,
+          backgroundColor: theme.colors.surface,
 
         }}
         headerTitleStyle={{

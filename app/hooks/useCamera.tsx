@@ -1,7 +1,7 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as FileSystem from 'expo-file-system';
-import { useRef, useState } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import { Alert, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
@@ -21,7 +21,7 @@ export function useCamera(appData: AppData) {
   const [photoURIs, setPhotoURIs] = useState<string[]>([]);
 
   const [permission, requestPermission] = useCameraPermissions();
-  const createDiaryPhotosDirectory = async () => {
+  const createDiaryPhotosDirectory = useCallback(async () => {
     const diaryPhotosDir = `${FileSystem.documentDirectory}diary-photos/`;
     const dirInfo = await FileSystem.getInfoAsync(diaryPhotosDir);
 
@@ -30,7 +30,7 @@ export function useCamera(appData: AppData) {
     }
 
     return diaryPhotosDir;
-  };
+  }, []);
 
   const savePhotoLocally = async (tempUri: string) => {
     try {
@@ -160,7 +160,7 @@ export function useCamera(appData: AppData) {
     }
   };
 
-  return {
+  return useMemo(() => ({
     renderCamera,
     showCamera,
     toggleCamera,
@@ -181,6 +181,21 @@ export function useCamera(appData: AppData) {
     // Local storage functions
     savePhotoLocally,
     createDiaryPhotosDirectory,
-  };
+  }), [
+    renderCamera,
+    showCamera,
+    toggleCamera,
+    capturePhoto,
+    removePhotoURI,
+    clearPhotoURIs,
+    setPhotoURIs,
+    photoURIs,
+    cycleFlash,
+    flash,
+    getFlashIcon,
+    getFlashIconColor,
+    savePhotoLocally,
+    createDiaryPhotosDirectory,
+  ]);
 
 }

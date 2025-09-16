@@ -176,16 +176,11 @@ export default function Index() {
   }, [fetchDiaryEntries]);
 
   // Refresh entries function that can be passed down
-  const refreshEntries = useCallback(async () => {
-    if (!appData?.session?.user?.id) return;
 
-    const entries = await fetchDiaryEntries(appData.session.user.id);
-    setAppData(prev => prev ? { ...prev, diaryEntries: entries } : null);
-  }, [appData?.session?.user?.id, fetchDiaryEntries]);
 
   // Initial load
   useEffect(() => {
-    initializeApp();
+     initializeApp();
   }, []);
 
   // Auth state listener

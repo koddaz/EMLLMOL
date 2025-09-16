@@ -29,41 +29,233 @@ export function DiaryListItem(
   };
 
   return (
-    <View style={styles.listItem} onTouchEnd={onPress}>
-      <View style={styles.header}>
-        <View style={styles.chip}>
+    <Surface style={[styles.card, { marginVertical: 6, marginHorizontal: 4 }]} onTouchEnd={onPress}>
+      {/* Calendar-style header with time and meal - using primaryContainer for selected items/highlighted sections */}
+      <View style={{
+        backgroundColor: theme.colors.primaryContainer,
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+      }}>
+        {/* Large meal icon - using primary for main brand elements */}
+        <View style={{
+          backgroundColor: theme.colors.primary,
+          borderRadius: 20,
+          width: 40,
+          height: 40,
+          justifyContent: 'center',
+          alignItems: 'center',
+          marginRight: 12,
+        }}>
           <MaterialCommunityIcons
             name={getMealIcon(diaryData.meal_type || '')}
-            size={16}
-            color={theme.colors.onSecondary}
+            size={20}
+            color={theme.colors.onPrimary}
           />
         </View>
-        <Text variant="labelSmall" style={{ flex: 1, marginLeft: 8 }}>
-          {formatTime(diaryData.created_at)}
-        </Text>
-      </View>
-
-      <View style={styles.row}>
-        <View style={[styles.content, { flexDirection: 'row' }]}>
-          <View style={styles.chip}>
-            <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
-            <Text variant="bodySmall">{diaryData.glucose || '0'}</Text>
-          </View>
-          <View style={styles.chip}>
-            <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondary} />
-            <Text variant="bodySmall">{diaryData.carbs || 0}g</Text>
-          </View>
+        
+        {/* Time and meal type - using onPrimaryContainer for text on primary container backgrounds */}
+        <View style={{ flex: 1 }}>
+          <Text variant="headlineSmall" style={{
+            color: theme.colors.onPrimaryContainer,
+            fontWeight: '700',
+            letterSpacing: 0.5,
+          }}>
+            {formatTime(diaryData.created_at)}
+          </Text>
+          <Text variant="bodyMedium" style={{
+            color: theme.colors.onPrimaryContainer,
+            textTransform: 'uppercase',
+            fontWeight: '500',
+            letterSpacing: 1,
+            opacity: 0.8,
+          }}>
+            {diaryData.meal_type || 'Meal'}
+          </Text>
         </View>
       </View>
-      
-      <View style={styles.footer}>
-        <Text variant="bodySmall" style={{ 
-          color: theme.colors.onSecondaryContainer,
-          textTransform: 'capitalize'
+
+      {/* Calendar diary content - using surface for card surfaces */}
+      <View style={{
+        padding: 16,
+        backgroundColor: theme.colors.surface,
+      }}>
+        {/* Main metrics in a grid */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          marginBottom: 12,
         }}>
-          {diaryData.meal_type || 'Meal'}
-        </Text>
+          {/* Glucose reading - using secondaryContainer for input field backgrounds/card backgrounds */}
+          {diaryData.glucose && (
+            <View style={{
+              flex: 1,
+              alignItems: 'center',
+              backgroundColor: theme.colors.secondaryContainer,
+              borderRadius: 8,
+              padding: 8,
+              marginRight: 4,
+            }}>
+              <MaterialCommunityIcons 
+                name="blood-bag" 
+                size={20} 
+                color={theme.colors.onSecondaryContainer} 
+              />
+              <Text variant="labelLarge" style={{
+                color: theme.colors.onSecondaryContainer,
+                fontWeight: '600',
+                marginTop: 2,
+              }}>
+                {diaryData.glucose}
+              </Text>
+              <Text variant="bodySmall" style={{
+                color: theme.colors.onSecondaryContainer,
+                opacity: 0.7,
+              }}>
+                mg/dL
+              </Text>
+            </View>
+          )}
+
+          {/* Carbs - using secondaryContainer for card backgrounds */}
+          {diaryData.carbs && (
+            <View style={{
+              flex: 1,
+              alignItems: 'center',
+              backgroundColor: theme.colors.secondaryContainer,
+              borderRadius: 8,
+              padding: 8,
+              marginHorizontal: 4,
+            }}>
+              <MaterialCommunityIcons 
+                name="food" 
+                size={20} 
+                color={theme.colors.onSecondaryContainer} 
+              />
+              <Text variant="labelLarge" style={{
+                color: theme.colors.onSecondaryContainer,
+                fontWeight: '600',
+                marginTop: 2,
+              }}>
+                {diaryData.carbs}
+              </Text>
+              <Text variant="bodySmall" style={{
+                color: theme.colors.onSecondaryContainer,
+                opacity: 0.7,
+              }}>
+                carbs
+              </Text>
+            </View>
+          )}
+
+          {/* Insulin - using secondaryContainer for card backgrounds */}
+          {diaryData.insulin && (
+            <View style={{
+              flex: 1,
+              alignItems: 'center',
+              backgroundColor: theme.colors.secondaryContainer,
+              borderRadius: 8,
+              padding: 8,
+              marginLeft: 4,
+            }}>
+              <MaterialCommunityIcons 
+                name="needle" 
+                size={20} 
+                color={theme.colors.onSecondaryContainer} 
+              />
+              <Text variant="labelLarge" style={{
+                color: theme.colors.onSecondaryContainer,
+                fontWeight: '600',
+                marginTop: 2,
+              }}>
+                {diaryData.insulin}
+              </Text>
+              <Text variant="bodySmall" style={{
+                color: theme.colors.onSecondaryContainer,
+                opacity: 0.7,
+              }}>
+                units
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Additional info row */}
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: diaryData.note ? 8 : 0,
+        }}>
+          {/* Activity level - using info color for neutral badges */}
+          {diaryData.activity_level && diaryData.activity_level !== 'none' && (
+            <View style={{
+              flexDirection: 'row',
+              backgroundColor: theme.colors.info,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.outline,
+              alignItems: 'center',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              margin: 2,
+              gap: 4,
+            }}>
+              <MaterialCommunityIcons name="run" size={14} color={theme.colors.onInfo} />
+              <Text variant="bodySmall" style={{ 
+                color: theme.colors.onInfo,
+                textTransform: 'capitalize',
+                fontWeight: '500',
+              }}>
+                {diaryData.activity_level}
+              </Text>
+            </View>
+          )}
+
+          {/* Photos indicator - using info color for neutral badges */}
+          {diaryData.uri_array && diaryData.uri_array.length > 0 && (
+            <View style={{
+              flexDirection: 'row',
+              backgroundColor: theme.colors.info,
+              borderRadius: 8,
+              borderWidth: 1,
+              borderColor: theme.colors.outline,
+              alignItems: 'center',
+              paddingHorizontal: 8,
+              paddingVertical: 4,
+              margin: 2,
+              gap: 4,
+            }}>
+              <MaterialCommunityIcons name="camera" size={14} color={theme.colors.onInfo} />
+              <Text variant="bodySmall" style={{ color: theme.colors.onInfo }}>
+                {diaryData.uri_array.length}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Note section - using surfaceVariant for subtle backgrounds */}
+        {diaryData.note && (
+          <View style={{
+            backgroundColor: theme.colors.surfaceVariant,
+            borderRadius: 8,
+            padding: 8,
+            borderLeftWidth: 3,
+            borderLeftColor: theme.colors.primary, // using primary for accent/important elements
+          }}>
+            <Text variant="bodySmall" style={{
+              color: theme.colors.onSurfaceVariant, // text on subtle backgrounds
+              fontStyle: 'italic',
+              lineHeight: 16,
+            }}>
+              {diaryData.note}
+            </Text>
+          </View>
+        )}
       </View>
-    </View>
+    </Surface>
   );
 }

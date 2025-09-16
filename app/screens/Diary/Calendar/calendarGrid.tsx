@@ -203,7 +203,7 @@ export function CalendarGrid(
             <View style={styles.calendarGrid}>
                 {days}
             </View>
-            <View style={styles.calendarGridFiller}>
+            <View style={styles.footer}>
                 <Text>  </Text>
             </View>
         </View>

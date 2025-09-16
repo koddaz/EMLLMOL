@@ -29,6 +29,8 @@ export function SettingsScreen({
     const { theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
 
+    const [navCase, setNavCase] = useState(1);
+
     return (
         <View style={styles.background}>
             <SettingsHeader 
@@ -60,19 +62,19 @@ export function SettingsScreen({
                     setCurrentSection={setCurrentSection}
                 />
                 
-                <View style={styles.container}>
-                    <View style={styles.box}>
+                
+                    <View style={[styles.box, {borderTopWidth: 0}]}>
                         <View style={styles.footer}>
                             <Text variant="bodySmall" style={{
                                 color: theme.colors.onSecondaryContainer,
-                                textAlign: 'center',
+                                textAlign: 'right',
                                 flex: 1
                             }}>
                                 Version 1.0.0 • Made with ❤️
                             </Text>
                         </View>
                     </View>
-                </View>
+                
             </ScrollView>
 
             <Snackbar

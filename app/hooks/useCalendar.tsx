@@ -1,5 +1,5 @@
 import { AppData } from "@/app/constants/interface/appData";
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export function useCalendar(appData: AppData) {
   const [showCalendar, setShowCalendar] = useState(false);
@@ -7,15 +7,15 @@ export function useCalendar(appData: AppData) {
   const [selectedDate, setSelectedDate] = useState(new Date());
 
 
-  const toggleCalendar = (value?: boolean) => {
+  const toggleCalendar = useCallback((value?: boolean) => {
     if (typeof value === "boolean") {
       setShowCalendar(value);
     } else {
       setShowCalendar((prev) => !prev);
     }
-  };
+  }, []);
 
-  const formatDate = (date: Date) => {
+  const formatDate = useCallback((date: Date) => {
     if (appData.settings.dateFormat === 'DD/MM/YYYY') {
       return date.toLocaleDateString('en-GB', {
         day: '2-digit',
@@ -29,9 +29,9 @@ export function useCalendar(appData: AppData) {
 
       });
     }
-  }
+  }, [appData.settings.dateFormat]);
 
-  const formatTime = (date: Date) => {
+  const formatTime = useCallback((date: Date) => {
     if (appData.settings.clockFormat === '12h') {
       return date.toLocaleTimeString('en-US', {
         hour: '2-digit',
@@ -44,17 +44,17 @@ export function useCalendar(appData: AppData) {
       minute: '2-digit',
       hour12: false
     });
-  }
+  }, [appData.settings.clockFormat]);
 
-  const getDaysInMonth = (date: Date) => {
+  const getDaysInMonth = useCallback((date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-  };
+  }, []);
 
-  const getFirstDayOfMonth = (date: Date) => {
+  const getFirstDayOfMonth = useCallback((date: Date) => {
     return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
-  };
+  }, []);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     const newMonth = new Date(currentMonth)
     const thisMonth = new Date();
     
@@ -71,9 +71,9 @@ export function useCalendar(appData: AppData) {
       }
     newMonth.setDate(1); // Reset to the first day of the month
     setCurrentMonth(newMonth);
-  };
+  }, [currentMonth]);
 
-  const navigateDate = (direction: 'prev' | 'next') => {
+  const navigateDate = useCallback((direction: 'prev' | 'next') => {
     const newDate = new Date(selectedDate);
     if (direction === 'prev') {
       newDate.setDate(newDate.getDate() - 1);
@@ -81,9 +81,9 @@ export function useCalendar(appData: AppData) {
       newDate.setDate(newDate.getDate() + 1);
     }
     setSelectedDate(newDate);
-  }
+  }, [selectedDate]);
 
-  return {
+  return useMemo(() => ({
     selectedDate,
     setSelectedDate,
     setShowCalendar,
@@ -97,5 +97,19 @@ export function useCalendar(appData: AppData) {
     getFirstDayOfMonth,
     navigateMonth,
     navigateDate,
-  }
+  }), [
+    selectedDate,
+    setSelectedDate,
+    setShowCalendar,
+    setCurrentMonth,
+    showCalendar,
+    currentMonth,
+    toggleCalendar,
+    formatDate,
+    formatTime,
+    getDaysInMonth,
+    getFirstDayOfMonth,
+    navigateMonth,
+    navigateDate,
+  ]);
 }

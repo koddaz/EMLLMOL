@@ -1,7 +1,7 @@
 import { supabase } from "@/app/api/supabase/supabase";
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useMemo } from "react";
 
 export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetStateAction<AppData | null>>) {
   const [isLoading, setIsLoading] = useState(false);
@@ -258,7 +258,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     }
   };
 
-  return {
+  return useMemo(() => ({
     saveDiaryEntry,
     updateDiaryEntry,
     retrieveEntries,
@@ -283,5 +283,30 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     setActivity,
     foodType,
     setFoodType
-  };
+  }), [
+    saveDiaryEntry,
+    updateDiaryEntry,
+    retrieveEntries,
+    removeEntry,
+    isLoading,
+    error,
+    setError,
+    diaryEntries,
+    foodOptions,
+    activityOptions,
+    toggleInput,
+    toggleEntry,
+    showEntry,
+    showInput,
+    glucose,
+    setGlucose,
+    carbs,
+    setCarbs,
+    note,
+    setNote,
+    activity,
+    setActivity,
+    foodType,
+    setFoodType
+  ]);
 }

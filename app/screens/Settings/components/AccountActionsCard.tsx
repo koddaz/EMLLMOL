@@ -41,10 +41,12 @@ export function AccountActionsCard({
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.box}>
+       
+            <View style={[styles.box, {borderBottomWidth: 0, borderTopWidth: 0}]}>
                 <View style={styles.header}>
-                    <MaterialCommunityIcons name="cog" size={20} color={theme.colors.onSecondaryContainer} />
+                    <View style={styles.chip}>
+                    <MaterialCommunityIcons name="cog" size={20} color={theme.colors.onSecondary} />
+                    </View>
                     <Text variant="titleMedium" style={{ marginLeft: 8 }}>
                         Account Actions
                     </Text>
@@ -101,8 +103,8 @@ export function AccountActionsCard({
                         </Button>
                     </View>
                 </View>
-                <View style={styles.footer}></View>
+                <View style={[styles.footer, {borderBottomWidth: 0}]}></View>
             </View>
-        </View>
+        
     );
 }

@@ -3,7 +3,7 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Button, Text, TextInput } from "react-native-paper";
+import { Button, IconButton, Text, TextInput } from "react-native-paper";
 
 interface ProfileSettingsCardProps {
     appData: AppData;
@@ -59,7 +59,7 @@ export function ProfileSettingsCard({
     }, [editMode]);
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.box, { borderBottomWidth: 0 }]}>
             {error && (
                 <View style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
                     <View style={styles.content}>
@@ -69,45 +69,57 @@ export function ProfileSettingsCard({
                     </View>
                 </View>
             )}
-            <View style={styles.box}>
-                <View style={styles.header}>
-                    <MaterialCommunityIcons name="account-details" size={20} color={theme.colors.onSecondaryContainer} />
-                    <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                        Personal Information
-                    </Text>
+
+            <View style={styles.header}>
+                <View style={{flex: 1, flexDirection: 'row', alignItems: 'center'}}>
+                
+                <View style={styles.chip}>
+                <MaterialCommunityIcons name="account-details" size={20} color={theme.colors.onSecondary} />
                 </View>
-                <View style={styles.content}>
-                    <TextInput
-                        mode="outlined"
-                        value={appData?.session?.user.email || ''}
-                        label="Email"
-                        disabled
-                        left={<TextInput.Icon icon="email" />}
-                        style={[styles.textInput, { marginBottom: 8 }]}
-                        dense
-                    />
-                    <TextInput
-                        mode="outlined"
-                        value={username}
-                        onChangeText={setUsername}
-                        label="Username"
-                        editable={editMode}
-                        left={<TextInput.Icon icon="account" />}
-                        style={[styles.textInput, { marginBottom: 8 }]}
-                        dense
-                    />
-                    <TextInput
-                        mode="outlined"
-                        value={fullName}
-                        onChangeText={setFullName}
-                        label="Full Name"
-                        editable={editMode}
-                        left={<TextInput.Icon icon="account-details" />}
-                        style={styles.textInput}
-                        dense
-                    />
+                <Text variant="titleMedium" style={{ marginLeft: 8 }}>
+                    Personal Information
+                </Text>
                 </View>
-                <View style={styles.footer}></View>
+                <IconButton
+                    icon="pencil"
+                    size={20}
+                    iconColor={theme.colors.onSecondaryContainer}
+                    style={{ margin: 0 }}
+                    onPress={() => setEditMode(!editMode)}
+                />
+            </View>
+            <View style={styles.content}>
+                <TextInput
+                    mode="outlined"
+                    value={appData?.session?.user.email || ''}
+                    label="Email"
+                    disabled
+                    left={<TextInput.Icon icon="email" />}
+                    style={[styles.textInput, { marginBottom: 8 }]}
+                    dense
+                />
+                <TextInput
+                    mode="outlined"
+                    value={username}
+                    onChangeText={setUsername}
+                    label="Username"
+                    editable={editMode}
+                    left={<TextInput.Icon icon="account" />}
+                    style={[styles.textInput, { marginBottom: 8 }]}
+                    dense
+                />
+                <TextInput
+                    mode="outlined"
+                    value={fullName}
+                    onChangeText={setFullName}
+                    label="Full Name"
+                    editable={editMode}
+                    left={<TextInput.Icon icon="account-details" />}
+                    style={styles.textInput}
+                    dense
+                />
+
+
             </View>
             {editMode && (
                 <View style={styles.row}>
