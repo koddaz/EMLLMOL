@@ -15,6 +15,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
 
   const [glucose, setGlucose] = useState("");
   const [carbs, setCarbs] = useState("");
+  const [insulin, setInsulin] = useState("");
   const [note, setNote] = useState("");
   const [activity, setActivity] = useState("none");
   const [foodType, setFoodType] = useState("snack");
@@ -86,6 +87,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
   const saveDiaryEntry = async (formData: {
     glucose: string;
     carbs: string;
+    insulin: string;
     note: string;
     activity: string;
     foodType: string;
@@ -114,7 +116,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
         user_id: appData.session.user.id,  // Fixed: Using 'user_id' to match database
         glucose: parseFloat(formData.glucose),
         carbs: parseFloat(formData.carbs),
-        insulin: 0, // Default value, adjust as needed
+        insulin: parseFloat(formData.insulin) || 0,
         note: formData.note || null,
         activity_level: formData.activity,
         meal_type: formData.foodType,
@@ -140,6 +142,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       // Clear form
       setGlucose("");
       setCarbs("");
+      setInsulin("");
       setNote("");
       setActivity("none");
       setFoodType("snack");
@@ -155,6 +158,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
   const updateDiaryEntry = async (entryId: string, formData: {
     glucose: string;
     carbs: string;
+    insulin: string;
     note: string;
     activity: string;
     foodType: string;
@@ -182,7 +186,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       const updateData = {
         glucose: parseFloat(formData.glucose),
         carbs: parseFloat(formData.carbs),
-        insulin: 0, // Default value, adjust as needed
+        insulin: parseFloat(formData.insulin) || 0,
         note: formData.note || null,
         activity_level: formData.activity,
         meal_type: formData.foodType,
@@ -212,6 +216,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       // Clear form
       setGlucose("");
       setCarbs("");
+      setInsulin("");
       setNote("");
       setActivity("none");
       setFoodType("snack");
@@ -277,6 +282,8 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     setGlucose,
     carbs,
     setCarbs,
+    insulin,
+    setInsulin,
     note,
     setNote,
     activity,
@@ -302,6 +309,8 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     setGlucose,
     carbs,
     setCarbs,
+    insulin,
+    setInsulin,
     note,
     setNote,
     activity,

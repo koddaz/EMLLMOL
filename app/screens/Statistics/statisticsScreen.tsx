@@ -9,6 +9,8 @@ import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
 import { StatisticsHeader } from "./components/StatisticsHeader";
+import { StatisticsTopContainer } from "@/app/components/topContainer";
+
 
 interface StatisticsScreenProps {
     navigation: any;
@@ -386,10 +388,11 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
 
     return (
         <View style={styles.background}>
-            <StatisticsHeader selectedScreen={selectedScreen} setSelectedScreen={setSelectedScreen} selectedPeriod={selectedPeriod} selectedMealTypes={selectedMealTypes} />
-            <View style={styles.container}>
+            <StatisticsTopContainer period={selectedPeriod.toString()} />
+            
                 {renderStats()}
-            </View>
+            
+
         </View>
     );
 }

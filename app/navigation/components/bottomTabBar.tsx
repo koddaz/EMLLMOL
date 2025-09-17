@@ -1,6 +1,7 @@
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { CommonActions } from "@react-navigation/native";
 import { BottomNavigation } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 interface BottomTabBarProps {
   navigation: any;
@@ -11,15 +12,21 @@ interface BottomTabBarProps {
 
 export function CustomBottomTabBar({ navigation, state, descriptors, insets }: BottomTabBarProps) {
   const { theme } = useAppTheme();
+  const safeAreaInsets = useSafeAreaInsets();
 
   return (
     <BottomNavigation.Bar
       navigationState={state}
-      safeAreaInsets={insets}
+      safeAreaInsets={{ bottom: Math.max(insets?.bottom || 0, safeAreaInsets.bottom) }}
       style={{
-        height: 100,
         backgroundColor: theme.colors.surface,
         elevation: 8,
+        height: 56 + Math.max(insets?.bottom || 0, safeAreaInsets.bottom),
+        paddingVertical: 2,
+        paddingHorizontal: 4,
+        minHeight: 56,
+        borderWidth: 1,
+        borderColor: theme.colors.outline
       }}
       activeColor={theme.colors.secondary}
       inactiveColor={theme.colors.onSurface}
@@ -45,7 +52,7 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
         descriptors[route.key].options.tabBarIcon?.({
           focused,
           color,
-          size: 24,
+          size: 18,
         }) || null
       }
       getLabelText={({ route }) => {
@@ -61,7 +68,7 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
 
         return label;
       }}
-      labeled={true}
+      labeled={false}
       shifting={false}
     />
   );

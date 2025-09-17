@@ -14,7 +14,7 @@ import { DiaryNavigation } from "./diaryNavigation";
 import { TopBar } from "./components/topBar";
 import { useAuth } from "../hooks/useAuth";
 
-const Tab = createBottomTabNavigator();
+const tabNav = createBottomTabNavigator();
 
 export function TabNavigation({ appData, setAppData }: { appData: AppData, setAppData: (data: AppData) => void }) {
 
@@ -26,43 +26,17 @@ export function TabNavigation({ appData, setAppData }: { appData: AppData, setAp
     const calendarHook = useCalendar(appData);
     const cameraHook = useCamera(appData);
     const authHook = useAuth(appData.session, false);
-   
 
-    // Memoized component functions to prevent re-renders
-    const Diary = useCallback(() => (
-        <DiaryNavigation
-            appData={appData}
-            dbHook={dbHook}
-            calendarHook={calendarHook}
-            cameraHook={cameraHook}
-        />
-    ), [appData, dbHook, calendarHook, cameraHook]);
 
-    const Settings = useCallback(() => (
-        <SettingsScreen
-            appData={appData}
-            editMode={settingsEditMode}
-            setEditMode={setSettingsEditMode}
-            currentSection={settingsSection}
-            setCurrentSection={setSettingsSection}
-            setAppData={setAppData}
-            authHook={authHook}
-        />
-    ), [appData, settingsEditMode, settingsSection, setAppData, authHook]);
 
-    const Statistics = useCallback((props: any) => (
-        <StatisticsScreen
-            {...props}
-            appData={appData}
-            calendarHook={calendarHook}
-            dbHook={dbHook}
-        />
-    ), [appData, calendarHook, dbHook]);
+
+
+
 
     // Get the right button icon based on current tab
     const getRightButtonIcon = useCallback((routeName: string) => {
         switch (routeName) {
-            case 'Home':
+            case 'Diary':
                 return calendarHook.showCalendar ? "close" : "calendar-month";
             case 'Statistics':
                 return "chart-box-outline";
@@ -76,14 +50,17 @@ export function TabNavigation({ appData, setAppData }: { appData: AppData, setAp
     // Get the right button action based on current tab
     const getRightButtonAction = useCallback((routeName: string) => {
         switch (routeName) {
-            case 'Home':
-                return () => calendarHook.toggleCalendar();
+            case 'Diary':
+                return () => {
+                    console.log('📅 Calendar button pressed, current state:', calendarHook.showCalendar);
+                    calendarHook.toggleCalendar();
+                };
             case 'Statistics':
-                return () => {}; // No action for statistics
+                return () => { }; // No action for statistics
             case 'Settings':
-                return () => {}; // No action for settings
+                return () => { }; // No action for settings
             default:
-                return () => {};
+                return () => { };
         }
     }, [calendarHook]);
 
@@ -99,6 +76,18 @@ export function TabNavigation({ appData, setAppData }: { appData: AppData, setAp
                 }}
             />
         ),
+        tabBarIcon: ({ color }: any) => {
+            switch (route.name) {
+                case 'Diary':
+                    return <Icon source="home" color={color} size={20} />;
+                case 'Statistics':
+                    return <Icon source="chart-line" color={color} size={20} />;
+                case 'Settings':
+                    return <Icon source="cog" color={color} size={20} />;
+                default:
+                    return null;
+            }
+        },
     }), [getRightButtonIcon, getRightButtonAction]);
 
     // Memoized tab bar to prevent re-renders
@@ -106,45 +95,72 @@ export function TabNavigation({ appData, setAppData }: { appData: AppData, setAp
         <CustomBottomTabBar {...props} />
     ), []);
 
-    // Memoized screen options for each tab
-    const homeOptions = useMemo(() => ({
-        tabBarIcon: ({ color }: any) => (
-            <Icon source="home" color={color} size={26} />
-        ),
-    }), []);
 
-    const statisticsOptions = useMemo(() => ({
-        tabBarIcon: ({ color }: any) => (
-            <Icon source="chart-line" color={color} size={26} />
-        ),
-    }), []);
 
-    const settingsOptions = useMemo(() => ({
-        tabBarIcon: ({ color }: any) => (
-            <Icon source="cog" color={color} size={26} />
-        ),
-    }), []);
+
 
     return (
-        <Tab.Navigator
+        <tabNav.Navigator
+            initialRouteName="Diary"
             screenOptions={screenOptions}
-            tabBar={tabBarComponent}>
-            <Tab.Screen
-                name="Home"
-                component={Diary}
-                options={homeOptions}
-            />
-            <Tab.Screen
+            tabBar={tabBarComponent}
+            >
+            
+            <tabNav.Screen
+                name="Diary"
+            >
+                {(props) => (
+                    <DiaryNavigation
+                        {...props}
+                        appData={appData}
+                        dbHook={dbHook}
+                        calendarHook={calendarHook}
+                        cameraHook={cameraHook}
+                    />
+
+                )}
+
+            </tabNav.Screen>
+
+            <tabNav.Screen
                 name="Statistics"
-                component={Statistics}
-                options={statisticsOptions}
-            />
-            <Tab.Screen
+            >
+                {(props) => (
+                    <StatisticsScreen
+                        {...props}
+                        appData={appData}
+                        calendarHook={calendarHook}
+                        dbHook={dbHook}
+                    />
+
+                )}
+
+            </tabNav.Screen>
+
+            <tabNav.Screen
                 name="Settings"
-                component={Settings}
-                options={settingsOptions}
-            />
-        </Tab.Navigator>
+            >
+                {(props) => (
+                    <SettingsScreen
+                        {...props}
+                        appData={appData}
+                        editMode={settingsEditMode}
+                        setEditMode={setSettingsEditMode}
+                        currentSection={settingsSection}
+                        setCurrentSection={setSettingsSection}
+                        setAppData={setAppData}
+                        authHook={authHook}
+                    />
+
+                )}
+
+            </tabNav.Screen>
+
+
+
+
+
+        </tabNav.Navigator>
     );
 }
 

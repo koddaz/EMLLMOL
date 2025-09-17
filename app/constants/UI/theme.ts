@@ -6,10 +6,11 @@ import { mainStyle } from '@/app/layout';
 
 
 export function useAppTheme() {
-  const theme = useTheme();
+  // Use customTheme instead of the default theme from useTheme()
+  const theme = customTheme;
 
   // Memoize styles to prevent recreation on every render
-  const styles = useMemo(() => customStyles(customTheme), [theme]);
+  const styles = useMemo(() => customStyles(customTheme), []);
 
 
   return { theme, styles };

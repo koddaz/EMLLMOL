@@ -7,6 +7,8 @@ import { SettingsHeader } from "./components/SettingsHeader";
 import { ProfileSettingsCard } from "./components/ProfileSettingsCard";
 import { AppSettingsCard } from "./components/AppSettingsCard";
 import { AccountActionsCard } from "./components/AccountActionsCard";
+import { SettingsTopContainer } from "@/app/components/topContainer";
+
 
 export function SettingsScreen({
     appData,
@@ -33,9 +35,9 @@ export function SettingsScreen({
 
     return (
         <View style={styles.background}>
-            <SettingsHeader 
-                editMode={editMode} 
-                setEditMode={setEditMode} 
+            <SettingsTopContainer
+                //editMode={false} 
+                // setEditMode={setEditMode} 
             />
             <ScrollView
                 style={styles.container}

@@ -16,12 +16,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
 
 
-    topContainerWrapper: {
-        flexDirection: 'row',
-        alignItems: 'stretch', // Makes both children same height
-        margin: 8,
-        gap: 8, // Space between chip and main container
-    },
 
     topContainerChip: {
         backgroundColor: theme.colors.primaryContainer,
@@ -42,9 +36,10 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         paddingEnd: 8,
         paddingStart: 16,
         paddingVertical: 8,
-        backgroundColor: theme.colors.primaryContainer,
+        backgroundColor: theme.colors.surface,
         borderRadius: 12,
         elevation: 4,
+        marginHorizontal: 8,
     },
 
     // STRUCTURED COMPONENTS
@@ -332,7 +327,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderWidth: 1,
         borderColor: theme.colors.outlineVariant, // subtle borders
         backgroundColor: theme.colors.surface, // card surfaces
-        marginBottom: 4,
+        marginBottom: 8,
         borderRadius: 4,
         padding: 8,
     }

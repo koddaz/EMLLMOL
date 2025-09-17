@@ -4,15 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createStaticNavigation, NavigationContainer } from '@react-navigation/native';
 import { useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useState, useCallback } from "react";
-import { AppState, SafeAreaView, Text, View } from "react-native";
+import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
-import { RootNavigation } from './navigation/rootNavigation';
 import { TabNavigation } from './navigation/tabNavigation';
 
 AppState.addEventListener('change', (state) => {
@@ -249,7 +248,7 @@ export default function Index() {
     <SafeAreaProvider>
       <GestureHandlerRootView>
         <PaperProvider theme={customTheme}>
-          <SafeAreaView style={{ flex: 1 }}>
+          <SafeAreaView style={{ flex: 1 }} edges={['top']}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
                 <TabNavigation appData={appData} setAppData={setAppData} />

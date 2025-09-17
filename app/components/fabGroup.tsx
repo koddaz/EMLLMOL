@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { FAB, Portal } from "react-native-paper";
 import { useAppTheme } from "../constants/UI/theme";
-import { useNavigation } from "../hooks/useNavigation";
+import { useNavigation } from '@react-navigation/native';
 
 export function FabContainer({ route, handleSave, diaryState } : any ) {
   const { theme } = useAppTheme();
-  const { navigateToTab } = useNavigation();
+  const navigation = useNavigation<any>();
   const [open, setOpen] = useState(false);
   const isInputScreen = route?.name === 'DiaryInput';
   const editingEntryId = route?.params?.diaryData?.id;
@@ -30,7 +30,7 @@ export function FabContainer({ route, handleSave, diaryState } : any ) {
             {
               icon: 'camera',
               label: 'Take Photo',
-              onPress: () => navigateToTab('Diary', 'DiaryCamera')
+              onPress: () => navigation.navigate('Diary', { screen: 'DiaryCamera' })
             }
           ]}
           onStateChange={() => {}} // Prevent state changes
@@ -60,7 +60,7 @@ export function FabContainer({ route, handleSave, diaryState } : any ) {
               label: 'Settings',
               onPress: () => {
                 setOpen(false);
-                navigateToTab('Settings');
+                navigation.navigate('Settings');
               }
             },
             {
@@ -68,7 +68,7 @@ export function FabContainer({ route, handleSave, diaryState } : any ) {
               label: 'Statistics',
               onPress: () => {
                 setOpen(false);
-                navigateToTab('Statistics');
+                navigation.navigate('Statistics');
               }
             },
             {
@@ -76,7 +76,7 @@ export function FabContainer({ route, handleSave, diaryState } : any ) {
               label: 'Add Entry',
               onPress: () => {
                 setOpen(false);
-                navigateToTab('Diary', 'DiaryInput');
+                navigation.navigate('Diary', { screen: 'DiaryInput' });
               }
             }
           ]}

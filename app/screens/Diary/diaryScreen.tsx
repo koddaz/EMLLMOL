@@ -12,14 +12,12 @@ export function DiaryScreen({
   dbHook,
   calendarHook,
   cameraHook,
-  rootNavigation,
   navigation
 }: {
   appData: AppData,
   dbHook: any,
   calendarHook: any,
   cameraHook: any,
-  rootNavigation?: any, // Make optional since it comes from the navigator
   navigation?: any
 
 }) {
