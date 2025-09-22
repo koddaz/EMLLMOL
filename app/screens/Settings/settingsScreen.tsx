@@ -3,7 +3,6 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { useState } from "react";
 import { ScrollView, View } from "react-native";
 import { Snackbar, Text } from "react-native-paper";
-import { SettingsHeader } from "./components/SettingsHeader";
 import { ProfileSettingsCard } from "./components/ProfileSettingsCard";
 import { AppSettingsCard } from "./components/AppSettingsCard";
 import { AccountActionsCard } from "./components/AccountActionsCard";

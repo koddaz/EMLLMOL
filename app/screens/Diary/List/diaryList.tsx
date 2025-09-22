@@ -9,6 +9,7 @@ import { DiaryListItem } from "./diaryListItem";
 import { DiaryTopContainer } from "@/app/components/topContainer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useWindowDimensions } from 'react-native';
+import { AppData } from "@/app/constants/interface/appData";
 
 export function DiaryList(
   { toggleEntry,
@@ -16,7 +17,8 @@ export function DiaryList(
     calendarHook,
     cameraHook,
     setSelectedDiaryData,
-    navigation
+    navigation,
+    appData
   }: {
     toggleEntry: (state: boolean) => void,
     dbHook: any,
@@ -24,11 +26,11 @@ export function DiaryList(
     cameraHook: any,
     setSelectedDiaryData?: (data: DiaryData) => void,
     navigation: any
+    appData: AppData
   }
 ) {
   const { theme, styles } = useAppTheme();
   const { width: screenWidth } = useWindowDimensions(); // Get screen width
-  const insets = useSafeAreaInsets();
 
   // Get all unique dates from entries
   const allDates = useMemo(() => {
@@ -132,68 +134,43 @@ export function DiaryList(
       />
 
 
-      <View style={{ flex: 1 }}>
+      <View style={styles.container}>
         <FlatList
-          data={paginatedData}
-          keyExtractor={(item) => item.date}
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={true}
-          decelerationRate="fast"
-          snapToAlignment="start"
-          initialScrollIndex={currentPageIndex} // Add this back!
-          onMomentumScrollEnd={handlePageChange}
-          // Add getItemLayout for better paging performance
-          getItemLayout={(data, index) => ({
-            length: screenWidth,
-            offset: screenWidth * index,
-            index,
-          })}
-          renderItem={({ item: pageData }) => (
-            // Use explicit width instead of flex + minWidth
-
-            <View style={[{ width: screenWidth }]}>
-
-              <FlatList
-                data={pageData.entries}
-                keyExtractor={(item) => item.id.toString()}
-                renderItem={({ item }) => {
-                  const itemDate = new Date(item.created_at);
-                  const diaryData = {
-                    id: item.id,
-                    created_at: itemDate,
-                    glucose: item.glucose,
-                    carbs: item.carbs,
-                    insulin: item.insulin,
-                    meal_type: item.meal_type,
-                    activity_level: item.activity_level,
-                    note: item.note || '',
-                    uri_array: item.uri_array || []
-                  };
-                  return (
-                    <DiaryListItem
-                      diaryData={diaryData}
-                      onPress={() => {
-                        setSelectedDiaryData && setSelectedDiaryData(diaryData);
-                        toggleEntry && toggleEntry(true);
-                      }}
-                    />
-                  );
+          data={currentPageEntries}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={({ item }) => {
+            const itemDate = new Date(item.created_at);
+            const diaryData = {
+              id: item.id,
+              created_at: itemDate,
+              glucose: item.glucose,
+              carbs: item.carbs,
+              insulin: item.insulin,
+              meal_type: item.meal_type,
+              activity_level: item.activity_level,
+              note: item.note || '',
+              uri_array: item.uri_array || []
+            };
+            return (
+              <DiaryListItem
+                appData={appData}
+                diaryData={diaryData}
+                onPress={() => {
+                  setSelectedDiaryData?.(diaryData);
+                  toggleEntry?.(true);
                 }}
-                ListEmptyComponent={renderEmptyComponent}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{
-                  paddingBottom: 100,
-                  flexGrow: 1
-                }}
-                style={{ flex: 1 }}
-                refreshing={dbHook.isLoading}
-                onRefresh={dbHook.refreshEntries}
               />
-            </View>
-
-          )}
+            );
+          }}
+          ListEmptyComponent={renderEmptyComponent}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            paddingBottom: 100,
+            flexGrow: 1
+          }}
+          style={{ flex: 1 }}
+          refreshing={dbHook.isLoading}
+          onRefresh={dbHook.refreshEntries}
         />
       </View>
       <FAB

@@ -1,13 +1,13 @@
+import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
-import { customStyles } from "@/app/constants/UI/styles";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useMemo } from "react";
-import { View } from "react-native";
-import { Surface, Text, useTheme } from "react-native-paper";
+import { Image, View } from "react-native";
+import { Icon, Surface, Text } from "react-native-paper";
+
+
 
 export function DiaryListItem(
-  { diaryData, onPress }: { diaryData: DiaryData, onPress?: () => void }) {
+  { diaryData, onPress, appData }: { diaryData: DiaryData, onPress?: () => void, appData: AppData }) {
   const { theme, styles } = useAppTheme();
 
   const formatTime = (date: Date) => {
@@ -18,7 +18,8 @@ export function DiaryListItem(
     });
   };
 
-  const getMealIcon = (mealType: string) => {
+  const getMealIcon = (mealType?: string) => {
+
     switch (mealType?.toLowerCase()) {
       case 'breakfast': return 'coffee';
       case 'lunch': return 'food';
@@ -26,11 +27,128 @@ export function DiaryListItem(
       case 'snack': return 'food-apple';
       default: return 'silverware';
     }
+
   };
 
+  const getActivityIcon = (activity?: string) => {
+
+    switch (activity?.toLowerCase()) {
+      case 'none': return 'sofa';
+      case 'low': return 'walk';
+      case 'medium': return 'run';
+      case 'high': return 'run-fast';
+      default: return 'help'; // or some default activity icon
+
+    }
+  }
+
+  const getUnit = (unit?: String) => {
+    switch (unit?.toLowerCase()) {
+      case 'mmol': return 'mmol/l'
+      case 'mgdl': return 'mg/Dl'
+    }
+  }
+
+
+
   return (
-    
-      
+
+    <Surface style={[styles.box, { marginBottom: 8, borderRadius: 8 }]} elevation={1} onTouchEnd={onPress}>
+
+      <View style={[styles.header, { borderTopEndRadius: 8, borderTopStartRadius: 8 }]}>
+        <Text variant={"labelLarge"} style={{ color: theme.colors.onPrimary, fontWeight: 'bold' }}>
+          {formatTime(diaryData.created_at)}
+        </Text>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end' }}>
+          <Icon source={getMealIcon(diaryData.meal_type || '')} size={20} color={theme.colors.onPrimaryContainer} />
+        </View>
+        <Text variant={"labelSmall"} style={{ color: theme.colors.onPrimaryContainer }}>
+          {diaryData.meal_type}
+        </Text>
+
+      </View>
+
+
+
+      <View style={[styles.content, { borderBottomEndRadius: 8, borderBottomStartRadius: 8, maxHeight: 90, minHeight: 75 }]}>
+        <View style={[styles.row, { gap: 4 }]}>
+
+
+          <View style={{ height: '100%', flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8, borderWidth: 1,
+                borderColor: theme.colors.outlineVariant }}>
+            {diaryData.uri_array && diaryData.uri_array.length > 0 ? (
+              <Image
+                source={{ uri: diaryData.uri_array.at(0) }}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: 8,
+                  //marginTop: 8
+                }}
+                resizeMode="contain"
+              />
+            ) : (
+                <Icon source="image-off" size={34} color={theme.colors.onSurfaceVariant} />
+            )}
+          </View>
+          <View style={{ flex: 2 }}>
+            <View style={[
+              { flex: 1 },
+              {
+                backgroundColor: theme.colors.surfaceVariant,
+                borderRadius: 8,
+                padding: 12,
+                borderWidth: 1,
+                borderColor: theme.colors.outlineVariant,
+
+              }
+            ]}>
+              <Text
+                variant={"bodySmall"}
+                style={{
+                  color: diaryData.note ? theme.colors.onSurface : theme.colors.onSurfaceVariant,
+                  textAlign: 'justify',
+                  textAlignVertical: 'top',
+                  lineHeight: 18,
+                  flex: 1,
+                }}
+              >
+                {diaryData.note || "No notes added..."}
+              </Text>
+            </View>
+          </View>
+          <View style={styles.chip}>
+            <View>
+              <View style={styles.row}>
+                <Icon source={"blood-bag"} size={20} color={theme.colors.onPrimaryContainer} />
+                <Text variant={"labelSmall"} style={{ color: theme.colors.onPrimaryContainer, marginLeft: 8 }}>
+                  {diaryData.glucose} {getUnit(appData.settings.glucose)}
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Icon source={"needle"} size={20} color={theme.colors.onPrimaryContainer} />
+                <Text variant={"labelSmall"} style={{ color: theme.colors.onPrimaryContainer, marginLeft: 8 }}>
+                  {diaryData.insulin}
+                </Text>
+              </View>
+              <View style={styles.row}>
+                <Icon source={getActivityIcon(diaryData.activity_level || '')} size={20} color={theme.colors.onPrimaryContainer} />
+                <Text variant={"labelSmall"} style={{ color: theme.colors.onPrimaryContainer, marginLeft: 8 }}>
+                  {diaryData.activity_level}
+                </Text>
+              </View>
+            </View>
+
+          </View>
+
+        </View>
+
+      </View>
+    </Surface>
+
+
+
+
     // <Surface style={[styles.card, { marginVertical: 6, marginHorizontal: 4 }]} onTouchEnd={onPress}>
     //   {/* Calendar-style header with time and meal - using primaryContainer for selected items/highlighted sections */}
     //   <View style={{
@@ -58,7 +176,7 @@ export function DiaryListItem(
     //         color={theme.colors.onPrimary}
     //       />
     //     </View>
-        
+
     //     {/* Time and meal type - using onPrimaryContainer for text on primary container backgrounds */}
     //     <View style={{ flex: 1 }}>
     //       <Text variant="headlineSmall" style={{
@@ -259,6 +377,6 @@ export function DiaryListItem(
     //     )}
     //   </View>
     // </Surface>
-   
+
   );
 }

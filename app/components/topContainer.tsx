@@ -24,6 +24,8 @@ interface TopContainerProps {
   showRightButton?: boolean;
 }
 
+
+
 export function TopContainer({
   leftIcon = "note",
   leftIconSize = 24,
@@ -148,21 +150,31 @@ interface DiaryTopContainerProps {
   };
 }
 
-export function InputTopContainer({ editingEntry, calendarHook }: DiaryTopContainerProps) {
+interface InputTopContainerProps 
+{
+  editingEntry?: DiaryData | null; 
+  calendarHook?: any;
+  navCamera?: () => void;
+}
+
+export function InputTopContainer({ editingEntry, calendarHook, navCamera }: InputTopContainerProps) {
   const title = editingEntry ? 'Edit entry' : 'New entry';
   const subtitle = editingEntry
-    ? calendarHook.formatTime(editingEntry.created_at) + ' [' + calendarHook.formatDate(editingEntry.created_at) + ']'
-    : calendarHook.formatTime(new Date()) + ' [' + calendarHook.formatDate(new Date()) + ']';
+    ? `${calendarHook.formatTime(editingEntry.created_at)} [${calendarHook.formatDate(editingEntry.created_at)}]`
+    : `${calendarHook.formatTime(new Date())} [${calendarHook.formatDate(new Date())}` + ']';
 
   return (
     <TopContainer
+      showRightButton={true}
+      onRightPress={navCamera}
       leftIcon="note-plus"
-      rightIcon="camera-plus"
+      //rightIcon="camera-plus"
       title={title}
       subtitle={subtitle}
     />
   );
 }
+
 
 export function DiaryTopContainer({
   calendarHook,

@@ -85,7 +85,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         alignItems: 'center',
         paddingHorizontal: 8,
         paddingVertical: 4,
-        margin: 2,
         gap: 4,
     },
     chipSecondary: {

@@ -8,7 +8,6 @@ import { Button, SegmentedButtons, Text } from "react-native-paper";
 import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
 import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
-import { StatisticsHeader } from "./components/StatisticsHeader";
 import { StatisticsTopContainer } from "@/app/components/topContainer";
 
 

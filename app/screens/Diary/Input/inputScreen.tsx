@@ -57,20 +57,21 @@ export function InputScreen({
   // Load editing entry if provided
   useEffect(() => {
     const editingData = route.params?.editingEntry as DiaryData;
-    if (editingData) {
-      setEditingEntry(editingData);
-      setTempGlucose(editingData.glucose || (appData.settings.glucose === "mmol" ? 5.6 : 100));
-      setTempCarbs(editingData.carbs?.toString() || "0");
-      setTempInsulin(editingData.insulin?.toString() || "0");
-      setTempNote(editingData.note || "");
-      setTempActivity(editingData.activity_level || "none");
-      setTempMeal(editingData.meal_type || "snack");
+    if (!editingData) {
+      return;
     }
+    setEditingEntry(editingData);
+    setTempGlucose(editingData.glucose || (appData.settings.glucose === "mmol" ? 5.6 : 100));
+    setTempCarbs(editingData.carbs?.toString() || "0");
+    setTempInsulin(editingData.insulin?.toString() || "0");
+    setTempNote(editingData.note || "");
+    setTempActivity(editingData.activity_level || "none");
+    setTempMeal(editingData.meal_type || "snack");
   }, [route.params?.editingEntry, appData.settings.glucose]);
 
   const handleSave = async () => {
     if (isSaving) return;
-    
+
     setIsSaving(true);
     try {
       // Prepare form data
@@ -94,7 +95,7 @@ export function InputScreen({
 
       // Call the save function with editing ID and form data
       await onSave(editingEntry?.id, formData);
-      
+
       // Navigate back after successful save with a small delay
       console.log('🔸 Save successful, navigating back');
       setTimeout(() => {
@@ -107,7 +108,7 @@ export function InputScreen({
           navigation.navigate('MainDiary');
         }
       }, 100);
-      
+
     } catch (error) {
       console.error('Save failed:', error);
       // Still navigate back even on error
@@ -128,127 +129,142 @@ export function InputScreen({
   return (
     <View style={styles.background}>
       <InputTopContainer
+        navCamera={() => navigation.navigate("DiaryCamera")}
         editingEntry={editingEntry}
         calendarHook={calendarHook}
       />
+      <View style={styles.container}>
 
-      <View style={styles.box}>
-        <View style={styles.content}>
-          <GlucosePicker
-            selectedValue={tempGlucose}
-            onValueChange={setTempGlucose}
-            appData={appData}
+
+        <GlucosePicker
+          selectedValue={tempGlucose}
+          onValueChange={setTempGlucose}
+          appData={appData}
+          disabled={isSaving}
+          height={72}
+          itemHeight={36}
+        />
+
+        <View style={[styles.row, { gap: 4 }]}>
+          <CustomTextInput
+            value={tempCarbs}
+            onChangeText={setTempCarbs}
+            placeholder="0"
+            keyboardType="numeric"
+            leftIcon="bread-slice"
+            suffix="g"
+            maxLength={4}
+            containerStyle={{ flex: 1 }}
             disabled={isSaving}
-            height={72}
-            itemHeight={36}
           />
-
-          <View style={[styles.row, { gap: 4 }]}>
-            <CustomTextInput
-              value={tempCarbs}
-              onChangeText={setTempCarbs}
-              placeholder="0"
-              keyboardType="numeric"
-              leftIcon="bread-slice"
-              suffix="g"
-              maxLength={4}
-              containerStyle={{ flex: 1 }}
-              disabled={isSaving}
-            />
-            <CustomTextInput
-              value={tempInsulin}
-              onChangeText={setTempInsulin}
-              placeholder="0"
-              keyboardType="numeric"
-              leftIcon="needle"
-              suffix="units"
-              maxLength={4}
-              containerStyle={{ flex: 1 }}
-              disabled={isSaving}
-            />
-          </View>
 
           <CustomTextInput
-            value={tempNote}
-            onChangeText={setTempNote}
-            placeholder="Add any notes about your meal or how you're feeling..."
-            multiline
-            numberOfLines={4}
-            minHeight={120}
-            maxHeight={120}
-            leftIcon="note-text"
-            maxLength={500}
+            value={tempInsulin}
+            onChangeText={setTempInsulin}
+            placeholder="0"
+            keyboardType="numeric"
+            leftIcon="needle"
+            suffix="units"
+            maxLength={4}
+            containerStyle={{ flex: 1 }}
             disabled={isSaving}
           />
+        </View>
 
-          <ButtonPicker 
-            value={tempActivity} 
-            setValue={setTempActivity} 
-            valueArray={activityArray} 
-            iconName="run" 
-          />
-          
-          <ButtonPicker 
-            value={tempMeal} 
-            setValue={setTempMeal} 
-            valueArray={mealArray} 
-            iconName="food" 
-          />
 
-          {/* Photos Section */}
-          <View style={styles.boxPicker}>
-            {photoURIs.length === 0 ? (
-              <View style={styles.content}>
-                <View style={styles.row}>
-                  <View style={{ paddingHorizontal: 4, width: 44 }}>
-                    <Icon source="camera" size={24} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                      No photos added yet...
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ) : (
-              <View style={styles.content}>
-                <FlatList
-                  data={photoURIs}
-                  horizontal
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <View style={{ 
-                      width: 100, 
-                      height: 100, 
-                      marginRight: 8,
-                      borderWidth: 1, 
-                      borderColor: theme.colors.outline 
-                    }}>
-                      <Image 
-                        source={{ uri: item }} 
-                        style={{ flex: 1, resizeMode: 'cover' }} 
-                      />
-                    </View>
-                  )}
-                />
-              </View>
-            )}
-          </View>
 
-          {/* Save Button */}
-          <View style={[styles.row, { justifyContent: 'flex-end' }]}>
-            <IconButton
-              size={40}
-              mode="outlined"
-              icon="floppy"
-              style={{ borderColor: theme.colors.outlineVariant }}
-              onPress={handleSave}
+        <View style={[styles.row, { gap: 8, alignItems: 'stretch', flex: 1 }]}>
+          <View style={{ flex: 1 }}>
+            <CustomTextInput
+              value={tempNote}
+              onChangeText={setTempNote}
+              placeholder="Add any notes about your meal or how you're feeling..."
+              multiline
+              numberOfLines={10}
+              leftIcon="note-text"
+              maxLength={150}
               disabled={isSaving}
+              containerStyle={{ flex: 1 }} 
+              inputStyle={{ flex: 1 }} 
             />
           </View>
+
+          <View style={{ flex: 1 }}>
+            <ButtonPicker
+              value={tempActivity}
+              setValue={setTempActivity}
+              valueArray={activityArray}
+              iconName="run"
+            />
+
+            <ButtonPicker
+              value={tempMeal}
+              setValue={setTempMeal}
+              valueArray={mealArray}
+              iconName="food"
+            />
+          </View>
+
+
+        </View>
+    
+        <View style={styles.boxPicker}>
+          {photoURIs.length === 0 ? (
+            <View style={styles.content}>
+              <View style={styles.row}>
+                <View style={{ paddingHorizontal: 4, width: 44 }}>
+                  <Icon source="camera" size={24} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                    No photos added yet...
+                  </Text>
+                </View>
+              </View>
+            </View>
+          ) : (
+            <View style={styles.content}>
+              <FlatList
+                data={photoURIs}
+                horizontal
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <View style={{
+                    flex: 1,
+                    marginRight: 8,
+                    borderWidth: 1,
+                    borderColor: theme.colors.outline
+                  }}>
+                    <Image
+                      source={{ uri: item }}
+                      style={{ flex: 1, resizeMode: 'cover' }}
+                    />
+                  </View>
+                )}
+              />
+            </View>
+          )}
+        </View>
+
+        {/* Photos Section */}
+        
+
+        {/* Save Button */}
+        <View style={[styles.row, { justifyContent: 'flex-end', padding: 20 }]}>
+          <IconButton
+            size={40}
+            mode="outlined"
+            icon="floppy"
+            style={{ borderColor: theme.colors.outlineVariant }}
+            onPress={handleSave}
+            disabled={isSaving}
+          />
         </View>
       </View>
+
+
     </View>
+
   );
 }
 

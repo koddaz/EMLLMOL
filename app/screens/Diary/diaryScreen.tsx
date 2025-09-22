@@ -60,6 +60,7 @@ export function DiaryScreen({
 
 
       <DiaryList
+        appData={appData}
         toggleEntry={() => { dbHook.toggleEntry() }}
         setSelectedDiaryData={setSelectedDiaryData}
         calendarHook={calendarHook}

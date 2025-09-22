@@ -147,7 +147,7 @@ export function DiaryEntry({
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await dbHook.removeEntry(diaryData.id.toString());
+            await dbHook.removeEntry(diaryData.id?.toString());
             await dbHook.refreshEntries();
             dbHook.toggleEntry;
           }
