@@ -7,21 +7,16 @@ import { Button, Text } from "react-native-paper";
 
 interface AccountActionsCardProps {
     appData: AppData;
-    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
     authHook: any;
 }
 
 export function AccountActionsCard({
     appData,
-    setCurrentSection,
     authHook
 }: AccountActionsCardProps) {
     const { theme, styles } = useAppTheme();
     
 
-    useEffect(() => {
-        setCurrentSection('account');
-    }, []);
 
     const handleSignOut = async () => {
         try {

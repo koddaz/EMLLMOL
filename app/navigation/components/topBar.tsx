@@ -1,3 +1,4 @@
+import React from "react";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { Header } from "@react-navigation/elements";
 import { Image, View } from "react-native";
@@ -17,7 +18,7 @@ interface CustomHeaderProps {
   };
 }
 
-export function TopBar({
+export const TopBar = React.memo(function TopBar({
   options,
   title = '',
   showLogo = false,
@@ -97,4 +98,4 @@ export function TopBar({
       )}
     </View>
   );
-}
+});

@@ -10,7 +10,6 @@ interface ProfileSettingsCardProps {
     setShowSuccessMessage: (value: boolean) => void;
     editMode: boolean;
     setEditMode: (mode: boolean) => void;
-    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
     authHook: any;
 }
 
@@ -19,7 +18,6 @@ export function ProfileSettingsCard({
     setShowSuccessMessage,
     editMode,
     setEditMode,
-    setCurrentSection,
     authHook
 }: ProfileSettingsCardProps) {
     const { theme, styles } = useAppTheme();
@@ -30,9 +28,6 @@ export function ProfileSettingsCard({
     const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
     const [avatarUrl, setAvatarUrl] = useState(appData?.profile?.avatarUrl || '');
 
-    useEffect(() => {
-        setCurrentSection('profile');
-    }, []);
 
     const handleUpdateProfile = async () => {
         if (!username || !fullName) return;

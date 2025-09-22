@@ -4,7 +4,7 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useMemo } from "react";
 import { FlatList, View } from "react-native";
-import { FAB, Text } from "react-native-paper";
+import { Divider, FAB, Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
 import { DiaryTopContainer } from "@/app/components/topContainer";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -132,6 +132,8 @@ export function DiaryList(
             : '0'
         }}
       />
+      
+      <Divider style={{ marginTop: 2, marginBottom: 8, marginHorizontal: 8 }} />
 
 
       <View style={styles.container}>

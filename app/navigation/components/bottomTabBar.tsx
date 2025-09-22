@@ -14,9 +14,21 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
   const { theme } = useAppTheme();
   const safeAreaInsets = useSafeAreaInsets();
 
+
+  const visibleRoutes = state.routes.filter((route: any) => {
+    return ['Diary', 'Statistics', 'Settings'].includes(route.name);
+  });
+
+  // Create filtered state with only visible routes
+  const filteredState = {
+    ...state,
+    routes: visibleRoutes,
+    index: visibleRoutes.findIndex((route: any) => route.key === state.routes[state.index].key)
+  };
+
   return (
     <BottomNavigation.Bar
-      navigationState={state}
+      navigationState={filteredState}
       safeAreaInsets={{ bottom: Math.max(insets?.bottom || 0, safeAreaInsets.bottom) }}
       style={{
         backgroundColor: theme.colors.surface,
@@ -40,7 +52,7 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
         if (event.defaultPrevented) {
           preventDefault();
         } else {
-          // Find the actual route in the navigation state
+          // Find the actual route in the original navigation state
           const navRoute = state.routes.find((r: any) => r.key === route.key);
           navigation.dispatch({
             ...CommonActions.navigate(navRoute?.name || route.key, navRoute?.params),
@@ -57,7 +69,7 @@ export function CustomBottomTabBar({ navigation, state, descriptors, insets }: B
       }
       getLabelText={({ route }) => {
         const { options } = descriptors[route.key];
-        // Find the actual route in the navigation state
+        // Find the actual route in the original navigation state
         const navRoute = state.routes.find((r: any) => r.key === route.key);
         const label =
           typeof options.tabBarLabel === 'string'

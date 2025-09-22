@@ -13,6 +13,7 @@ import { AppData } from './constants/interface/appData';
 import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
 import { TabNavigation } from './navigation/tabNavigation';
+import { DiaryNavigation } from './navigation/diaryNavigation';
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -251,7 +252,7 @@ export default function Index() {
           <SafeAreaView style={{ flex: 1 }} edges={['top']}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
-                <TabNavigation appData={appData} setAppData={setAppData} />
+                <DiaryNavigation appData={appData} setAppData={setAppData} />
               </NavigationContainer>
             ) : (
               <AuthScreen />

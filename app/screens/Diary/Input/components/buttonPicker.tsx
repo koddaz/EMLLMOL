@@ -1,5 +1,5 @@
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { View, FlatList } from "react-native";
+import { View } from "react-native";
 import { Icon, IconButton, Text } from "react-native-paper";
 
 export function ButtonPicker({
@@ -21,20 +21,22 @@ export function ButtonPicker({
         <View style={{ alignContent: 'flex-start' }}>
           <Icon source={iconName} size={24} />
         </View>
-        <FlatList
-          data={valueArray}
-          numColumns={2}
-          scrollEnabled={false}
-          keyExtractor={(item) => item}
-          columnWrapperStyle={{ justifyContent: 'space-around' }}
-          renderItem={({ item }) => {
+        <View style={{
+          flexDirection: 'row',
+          flexWrap: 'wrap',
+          justifyContent: 'space-around',
+          flex: 1
+        }}>
+          {valueArray.map((item) => {
             const isSelected = value === item;
             return (
               <View
+                key={item}
                 style={{
                   alignItems: 'center',
-
-                  marginHorizontal: 1
+                  marginHorizontal: 1,
+                  width: '45%',
+                  marginBottom: 4
                 }}
               >
                 <IconButton
@@ -56,8 +58,8 @@ export function ButtonPicker({
                 </Text>
               </View>
             );
-          }}
-        />
+          })}
+        </View>
       </View>
 
 

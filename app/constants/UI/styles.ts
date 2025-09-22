@@ -68,7 +68,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
     footer: {
         flexDirection: 'row',
-        backgroundColor: theme.colors.secondaryContainer, // subtle backgrounds
+        backgroundColor: theme.colors.surface, // subtle backgrounds
     },
 
     // INTERACTIVE ELEMENTS

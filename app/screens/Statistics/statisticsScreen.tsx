@@ -1,11 +1,11 @@
 import { AppData } from "@/app/constants/interface/appData";
-import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
+import { useStatistics } from "@/app/hooks/useStatistics";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState, useCallback, useMemo } from "react";
-import { ScrollView, View } from "react-native";
-import { Button, SegmentedButtons, Text } from "react-native-paper";
-import Svg, { Circle, Line, Path, Text as SvgText } from 'react-native-svg';
+import React from "react";
+import { View, useWindowDimensions } from "react-native";
+import { Divider, SegmentedButtons, Text } from "react-native-paper";
+import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
 import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
 import { StatisticsTopContainer } from "@/app/components/topContainer";
@@ -18,126 +18,36 @@ interface StatisticsScreenProps {
     appData: AppData;
 }
 
-export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: StatisticsScreenProps) {
+export function StatisticsScreen({ navigation, dbHook, appData }: StatisticsScreenProps) {
     const { styles, theme } = useAppTheme();
-    const [glucosePeriod, setGlucosePeriod] = useState(7);
-    const [carbsPeriod, setCarbsPeriod] = useState(7);
-    const [entriesPeriod, setEntriesPeriod] = useState(7);
-    const [selectedMealTypes, setSelectedMealTypes] = useState(['breakfast', 'lunch', 'dinner', 'snack']);
-    const [selectedScreen, setSelectedScreen] = useState('glucose');
-    // Calculate the max period to show in header
-    const selectedPeriod = Math.max(glucosePeriod, carbsPeriod, entriesPeriod);
+    const { width: screenWidth } = useWindowDimensions();
+    const {
+        glucosePeriod,
+        setGlucosePeriod,
+        carbsPeriod,
+        setCarbsPeriod,
+        currentSection,
+        setCurrentSection,
+        selectedPeriod,
+        medianGlucose,
+        summaryStats,
+        mealColors,
+        glucoseChartData,
+        carbsDataByMeal,
+    } = useStatistics(dbHook.diaryEntries || []);
 
-    // Generate date array
-    const generateDateArray = useCallback((days: number) => {
-        const array: Date[] = [];
-        const now = new Date();
-        for (let i = days - 1; i >= 0; i--) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            array.push(date);
-        }
-        return array;
-    }, []);
-
-    // Process data functions with meal type separation
-    const processGlucoseData = useCallback((entries: DiaryData[], days: number) => {
-        const daysArray = generateDateArray(days);
-        const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-        const result: { [mealType: string]: { x: number; y: number; date: string }[] } = {};
-
-        mealTypes.forEach(mealType => {
-            const dataByDate: { [key: string]: number[] } = {};
-
-            entries.forEach((entry) => {
-                if (entry.glucose && entry.glucose > 0 && entry.meal_type === mealType) {
-                    const date = new Date(entry.created_at).toISOString().split('T')[0];
-                    if (!dataByDate[date]) dataByDate[date] = [];
-                    dataByDate[date].push(entry.glucose);
-                }
-            });
-
-            result[mealType] = daysArray.map((day, i) => {
-                const dateStr = day.toISOString().split('T')[0];
-                const values = dataByDate[dateStr] || [];
-                const avg = values.length > 0 ? values.reduce((sum, val) => sum + val, 0) / values.length : 0;
-                return { x: i, y: avg, date: dateStr };
-            });
-        });
-
-        return result;
-    }, [generateDateArray]);
-
-    const processCarbsData = useCallback((entries: DiaryData[], days: number) => {
-        const daysArray = generateDateArray(days);
-        const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-        const result: { [mealType: string]: { x: number; y: number; date: string }[] } = {};
-
-        mealTypes.forEach(mealType => {
-            const dataByDate: { [key: string]: number } = {};
-
-            entries.forEach((entry) => {
-                if (entry.carbs && entry.carbs > 0 && entry.meal_type === mealType) {
-                    const date = new Date(entry.created_at).toISOString().split('T')[0];
-                    dataByDate[date] = (dataByDate[date] || 0) + entry.carbs;
-                }
-            });
-
-            result[mealType] = daysArray.map((day, i) => {
-                const dateStr = day.toISOString().split('T')[0];
-                return { x: i, y: dataByDate[dateStr] || 0, date: dateStr };
-            });
-        });
-
-        return result;
-    }, [generateDateArray]);
-
-    const processEntriesData = useCallback((entries: DiaryData[], days: number) => {
-        const daysArray = generateDateArray(days);
-        const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack'];
-        const result: { [mealType: string]: { x: number; y: number; date: string }[] } = {};
-
-        mealTypes.forEach(mealType => {
-            const countByDate: { [key: string]: number } = {};
-
-            entries.forEach((entry) => {
-                if (entry.meal_type === mealType) {
-                    const date = new Date(entry.created_at).toISOString().split('T')[0];
-                    countByDate[date] = (countByDate[date] || 0) + 1;
-                }
-            });
-
-            result[mealType] = daysArray.map((day, i) => {
-                const dateStr = day.toISOString().split('T')[0];
-                return { x: i, y: countByDate[dateStr] || 0, date: dateStr };
-            });
-        });
-
-        return result;
-    }, [generateDateArray]);
-
-    // Multi-line chart component for meal types
-    const MealTypeChart = React.memo(({ dataByMeal, title }: {
-        dataByMeal: { [mealType: string]: { x: number; y: number; date: string }[] },
-        title: string
+    // Simple glucose chart component
+    const GlucoseChart = React.memo(({ data, period }: {
+        data: { x: number; y: number; date: string; hasData?: boolean }[];
+        period: number;
     }) => {
-        const width = 320;
+        const width = screenWidth - 32; // Account for margins
         const height = 220;
         const padding = 40;
         const bottomPadding = 80;
 
-        // Meal type colors
-        const mealColors = {
-            breakfast: '#ff9500', // Orange
-            lunch: '#34c759',     // Green  
-            dinner: '#007aff',    // Blue
-            snack: '#ff3b30'      // Red
-        };
-
-        // Find max Y across all meal types
-        const allData = Object.values(dataByMeal).flat();
-        const maxY = Math.max(1, Math.max(...allData.map(d => d.y)));
-        const dataLength = Object.values(dataByMeal)[0]?.length || 0;
+        const maxY = Math.max(1, Math.max(...data.map(d => d.y)));
+        const dataLength = data.length;
 
         const xScale = d3Scale.scaleLinear().domain([0, dataLength - 1]).range([padding, width - padding]);
         const yScale = d3Scale.scaleLinear().domain([0, maxY]).range([height - bottomPadding, padding]);
@@ -147,32 +57,47 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
             .y(d => yScale(d.y))
             .curve(d3Shape.curveCardinal);
 
-        // Generate grid lines and labels
+        const linePath = lineGenerator(data.filter(d => d.y > 0));
+
+        // Generate grid lines
         const gridLines = [0, 1, 2, 3, 4].map(i => {
             const value = (maxY / 4) * i;
             const y = yScale(value);
             return { value, y };
         });
 
-        // Generate date labels - show first, middle, and last dates
-        const firstMealData = Object.values(dataByMeal)[0] || [];
-        const dateLabels = [0, Math.floor(dataLength / 2), dataLength - 1]
-            .filter(i => i < dataLength)
-            .map(i => {
-                const point = firstMealData[i];
-                if (!point) return null;
-                const date = new Date(point.date);
-                const label = date.toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric'
-                });
-                return {
+        // Generate labels based on period
+        let labels: { x: number; label: string; index: number }[] = [];
+
+        if (period === 1) {
+            // Hourly labels for 1-day view
+            labels = [0, 6, 12, 18, 23]
+                .filter(i => i < dataLength)
+                .map(i => ({
                     x: xScale(i),
-                    label: label,
+                    label: `${i}:00`,
                     index: i
-                };
-            })
-            .filter(Boolean);
+                }));
+        } else {
+            // Date labels for multi-day view
+            labels = [0, Math.floor(dataLength / 2), dataLength - 1]
+                .filter(i => i < dataLength)
+                .map(i => {
+                    const point = data[i];
+                    if (!point) return null;
+                    const date = new Date(point.date);
+                    const label = date.toLocaleDateString('en-US', {
+                        month: 'short',
+                        day: 'numeric'
+                    });
+                    return {
+                        x: xScale(i),
+                        label: label,
+                        index: i
+                    };
+                })
+                .filter(Boolean) as { x: number; label: string; index: number }[];
+        }
 
         return (
             <View style={{ alignItems: 'center', marginVertical: 8 }}>
@@ -204,74 +129,339 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
                         </SvgText>
                     ))}
 
-                    {/* Lines for each meal type */}
-                    {Object.entries(dataByMeal).map(([mealType, data]) => {
-                        const linePath = lineGenerator(data);
-                        const color = mealColors[mealType as keyof typeof mealColors];
+                    {/* Glucose line */}
+                    <Path
+                        d={linePath || ""}
+                        fill="none"
+                        stroke={theme.colors.primary}
+                        strokeWidth={3}
+                    />
 
-                        return (
-                            <React.Fragment key={mealType}>
-                                {/* Meal line */}
-                                <Path
-                                    d={linePath || ""}
-                                    fill="none"
-                                    stroke={color}
-                                    strokeWidth={2}
-                                />
+                    {/* Data points */}
+                    {data.map((point, i) => (
+                        <Circle
+                            key={`point-${i}`}
+                            cx={xScale(point.x)}
+                            cy={yScale(point.y)}
+                            r={point.y > 0 ? 4 : 1}
+                            fill={point.y > 0 ? theme.colors.primary : 'transparent'}
+                        />
+                    ))}
 
-                                {/* Data points for this meal */}
-                                {data.map((point, i) => (
-                                    <Circle
-                                        key={`${mealType}-point-${i}`}
-                                        cx={xScale(point.x)}
-                                        cy={yScale(point.y)}
-                                        r={point.y > 0 ? 3 : 1}
-                                        fill={color}
-                                    />
-                                ))}
-                            </React.Fragment>
-                        );
-                    })}
-
-                    {/* Date labels at bottom */}
-                    {dateLabels.map((dateLabel, i) => (
+                    {/* Value labels for points with data (only for 1-day view) */}
+                    {period === 1 && data.filter(d => d.y > 0).map((point, i) => (
                         <SvgText
-                            key={`date-${i}`}
-                            x={dateLabel.x}
+                            key={`value-${point.x}`}
+                            x={xScale(point.x)}
+                            y={yScale(point.y) - 10}
+                            textAnchor="middle"
+                            fontSize="10"
+                            fontWeight="bold"
+                            fill={theme.colors.primary}
+                        >
+                            {point.y.toFixed(1)}
+                        </SvgText>
+                    ))}
+
+                    {/* Time/Date labels */}
+                    {labels.map((label, i) => (
+                        <SvgText
+                            key={`label-${i}`}
+                            x={label.x}
                             y={height - bottomPadding + 20}
                             textAnchor="middle"
                             fontSize="10"
                             fill="#666"
                         >
-                            {dateLabel.label}
+                            {label.label}
                         </SvgText>
                     ))}
                 </Svg>
-
-                {/* Legend */}
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', marginTop: 8 }}>
-                    {Object.entries(mealColors).map(([mealType, color]) => (
-                        <View key={mealType} style={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            marginHorizontal: 8,
-                            marginVertical: 2
-                        }}>
-                            <View style={{
-                                width: 12,
-                                height: 2,
-                                backgroundColor: color,
-                                marginRight: 4
-                            }} />
-                            <Text variant="bodySmall" style={{ textTransform: 'capitalize' }}>
-                                {mealType}
-                            </Text>
-                        </View>
-                    ))}
-                </View>
             </View>
         );
     });
+
+    // Bar chart component for carbs by meal type
+    const CarbsBarChart = React.memo(({ data, period }: {
+        data: { [mealType: string]: { x: number; y: number; date: string }[] },
+        period: number
+    }) => {
+        const width = screenWidth - 32;
+        const height = 220;
+        const padding = 40;
+        const bottomPadding = 80;
+
+        // Calculate total carbs per meal type for the period
+        const mealTotals = Object.entries(data).map(([mealType, entries]) => ({
+            mealType,
+            total: entries.reduce((sum, entry) => sum + entry.y, 0),
+            color: mealColors[mealType as keyof typeof mealColors]
+        })).filter(item => item.total > 0);
+
+        if (mealTotals.length === 0) {
+            return (
+                <View style={{ alignItems: 'center', justifyContent: 'center', height: 200 }}>
+                    <Text>No carbs data available</Text>
+                </View>
+            );
+        }
+
+        const maxTotal = Math.max(...mealTotals.map(item => item.total));
+        const barWidth = (width - padding * 2) / mealTotals.length * 0.8;
+        const barSpacing = (width - padding * 2) / mealTotals.length * 0.2;
+
+        const yScale = d3Scale.scaleLinear().domain([0, maxTotal]).range([height - bottomPadding, padding]);
+
+        // Generate grid lines
+        const gridLines = [0, 1, 2, 3, 4].map(i => {
+            const value = (maxTotal / 4) * i;
+            const y = yScale(value);
+            return { value, y };
+        });
+
+        return (
+            <View style={{ alignItems: 'center', marginVertical: 8 }}>
+                <Svg width={width} height={height}>
+                    {/* Grid lines */}
+                    {gridLines.map((line, i) => (
+                        <Line
+                            key={`grid-${i}`}
+                            x1={padding}
+                            y1={line.y}
+                            x2={width - padding}
+                            y2={line.y}
+                            stroke="#f0f0f0"
+                            strokeWidth={1}
+                        />
+                    ))}
+
+                    {/* Y-axis labels */}
+                    {gridLines.map((line, i) => (
+                        <SvgText
+                            key={`y-label-${i}`}
+                            x={padding - 8}
+                            y={line.y + 4}
+                            textAnchor="end"
+                            fontSize="10"
+                            fill="#666"
+                        >
+                            {line.value.toFixed(0)}g
+                        </SvgText>
+                    ))}
+
+                    {/* Bars */}
+                    {mealTotals.map((item, i) => {
+                        const barHeight = (height - bottomPadding) - yScale(item.total);
+                        const x = padding + i * (barWidth + barSpacing) + barSpacing / 2;
+
+                        return (
+                            <React.Fragment key={item.mealType}>
+                                {/* Bar */}
+                                <Rect
+                                    x={x}
+                                    y={yScale(item.total)}
+                                    width={barWidth}
+                                    height={barHeight}
+                                    fill={item.color}
+                                    rx={4}
+                                />
+
+                                {/* Value label on top of bar */}
+                                <SvgText
+                                    x={x + barWidth / 2}
+                                    y={yScale(item.total) - 8}
+                                    textAnchor="middle"
+                                    fontSize="12"
+                                    fontWeight="bold"
+                                    fill="#333"
+                                >
+                                    {item.total.toFixed(0)}g
+                                </SvgText>
+
+                                {/* Meal type label */}
+                                <SvgText
+                                    x={x + barWidth / 2}
+                                    y={height - bottomPadding + 20}
+                                    textAnchor="middle"
+                                    fontSize="10"
+                                    fill="#666"
+                                    style={{ textTransform: 'capitalize' }}
+                                >
+                                    {item.mealType}
+                                </SvgText>
+                            </React.Fragment>
+                        );
+                    })}
+                </Svg>
+
+                {/* Period indicator */}
+                <Text variant="bodySmall" style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}>
+                    Total carbs over {period} {period === 1 ? 'day' : 'days'}
+                </Text>
+            </View>
+        );
+    });
+
+    // Summary stats component with chips
+    const SummaryStats = React.memo(() => {
+        const ChipRow = ({ children }: { children: React.ReactNode }) => (
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+                {children}
+            </View>
+        );
+
+        const StatChip = ({ icon, label, value, color }: {
+            icon: string;
+            label: string;
+            value: string;
+            color?: string;
+        }) => (
+            <View style={{
+                flex: 1,
+                marginHorizontal: 2,
+                padding: 8,
+                backgroundColor: color || theme.colors.primaryContainer,
+                borderRadius: 8,
+                alignItems: 'center'
+            }}>
+                <MaterialCommunityIcons
+                    name={icon as any}
+                    size={16}
+                    color={theme.colors.onPrimaryContainer}
+                />
+                <Text variant="bodySmall" style={{
+                    color: theme.colors.onPrimaryContainer,
+                    marginTop: 2,
+                    fontSize: 10,
+                    textAlign: 'center'
+                }}>
+                    {label}
+                </Text>
+                <Text variant="labelMedium" style={{
+                    color: theme.colors.onPrimaryContainer,
+                    fontWeight: 'bold',
+                    textAlign: 'center'
+                }}>
+                    {value}
+                </Text>
+            </View>
+        );
+
+        const MealTypeChip = ({ mealType, carbs, insulin }: {
+            mealType: string;
+            carbs: number;
+            insulin: number;
+        }) => (
+            <View style={{
+                flex: 1,
+                marginHorizontal: 2,
+                padding: 8,
+                backgroundColor: mealColors[mealType as keyof typeof mealColors] + '20',
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: mealColors[mealType as keyof typeof mealColors],
+                alignItems: 'center'
+            }}>
+                <Text variant="bodySmall" style={{
+                    color: mealColors[mealType as keyof typeof mealColors],
+                    marginBottom: 4,
+                    fontSize: 10,
+                    textTransform: 'capitalize',
+                    fontWeight: 'bold'
+                }}>
+                    {mealType}
+                </Text>
+                <Text variant="bodySmall" style={{
+                    color: mealColors[mealType as keyof typeof mealColors],
+                    fontSize: 9
+                }}>
+                    {carbs.toFixed(0)}g carbs
+                </Text>
+                <Text variant="bodySmall" style={{
+                    color: mealColors[mealType as keyof typeof mealColors],
+                    fontSize: 9
+                }}>
+                    {insulin.toFixed(1)}u insulin
+                </Text>
+            </View>
+        );
+
+        return (
+            <View style={{ padding: 8 }}>
+                {/* Main stats row */}
+                <ChipRow>
+                    <StatChip
+                        icon="blood-bag"
+                        label="Median Glucose"
+                        value={`${medianGlucose.toFixed(1)} ${appData.settings.glucose}`}
+                    />
+                    <StatChip
+                        icon="silverware"
+                        label="Total Meals"
+                        value={summaryStats.totalMeals.toString()}
+                    />
+                </ChipRow>
+
+                <ChipRow>
+                    <StatChip
+                        icon="food"
+                        label="Total Carbs"
+                        value={`${summaryStats.totalCarbs.toFixed(0)}g`}
+                    />
+                    <StatChip
+                        icon="needle"
+                        label="Total Insulin"
+                        value={`${summaryStats.totalInsulin.toFixed(1)}u`}
+                    />
+                </ChipRow>
+
+                {/* Meal breakdown */}
+                <Text variant="labelMedium" style={{
+                    marginTop: 12,
+                    marginBottom: 8,
+                    color: theme.colors.onSurface,
+                    textAlign: 'center'
+                }}>
+                    Breakdown by Meal Type
+                </Text>
+
+                <ChipRow>
+                    <MealTypeChip
+                        mealType="breakfast"
+                        carbs={summaryStats.carbsByMeal.breakfast}
+                        insulin={summaryStats.insulinByMeal.breakfast}
+                    />
+                    <MealTypeChip
+                        mealType="lunch"
+                        carbs={summaryStats.carbsByMeal.lunch}
+                        insulin={summaryStats.insulinByMeal.lunch}
+                    />
+                </ChipRow>
+
+                <ChipRow>
+                    <MealTypeChip
+                        mealType="dinner"
+                        carbs={summaryStats.carbsByMeal.dinner}
+                        insulin={summaryStats.insulinByMeal.dinner}
+                    />
+                    <MealTypeChip
+                        mealType="snack"
+                        carbs={summaryStats.carbsByMeal.snack}
+                        insulin={summaryStats.insulinByMeal.snack}
+                    />
+                </ChipRow>
+
+                <Text variant="bodySmall" style={{
+                    marginTop: 8,
+                    color: theme.colors.onSurfaceVariant,
+                    textAlign: 'center'
+                }}>
+                    Summary over {selectedPeriod} {selectedPeriod === 1 ? 'day' : 'days'}
+                </Text>
+            </View>
+        );
+    });
+
 
     const PeriodButtons = React.memo(({
         period,
@@ -289,24 +479,24 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
         };
 
         return (
-            <View style={[styles.row, { justifyContent: 'center', marginVertical: 8 }]}>
+            <View style={[styles.row, { justifyContent: 'center' }]}>
                 <SegmentedButtons
                     value={periodToString(period)}
                     onValueChange={handlePeriodChange}
                     buttons={[
                         {
-                            value: '7',
-                            label: '7 Days',
-                            style: { borderRadius: 8 },
+                            value: currentSection === 'carbs' || 'summary' ? '1' : '7',
+                            label: currentSection === 'carbs' || 'summary' ? 'today' : '7 days',
+                            style: { borderRadius: 0 },
                         },
                         {
-                            value: '14',
-                            label: '14 Days',
+                            value: currentSection === 'carbs' || 'summary' ? '7' : '14',
+                            label: currentSection === 'carbs' || 'summary' ? '7 days' : '14 days',
                         },
                         {
-                            value: '30',
-                            label: '30 Days',
-                            style: { borderRadius: 8 },
+                            value: currentSection === 'carbs'  || 'summary' ? '14' : '30',
+                            label: currentSection === 'carbs'  || 'summary' ? '14 days' : '30 days',
+                            style: { borderRadius: 0 },
                         },
                     ]}
                 />
@@ -314,70 +504,37 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
         );
     });
 
-    // Memoized data by meal type
-    const glucoseDataByMeal = useMemo(() =>
-        processGlucoseData(dbHook.diaryEntries || [], glucosePeriod),
-        [dbHook.diaryEntries, glucosePeriod, processGlucoseData]
-    );
-
-    const carbsDataByMeal = useMemo(() =>
-        processCarbsData(dbHook.diaryEntries || [], carbsPeriod),
-        [dbHook.diaryEntries, carbsPeriod, processCarbsData]
-    );
-
-    const entriesDataByMeal = useMemo(() =>
-        processEntriesData(dbHook.diaryEntries || [], entriesPeriod),
-        [dbHook.diaryEntries, entriesPeriod, processEntriesData]
-    );
-
     const renderStats = () => {
         let content;
-        if (selectedScreen === 'glucose') {
+        if (currentSection === 'glucose') {
             content = (
                 <>
-                    <View style={styles.header}>
-                        <MaterialCommunityIcons name="blood-bag" size={20} color={theme.colors.onSecondaryContainer} />
-                        <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                            Blood Glucose
-                        </Text>
-                    </View>
                     <View style={styles.content}>
+                        <GlucoseChart data={glucoseChartData} period={glucosePeriod} />
+                    </View>
+                    <View style={styles.footer}>
                         <PeriodButtons period={glucosePeriod} setPeriod={setGlucosePeriod} />
-                        <MealTypeChart dataByMeal={glucoseDataByMeal} title="Glucose" />
                     </View>
-                    <View style={styles.footer} />
                 </>
             );
-        } else if (selectedScreen === 'carbs') {
+        } else if (currentSection === 'carbs') {
             content = (
                 <>
-                    <View style={styles.header}>
-                        <MaterialCommunityIcons name="food" size={20} color={theme.colors.onSecondaryContainer} />
-                        <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                            Carbohydrates
-                        </Text>
-                    </View>
                     <View style={styles.content}>
+                        <CarbsBarChart data={carbsDataByMeal} period={carbsPeriod} />
+                    </View>
+                    <View style={styles.footer}>
                         <PeriodButtons period={carbsPeriod} setPeriod={setCarbsPeriod} />
-                        <MealTypeChart dataByMeal={carbsDataByMeal} title="Carbs" />
                     </View>
-                    <View style={styles.footer} />
                 </>
             );
-        } else if (selectedScreen === 'entries') {
+        } else if (currentSection === 'summary') {
             content = (
                 <>
-                    <View style={styles.header}>
-                        <MaterialCommunityIcons name="calendar-check" size={20} color={theme.colors.onSecondaryContainer} />
-                        <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                            Diary Entries
-                        </Text>
-                    </View>
                     <View style={styles.content}>
-                        <PeriodButtons period={entriesPeriod} setPeriod={setEntriesPeriod} />
-                        <MealTypeChart dataByMeal={entriesDataByMeal} title="Entries" />
+                        <SummaryStats />
+                        <PeriodButtons period={carbsPeriod} setPeriod={setCarbsPeriod} />
                     </View>
-                    <View style={styles.footer} />
                 </>
             );
         }
@@ -387,10 +544,48 @@ export function StatisticsScreen({ navigation, dbHook, calendarHook, appData }: 
 
     return (
         <View style={styles.background}>
-            <StatisticsTopContainer period={selectedPeriod.toString()} />
-            
+            <StatisticsTopContainer
+                period={currentSection === 'glucose' ? `Median: ${medianGlucose.toFixed(1)} ${appData.settings.glucose}` : `${selectedPeriod} days`}
+                content={
+                <SegmentedButtons
+                    value={currentSection}
+                    onValueChange={setCurrentSection}
+                    density="small"
+                    buttons={[
+                        {
+                            value: 'summary',
+                            label: 'Summary',
+                            icon: "chart-pie",
+                            checkedColor: theme.colors.secondary,
+                            uncheckedColor: theme.colors.primary,
+                            style: { borderRadius: 0, borderBottomWidth: 0, borderLeftWidth: 0 }
+                        },
+                        {
+                            value: 'carbs',
+                            label: 'Carbs',
+                            icon: "food",
+                            checkedColor: theme.colors.secondary,
+                            uncheckedColor: theme.colors.primary,
+                            style: { borderRadius: 0, borderBottomWidth: 0, borderRightWidth: 0 }
+                        },
+                        {
+                            value: 'glucose',
+                            label: 'Glucose',
+                            icon: "blood-bag",
+                            checkedColor: theme.colors.secondary,
+                            uncheckedColor: theme.colors.primary,
+                            style: { borderRadius: 0, borderBottomWidth: 0, borderRightWidth: 0 }
+                        },
+
+                    ]}
+                />
+            } />
+            <Divider style={{ marginTop: 2, marginBottom: 8, marginHorizontal: 8 }} />
+            <View style={styles.container}>
                 {renderStats()}
-            
+            </View>
+
+
 
         </View>
     );

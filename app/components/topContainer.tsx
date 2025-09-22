@@ -11,6 +11,16 @@ interface ChipData {
   iconColor?: string;
 }
 
+interface ButtonData {
+  icon: string;
+  size?: number;
+  backgroundColor?: string;
+  iconColor?: string;
+  containerColor?: string;
+  mode?: 'contained' | 'outlined' | 'text';
+  onPress: () => void;
+}
+
 interface TopContainerProps {
   leftIcon?: string;
   leftIconSize?: number;
@@ -21,8 +31,9 @@ interface TopContainerProps {
   onLeftPress?: () => void;
   onRightPress?: () => void;
   chips?: ChipData[];
-  showRightButton?: boolean;
-  content?: any
+  showButtons?: boolean;
+  content?: any;
+  buttons?: ButtonData[];
 }
 
 
@@ -37,113 +48,147 @@ export function TopContainer({
   onLeftPress,
   onRightPress,
   chips = [],
-  showRightButton = true,
-  content
+  showButtons = true,
+  content,
+  buttons = [],
 }: TopContainerProps) {
   const { styles, theme } = useAppTheme();
 
   return (
-
+    <View style={{backgroundColor: theme.colors.surface,elevation: 4,
+      borderRadius: 8, padding: 8, margin: 8}}>
     <View style={{
-      flexDirection: 'row',
-      alignItems: 'center',
-      margin: 8,
-      padding: 8,
-      backgroundColor: theme.colors.surface,
-      elevation: 4,
-      borderRadius: 8
-    }}>
-      {/* Left Icon */}
-      {!leftIcon && (
-        <View style={{ marginRight: 8 }}>
-          <Icon
-            source={leftIcon}
-            size={leftIconSize}
-            color={theme.colors.onSurface}
-          />
-        </View>
-      )}
 
-      {/* Center Content */}
-      <View style={{ flex: 2, marginLeft: leftIcon ? 8 : 0 }}>
-        <Text variant="titleLarge" style={{
-          fontSize: 20,
-          fontWeight: 'bold',
-          color: theme.colors.onSurface
-        }}>
-          {title}
-        </Text>
-        {subtitle && (
-          <Text variant="bodyMedium" style={{
-            fontSize: 14,
-            color: theme.colors.onSurface,
-            marginTop: 2
+      
+      
+      
+    }}>
+      {/* Header Row */}
+      <View style={{
+        flexDirection: 'row',
+        alignItems: 'center'
+      }}>
+        {/* Left Icon */}
+        {!leftIcon && (
+          <View style={{ marginRight: 8 }}>
+            <Icon
+              source={leftIcon}
+              size={leftIconSize}
+              color={theme.colors.onSurface}
+            />
+          </View>
+        )}
+
+        {/* Center Content */}
+        <View style={{ flex: 2, marginLeft: leftIcon ? 8 : 0 }}>
+          <Text variant="titleLarge" style={{
+            fontSize: 20,
+            fontWeight: 'bold',
+            color: theme.colors.onSurface
           }}>
-            {subtitle}
+            {title}
           </Text>
-        )}
-        {content && (
-          <Text>Hej</Text>
-        )}
+          {subtitle && (
+            <Text variant="bodyMedium" style={{
+              fontSize: 14,
+              color: theme.colors.onSurface,
+              marginTop: 2
+            }}>
+              {subtitle}
+            </Text>
+          )}
+        </View>
+
+        {/* Chips */}
+        <FlatList
+          data={chips}
+          numColumns={2}
+          scrollEnabled={false}
+          keyExtractor={(item, index) => index.toString()}
+          columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 0 }}
+          renderItem={({ item: chip }) => (
+            <View
+              style={[
+                styles.chip,
+                {
+                  backgroundColor: chip.backgroundColor || theme.colors.primaryContainer,
+                  flex: 1,
+                  marginHorizontal: 2
+                }
+              ]}
+            >
+              <Icon
+                source={chip.icon}
+                size={16}
+                color={chip.iconColor || theme.colors.onPrimaryContainer}
+              />
+              {chip.text && (
+                <Text
+                  variant="bodySmall"
+                  style={{
+                    color: chip.textColor || theme.colors.onPrimaryContainer,
+                    marginLeft: 4
+                  }}
+                >
+                  {chip.text}
+                </Text>
+              )}
+            </View>
+          )}
+        />
+
+        {/* Right Buttons */}
+        {showButtons && buttons && buttons.length > 1 ? (
+          <FlatList
+            data={buttons}
+            horizontal
+            scrollEnabled={false}
+            keyExtractor={(item, index) => index.toString()}
+            renderItem={({ item: button }) => (
+              <IconButton
+                mode={"outlined"}
+                icon={button.icon}
+                iconColor={button.iconColor || theme.colors.onPrimary}
+                size={button.size || rightIconSize}
+                onPress={button.onPress}
+                style={{
+                  backgroundColor: button.backgroundColor || theme.colors.secondary,
+                  marginLeft: 8
+                }}
+                containerColor={button.containerColor || theme.colors.onSecondary}
+              />
+            )}
+          />
+        ) : showButtons && onRightPress ? (
+          <IconButton
+            mode="outlined"
+            icon={rightIcon}
+            iconColor={theme.colors.onPrimary}
+            size={rightIconSize}
+            onPress={onRightPress}
+            style={{
+              backgroundColor: theme.colors.secondary,
+              marginLeft: 8
+            }}
+            containerColor={theme.colors.onSecondary}
+          />
+        ) : null}
       </View>
 
-      {/* Chips */}
-      <FlatList
-        data={chips}
-        numColumns={2}
-        scrollEnabled={false}
-        keyExtractor={(item, index) => index.toString()}
-        columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 0 }}
-        renderItem={({ item: chip }) => (
-          <View
-            style={[
-              styles.chip,
-              {
-                backgroundColor: chip.backgroundColor || theme.colors.primaryContainer,
-                flex: 1,
-                marginHorizontal: 2
-              }
-            ]}
-          >
-            <Icon
-              source={chip.icon}
-              size={16}
-              color={chip.iconColor || theme.colors.onPrimaryContainer}
-            />
-            {chip.text && (
-              <Text
-                variant="bodySmall"
-                style={{
-                  color: chip.textColor || theme.colors.onPrimaryContainer,
-                  marginLeft: 4
-                }}
-              >
-                {chip.text}
-              </Text>
-            )}
-          </View>
-          
-        )}
-      />
 
-      {/* Right Button */}
-      {showRightButton && (
-        <IconButton
-          mode="outlined"
-          icon={rightIcon}
-          iconColor={theme.colors.onPrimary}
-          size={rightIconSize}
-          onPress={onRightPress}
-          style={{
-            backgroundColor: theme.colors.secondary,
-            marginLeft: 8
-          }}
-          containerColor={theme.colors.onSecondary}
-        />
-      )}
-      
+
     </View>
-    
+
+          {/* Content Section */}
+      {content && (
+        <View style={{ marginHorizontal: -8, marginTop: 8, marginBottom: -8 }}>
+          {content}
+        </View>
+      )}
+      </View>
+      
+
+
   );
 }
 
@@ -159,27 +204,37 @@ interface DiaryTopContainerProps {
   };
 }
 
-interface InputTopContainerProps 
-{
-  editingEntry?: DiaryData | null; 
+interface InputTopContainerProps {
+  editingEntry?: DiaryData | null;
   calendarHook?: any;
   navCamera?: () => void;
+  onSave?: () => void;
 }
 
-export function InputTopContainer({ editingEntry, calendarHook, navCamera }: InputTopContainerProps) {
+export function InputTopContainer({ editingEntry, calendarHook, navCamera, onSave }: InputTopContainerProps) {
   const title = editingEntry ? 'Edit entry' : 'New entry';
   const subtitle = editingEntry
     ? `${calendarHook.formatTime(editingEntry.created_at)} [${calendarHook.formatDate(editingEntry.created_at)}]`
     : `${calendarHook.formatTime(new Date())} [${calendarHook.formatDate(new Date())}` + ']';
 
+  const buttons: ButtonData[] = navCamera && onSave ? [
+    {
+      icon: "camera-plus",
+      onPress: navCamera
+    },
+    {
+      icon: "floppy",
+      onPress: onSave
+    }
+  ] : [];
+
   return (
     <TopContainer
-      showRightButton={true}
-      onRightPress={navCamera}
+      showButtons={true}
       leftIcon="note-plus"
-      //rightIcon="camera-plus"
       title={title}
       subtitle={subtitle}
+      buttons={buttons}
     />
   );
 }
@@ -202,7 +257,8 @@ export function DiaryTopContainer({
       icon: "blood-bag",
       text: entriesData.avgGlucose
     },
-    { icon: "needle",
+    {
+      icon: "needle",
       text: entriesData.totalInsulin.toString()
     }
   ] : [];
@@ -216,30 +272,30 @@ export function DiaryTopContainer({
         year: 'numeric'
       })}
       chips={chips}
-      showRightButton={false}
+      showButtons={false}
     />
   );
 }
 
-export function StatisticsTopContainer({ period }: { period: string }) {
+export function StatisticsTopContainer({ period, content }: { period: string, content: any }) {
   return (
     <TopContainer
       leftIcon="chart-line"
       rightIcon="filter"
       title="Statistics"
       subtitle={period}
+      content={content}
     />
   );
 }
 
-export function SettingsTopContainer(content: any) {
+export function SettingsTopContainer({ content }: { content?: any }) {
   return (
     <TopContainer
       leftIcon="cog"
       title="Settings"
       subtitle="Manage your preferences"
-      //rightIcon={editMode ? "check" : "pencil"}
-      showRightButton={false}
+      showButtons={false}
       content={content}
     />
   );

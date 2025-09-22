@@ -267,6 +267,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     saveDiaryEntry,
     updateDiaryEntry,
     retrieveEntries,
+    refreshEntries: retrieveEntries,
     removeEntry,
     isLoading,
     error,

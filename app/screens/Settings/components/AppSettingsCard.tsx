@@ -23,9 +23,6 @@ export function AppSettingsCard({
     const [clockFormat, setClockFormat] = useState(appData.settings.clockFormat);
     const [dateFormat, setDateFormat] = useState(appData.settings.dateFormat);
 
-    useEffect(() => {
-        setCurrentSection('preferences');
-    }, []);
 
     const saveAndLoadSetting = async (
         key: string,

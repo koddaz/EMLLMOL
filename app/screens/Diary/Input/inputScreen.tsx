@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, Image } from 'react-native';
-import { Icon, IconButton, Text } from 'react-native-paper';
+import { View, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Divider, Icon, IconButton, Text } from 'react-native-paper';
 import { AppData } from '@/app/constants/interface/appData';
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
@@ -8,6 +8,7 @@ import { CustomTextInput } from '@/app/components/textInput';
 import { GlucosePicker } from './components/decimalPicker';
 import { ButtonPicker } from './components/buttonPicker';
 import { InputTopContainer } from '@/app/components/topContainer';
+import { ImageRow } from '../../Camera/cameraScreen';
 
 interface InputScreenProps {
   appData: AppData;
@@ -130,10 +131,22 @@ export function InputScreen({
     <View style={styles.background}>
       <InputTopContainer
         navCamera={() => navigation.navigate("DiaryCamera")}
+        onSave={() => handleSave()}
         editingEntry={editingEntry}
         calendarHook={calendarHook}
       />
-      <View style={styles.container}>
+      <Divider style={{marginTop: 2, marginBottom: 8, marginHorizontal: 8}} />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 20 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.container}>
 
 
         <GlucosePicker
@@ -223,46 +236,17 @@ export function InputScreen({
               </View>
             </View>
           ) : (
-            <View style={styles.content}>
-              <FlatList
-                data={photoURIs}
-                horizontal
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <View style={{
-                    flex: 1,
-                    marginRight: 8,
-                    borderWidth: 1,
-                    borderColor: theme.colors.outline
-                  }}>
-                    <Image
-                      source={{ uri: item }}
-                      style={{ flex: 1, resizeMode: 'cover' }}
-                    />
-                  </View>
-                )}
-              />
-            </View>
+            <ImageRow cameraHook={cameraHook} />
           )}
         </View>
 
-        {/* Photos Section */}
-        
-
-        {/* Save Button */}
-        <View style={[styles.row, { justifyContent: 'flex-end', padding: 20 }]}>
-          <IconButton
-            size={40}
-            mode="outlined"
-            icon="floppy"
-            style={{ borderColor: theme.colors.outlineVariant }}
-            onPress={handleSave}
-            disabled={isSaving}
-          />
-        </View>
-      </View>
 
 
+
+
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </View>
 
   );
