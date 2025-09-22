@@ -14,6 +14,13 @@ import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
 import { TabNavigation } from './navigation/tabNavigation';
 import { DiaryNavigation } from './navigation/diaryNavigation';
+import { TabNav } from './navigation/nestedNavigation';
+import { useDB } from './hooks/useDB';
+import { useCalendar } from './hooks/useCalendar';
+import { useCamera } from './hooks/useCamera';
+import { useAuth } from './hooks/useAuth';
+
+
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -30,6 +37,9 @@ export default function Index() {
   const [appData, setAppData] = useState<AppData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+
+
 
   // Separate function to fetch diary entries
   const fetchDiaryEntries = useCallback(async (userId: string): Promise<DiaryData[]> => {
@@ -180,7 +190,7 @@ export default function Index() {
 
   // Initial load
   useEffect(() => {
-     initializeApp();
+    initializeApp();
   }, []);
 
   // Auth state listener
@@ -209,19 +219,20 @@ export default function Index() {
     };
   }, [initializeApp]);
 
+
   // Loading state
   if (isLoading) {
     return (
 
-      
-        <SafeAreaProvider>
-          <PaperProvider theme={customTheme}>
-            <View style={styles.background}>
-              <LoadingScreen />
-            </View>
-          </PaperProvider>
-        </SafeAreaProvider>
-        
+
+      <SafeAreaProvider>
+        <PaperProvider theme={customTheme}>
+          <View style={styles.background}>
+            <LoadingScreen />
+          </View>
+        </PaperProvider>
+      </SafeAreaProvider>
+
     );
   }
 
@@ -252,7 +263,7 @@ export default function Index() {
           <SafeAreaView style={{ flex: 1 }} edges={['top']}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
-                <DiaryNavigation appData={appData} setAppData={setAppData} />
+                <TabNav appData={appData} setAppData={setAppData} />
               </NavigationContainer>
             ) : (
               <AuthScreen />

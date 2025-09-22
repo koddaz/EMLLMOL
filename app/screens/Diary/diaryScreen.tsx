@@ -6,21 +6,23 @@ import { View } from "react-native";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
+import { useNavigation } from "@react-navigation/native";
 
 export function DiaryScreen({
   appData,
   dbHook,
   calendarHook,
   cameraHook,
-  navigation
 }: {
   appData: AppData,
   dbHook: any,
   calendarHook: any,
   cameraHook: any,
-  navigation?: any
+
 
 }) {
+
+  const navigation = useNavigation()
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 

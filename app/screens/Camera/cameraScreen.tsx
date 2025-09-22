@@ -94,7 +94,7 @@ export function ImageRow(
 
 
 export function CameraScreen(
-    { cameraHook, dbHook, appData, navigation }: { cameraHook: any, dbHook: any, appData: AppData, navigation: any }
+    { cameraHook, dbHook, appData, diaryNav }: { cameraHook: any, dbHook: any, appData: AppData, diaryNav: any }
 ) {
     const { styles, theme } = useAppTheme();
 
@@ -125,7 +125,7 @@ export function CameraScreen(
                     size={28}
                     icon="close"
                     mode="contained-tonal"
-                    onPress={() => navigation.goBack()}
+                    onPress={() => diaryNav.goBack()}
                     style={[
                         styles.iconButton,
                         {

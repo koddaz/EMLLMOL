@@ -12,13 +12,13 @@ import { StatisticsTopContainer } from "@/app/components/topContainer";
 
 
 interface StatisticsScreenProps {
-    navigation: any;
+    tabNav: any;
     dbHook: any;
     calendarHook: any;
     appData: AppData;
 }
 
-export function StatisticsScreen({ navigation, dbHook, appData }: StatisticsScreenProps) {
+export function StatisticsScreen({ tabNav, dbHook, appData }: StatisticsScreenProps) {
     const { styles, theme } = useAppTheme();
     const { width: screenWidth } = useWindowDimensions();
     const {

@@ -10,24 +10,19 @@ import { SettingsTopContainer } from "@/app/components/topContainer";
 
 
 
-export function Card() {
 
-    return (
-        <View style={{ flexDirection: 'row', flex: 1 }}>
-
-        </View>
-    );
-}
 
 
 export function SettingsScreen({
     appData,
     setAppData,
-    authHook
+    authHook,
+    tabNav
 }: {
-    appData: AppData;
-    setAppData: (data: AppData) => void;
-    authHook: any;
+    appData: AppData
+    setAppData: (data: AppData) => void
+    authHook: any
+    tabNav: any
 }) {
     const { theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
