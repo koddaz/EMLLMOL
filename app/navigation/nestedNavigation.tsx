@@ -59,7 +59,11 @@ export function TabNav(
      )
 
      return (
-          <Tab.Navigator>
+          <Tab.Navigator
+               screenOptions={{
+                   header: 
+               }}
+          >
 
                <Tab.Screen
                     options={{
@@ -74,7 +78,7 @@ export function TabNav(
 
                     options={{
                          animation: 'shift',
-
+                         
                     }}
                     name="Statistics"
                     component={
