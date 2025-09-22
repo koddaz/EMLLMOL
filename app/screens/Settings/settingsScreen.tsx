@@ -35,6 +35,7 @@ export function SettingsScreen({
     return (
         <View style={styles.background}>
             <SettingsTopContainer
+                content={<View></View>}
                 //editMode={false} 
                 // setEditMode={setEditMode} 
             />

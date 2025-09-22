@@ -57,18 +57,18 @@ export function useCalendar(appData: AppData) {
   const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     const newMonth = new Date(currentMonth)
     const thisMonth = new Date();
-    
-      if (direction === 'prev') {
-        newMonth.setMonth(newMonth.getMonth() - 1);
-      } else {
-        newMonth.setMonth(newMonth.getMonth() + 1);
 
-        if (newMonth.getFullYear() > thisMonth.getFullYear() ||
-            (newMonth.getFullYear() === thisMonth.getFullYear() 
-            && newMonth.getMonth() > thisMonth.getMonth())) {
-          newMonth.setFullYear(thisMonth.getFullYear(), thisMonth.getMonth());
-        }
+    if (direction === 'prev') {
+      newMonth.setMonth(newMonth.getMonth() - 1);
+    } else {
+      newMonth.setMonth(newMonth.getMonth() + 1);
+
+      if (newMonth.getFullYear() > thisMonth.getFullYear() ||
+        (newMonth.getFullYear() === thisMonth.getFullYear()
+          && newMonth.getMonth() > thisMonth.getMonth())) {
+        newMonth.setFullYear(thisMonth.getFullYear(), thisMonth.getMonth());
       }
+    }
     newMonth.setDate(1); // Reset to the first day of the month
     setCurrentMonth(newMonth);
   }, [currentMonth]);
@@ -83,7 +83,7 @@ export function useCalendar(appData: AppData) {
     setSelectedDate(newDate);
   }, [selectedDate]);
 
-  return useMemo(() => ({
+  return {
     selectedDate,
     setSelectedDate,
     setShowCalendar,
@@ -97,19 +97,5 @@ export function useCalendar(appData: AppData) {
     getFirstDayOfMonth,
     navigateMonth,
     navigateDate,
-  }), [
-    selectedDate,
-    setSelectedDate,
-    setShowCalendar,
-    setCurrentMonth,
-    showCalendar,
-    currentMonth,
-    toggleCalendar,
-    formatDate,
-    formatTime,
-    getDaysInMonth,
-    getFirstDayOfMonth,
-    navigateMonth,
-    navigateDate,
-  ]);
+  }
 }

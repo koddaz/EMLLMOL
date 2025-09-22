@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-EMLLMOL is a React Native Expo app for diabetes management with AI-powered food classification. The app uses Supabase for authentication and data storage, ONNX Runtime for machine learning inference, and React Native Paper for UI components.
+EMLLMOL is a React Native Expo app for diabetes management. The app uses Supabase for authentication and data storage, and React Native Paper for UI components.
 
 ## Development Commands
 
@@ -17,7 +17,6 @@ EMLLMOL is a React Native Expo app for diabetes management with AI-powered food 
 - `expo lint` - Run ESLint
 
 ### Custom Scripts
-- `npm run copy-model` - Copy ONNX model from Python project (requires path argument)
 - `npm run reset-project` - Reset to starter template
 
 ## Architecture Overview
@@ -34,17 +33,10 @@ EMLLMOL is a React Native Expo app for diabetes management with AI-powered food 
 - `app/screens/` - All screen components organized by feature
 - `app/components/` - Reusable UI components
 - `app/hooks/` - Custom hooks for database, camera, calendar, auth
-- `app/ai/` - AI/ML functionality with ONNX Runtime integration
 - `app/constants/` - TypeScript interfaces and UI constants
 - `app/navigation/` - Navigation configuration
 - `app/api/supabase/` - Supabase client and authentication
 
-### AI/ML Integration
-- **ONNX Runtime**: Food classification using `onnxruntime-react-native`
-- **Model Management**: Custom hooks (`useONNX`) and services for model loading
-- **Image Processing**: Preprocessing pipeline for camera images
-- **Model Location**: Models stored in `ai/models/onnx/` directory
-- **Python Integration**: Script available to copy models from Python training project
 
 ### Data Flow
 1. User authentication via Supabase
@@ -56,13 +48,11 @@ EMLLMOL is a React Native Expo app for diabetes management with AI-powered food 
 ### Key Interfaces
 - `AppData` - Main app state container with session, profile, settings, diary entries
 - `DiaryData` - Diary entry structure with glucose, carbs, insulin, meal type, activity level, notes, and images
-- `ClassificationResult` - AI model output structure
 
 ### Dependencies
 - **Expo SDK 53** with new architecture enabled
 - **React Native Paper** for Material Design components
 - **Supabase** for backend services
-- **ONNX Runtime** for AI inference
 - **React Navigation 7** via Expo Router
 - **Expo Camera** with permissions setup
 - **TypeScript** with strict configuration

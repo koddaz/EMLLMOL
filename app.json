@@ -53,13 +53,6 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ],
-      [
-        "onnxruntime-react-native",
-        {
-          "enableBestPlatformProviders": true,
-          "minAndroidApiLevel": 21
-        }
       ]
     ],
     "experiments": {

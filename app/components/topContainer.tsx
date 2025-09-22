@@ -22,6 +22,7 @@ interface TopContainerProps {
   onRightPress?: () => void;
   chips?: ChipData[];
   showRightButton?: boolean;
+  content?: any
 }
 
 
@@ -36,11 +37,13 @@ export function TopContainer({
   onLeftPress,
   onRightPress,
   chips = [],
-  showRightButton = true
+  showRightButton = true,
+  content
 }: TopContainerProps) {
   const { styles, theme } = useAppTheme();
 
   return (
+
     <View style={{
       flexDirection: 'row',
       alignItems: 'center',
@@ -79,6 +82,9 @@ export function TopContainer({
             {subtitle}
           </Text>
         )}
+        {content && (
+          <Text>Hej</Text>
+        )}
       </View>
 
       {/* Chips */}
@@ -116,6 +122,7 @@ export function TopContainer({
               </Text>
             )}
           </View>
+          
         )}
       />
 
@@ -134,7 +141,9 @@ export function TopContainer({
           containerColor={theme.colors.onSecondary}
         />
       )}
+      
     </View>
+    
   );
 }
 
@@ -223,7 +232,7 @@ export function StatisticsTopContainer({ period }: { period: string }) {
   );
 }
 
-export function SettingsTopContainer() {
+export function SettingsTopContainer(content: any) {
   return (
     <TopContainer
       leftIcon="cog"
@@ -231,6 +240,7 @@ export function SettingsTopContainer() {
       subtitle="Manage your preferences"
       //rightIcon={editMode ? "check" : "pencil"}
       showRightButton={false}
+      content={content}
     />
   );
 }

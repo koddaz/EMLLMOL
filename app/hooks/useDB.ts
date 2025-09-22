@@ -126,7 +126,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
 
       console.log('💾 Saving diary entry:', entryData);
       const { data, error } = await supabase.from('entries').insert([entryData]).select();
-      
+
       if (error) {
         console.error('❌ Failed to save diary entry:', error);
         setError('Failed to save diary entry: ' + error.message);
@@ -134,7 +134,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       }
 
       console.log('✅ Entry saved successfully:', data);
-      
+
       // Refresh entries after saving
       await retrieveEntries();
       console.log('✅ Entries refreshed successfully');
@@ -200,7 +200,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
         .eq('id', entryId)
         .eq('user_id', appData.session.user.id)
         .select();
-      
+
       if (error) {
         console.error('❌ Failed to update diary entry:', error);
         setError('Failed to update diary entry: ' + error.message);
@@ -208,7 +208,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       }
 
       console.log('✅ Entry updated successfully:', data);
-      
+
       // Refresh entries after updating
       await retrieveEntries();
       console.log('✅ Entries refreshed successfully');
@@ -243,18 +243,18 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
         .delete()
         .eq('id', entryId)
         .eq('user_id', appData.session.user.id);  // Fixed: Using 'user_id' to match database
-        
+
       if (error) {
         console.error('❌ Failed to delete diary entry:', error);
         setError('Failed to delete diary entry: ' + error.message);
         return;
       }
-      
+
       console.log('✅ Diary entry deleted successfully:', entryId);
-      
+
       // Refresh entries after deletion
       await retrieveEntries();
-      
+
     } catch (err) {
       console.error('❌ Failed to delete diary entry:', err);
       setError('Failed to delete diary entry');
@@ -263,7 +263,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     }
   };
 
-  return useMemo(() => ({
+  return {
     saveDiaryEntry,
     updateDiaryEntry,
     retrieveEntries,
@@ -290,32 +290,5 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     setActivity,
     foodType,
     setFoodType
-  }), [
-    saveDiaryEntry,
-    updateDiaryEntry,
-    retrieveEntries,
-    removeEntry,
-    isLoading,
-    error,
-    setError,
-    diaryEntries,
-    foodOptions,
-    activityOptions,
-    toggleInput,
-    toggleEntry,
-    showEntry,
-    showInput,
-    glucose,
-    setGlucose,
-    carbs,
-    setCarbs,
-    insulin,
-    setInsulin,
-    note,
-    setNote,
-    activity,
-    setActivity,
-    foodType,
-    setFoodType
-  ]);
+  }
 }

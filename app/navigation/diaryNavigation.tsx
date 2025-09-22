@@ -4,9 +4,9 @@ import { AppData } from "../constants/interface/appData";
 import { Alert, View } from "react-native";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
 import { useCallback, useState } from "react";
-import { AICameraScreen } from "../ai";
 import { DiaryScreen } from "../screens/Diary/diaryScreen";
 import { DiaryData } from "../constants/interface/diaryData";
+import { CameraScreen } from "../screens/Camera/cameraScreen";
 
 const diaryNav = createNativeStackNavigator();
 
@@ -151,7 +151,7 @@ export function DiaryNavigation({
           }}
         >
           {(props) => (
-            <AICameraScreen
+            <CameraScreen
               {...props}
               cameraHook={cameraHook}
               dbHook={dbHook}
