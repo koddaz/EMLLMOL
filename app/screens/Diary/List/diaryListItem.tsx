@@ -53,16 +53,17 @@ export function DiaryListItem(
 
   return (
 
+
     <Surface style={[styles.box, { marginBottom: 8, borderRadius: 8 }]} elevation={1} onTouchEnd={onPress}>
 
       <View style={[styles.header, { borderTopEndRadius: 8, borderTopStartRadius: 8 }]}>
-        <Text variant={"labelLarge"} style={{ color: theme.colors.onPrimary, fontWeight: 'bold' }}>
+        <Text variant={"labelLarge"} style={{ color: theme.colors.onSurface, fontWeight: 'bold' }}>
           {formatTime(diaryData.created_at)}
         </Text>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'flex-end' }}>
-          <Icon source={getMealIcon(diaryData.meal_type || '')} size={20} color={theme.colors.onPrimaryContainer} />
+          <Icon source={getMealIcon(diaryData.meal_type || '')} size={20} color={theme.colors.onSurface} />
         </View>
-        <Text variant={"labelSmall"} style={{ color: theme.colors.onPrimaryContainer }}>
+        <Text variant={"labelSmall"} style={{ color: theme.colors.onSurface }}>
           {diaryData.meal_type}
         </Text>
 

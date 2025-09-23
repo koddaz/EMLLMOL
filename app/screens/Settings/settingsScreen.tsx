@@ -25,7 +25,7 @@ export function SettingsScreen({
     authHook: any
     tabNav: any
 }) {
-    const { theme, styles } = useAppTheme();
+    const {theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [currentSection, setCurrentSectionState] = useState<'profile' | 'settings'>('profile')

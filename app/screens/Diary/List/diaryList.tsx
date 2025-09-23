@@ -3,7 +3,7 @@ import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useMemo } from "react";
-import { FlatList, View } from "react-native";
+import { FlatList, Pressable, View } from "react-native";
 import { Divider, FAB, Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
 import { DiaryTopContainer } from "@/app/components/topContainer";
@@ -154,6 +154,7 @@ export function DiaryList(
               uri_array: item.uri_array || []
             };
             return (
+            
               <DiaryListItem
                 appData={appData}
                 diaryData={diaryData}

@@ -128,6 +128,7 @@ export function DiaryNav(
 ) {
      const diaryNav = useNavigation<NavigationProp<DiaryStackParamList>>()
      const { styles, theme } = useAppTheme()
+     const nav = useNavigation()
 
      const emptyDiaryData: DiaryData = {
           id: '',
@@ -165,10 +166,10 @@ export function DiaryNav(
 
      const Camera = () => (
           <CameraScreen
-               diaryNav={diaryNav}
                cameraHook={cameraHook}
                dbHook={dbHook}
                appData={appData}
+               navigation={nav}
           />
      )
 
