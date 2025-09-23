@@ -100,13 +100,13 @@ export function DiaryEntry({
   diaryData,
   calendarHook,
   dbHook,
-  navigation
+  diaryNav
 }: {
   appData: AppData,
   diaryData: DiaryData,
   calendarHook: any,
   dbHook: any,
-  navigation: any
+  diaryNav: any
 }) {
   const { theme, styles } = useAppTheme();
 
@@ -134,7 +134,7 @@ export function DiaryEntry({
 
   const handleEdit = async () => {
     await dbHook.toggleEntry();
-    navigation.navigate('DiaryInput', { diaryData });
+    diaryNav.navigate('DiaryInput', { diaryData });
   }
 
   const handleDelete = () => {

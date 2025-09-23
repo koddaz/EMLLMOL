@@ -1,21 +1,18 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { SegmentedButtons, Text } from "react-native-paper";
+import { Divider, RadioButton, SegmentedButtons, Text } from "react-native-paper";
 
 interface AppSettingsCardProps {
     appData: AppData;
-    setCurrentSection: (section: 'profile' | 'preferences' | 'account') => void;
-    setAppData: (data: AppData) => void;
+    handleSettingChange: (key: keyof AppData["settings"], setValue: (v: string) => void) => (newValue: string) => void;
 }
 
 export function AppSettingsCard({
     appData,
-    setCurrentSection,
-    setAppData
+    handleSettingChange
 }: AppSettingsCardProps) {
     const { theme, styles } = useAppTheme();
     const [weight, setWeight] = useState(appData.settings.weight);
@@ -24,102 +21,80 @@ export function AppSettingsCard({
     const [dateFormat, setDateFormat] = useState(appData.settings.dateFormat);
 
 
-    const saveAndLoadSetting = async (
-        key: string,
-        newValue: string,
-        setValue: (v: string) => void
-    ) => {
-        try {
-            await AsyncStorage.setItem(key, newValue);
-            console.log(`Saved ${key}: ${newValue}`);
-            const loaded = await AsyncStorage.getItem(key);
-            setValue(loaded !== null ? loaded : newValue);
-            console.log(`Loaded ${key}: ${loaded}`);
-        } catch (error) {
-            console.error(`Error saving/loading ${key}:`, error);
-        }
-    };
 
-    const handleSettingChange = (
-        key: keyof AppData["settings"],
-        setValue: (v: string) => void
-    ) => (newValue: string) => {
-        setValue(newValue);
-        saveAndLoadSetting(key, newValue, setValue);
-        setAppData({
-            ...appData,
-            settings: {
-                ...appData.settings,
-                [key]: newValue,
-            },
-        });
-    };
+    const renderRadioButtons = (title: string, firstValue: string, secondValue: string, currentValue: string, settingKey: keyof AppData["settings"], setValue: (value: string) => void) => (
+        <View style={[styles.row, { marginBottom: 4 }]}>
+            <View style={{ alignItems: 'flex-start', flex: 2 }}>
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    {title}
+                </Text>
+            </View>
+            
+            <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-evenly' }}>
+                <View style={{ paddingHorizontal: 4, alignItems: 'center' }}>
+                    <RadioButton
+                        value={firstValue}
+                        status={currentValue === firstValue ? 'checked' : 'unchecked'}
+                        onPress={() => handleSettingChange(settingKey, setValue)(firstValue)}
+                    />
+                    <Text variant="labelSmall">{firstValue}</Text>
+                </View>
+                <View style={{ paddingHorizontal: 4, alignItems: 'center' }}>
+                    <RadioButton
+                        value={secondValue}
+                        status={currentValue === secondValue ? 'checked' : 'unchecked'}
+                        onPress={() => handleSettingChange(settingKey, setValue)(secondValue)}
+                    />
+                    <Text variant="labelSmall">{secondValue}</Text>
+                </View>
+            </View>
+        </View>
+    )
 
     return (
-        
-            <View style={[styles.box, {borderBottomWidth: 0, borderTopWidth: 0}]}>
-                <View style={styles.header}>
-                    <View style={styles.chip}>
+
+        <View style={[styles.box, { borderBottomWidth: 0, borderTopWidth: 0 }]}>
+            <View style={styles.header}>
+                <View style={styles.chip}>
                     <MaterialCommunityIcons name="scale-balance" size={20} color={theme.colors.onSecondary} />
-                    </View>
-                    <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                        Measurement Units
-                    </Text>
                 </View>
-                <View style={styles.content}>
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Weight Unit
-                    </Text>
-                    <SegmentedButtons
-                        value={weight}
-                        style={{ marginBottom: 16 }}
-                        onValueChange={handleSettingChange('weight', setWeight)}
-                        buttons={[
-                            { value: 'kg', label: 'Kilograms', icon: 'weight-kilogram' },
-                            { value: 'lbs', label: 'Pounds', icon: 'weight-pound' },
-                        ]}
-                    />
-                
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Glucose Unit
-                    </Text>
-                    <SegmentedButtons
-                        value={glucose}
-                        style={{ marginBottom: 16 }}
-                        onValueChange={handleSettingChange('glucose', setGlucose)}
-                        buttons={[
-                            { value: 'mmol', label: 'mmol/L', icon: 'test-tube' },
-                            { value: 'mgdl', label: 'mg/dL', icon: 'test-tube' },
-                        ]}
-                    />
-                
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Clock Format
-                    </Text>
-                    <SegmentedButtons
-                        value={clockFormat}
-                        style={{ marginBottom: 16 }}
-                        onValueChange={handleSettingChange('clockFormat', setClockFormat)}
-                        buttons={[
-                            { value: '12h', label: '12-hour', icon: 'clock' },
-                            { value: '24h', label: '24-hour', icon: 'clock' },
-                        ]}
-                    />
-                
-                    <Text variant="labelMedium" style={styles.selectorLabel}>
-                        Date Format
-                    </Text>
-                    <SegmentedButtons
-                        value={dateFormat}
-                        onValueChange={handleSettingChange('dateFormat', setDateFormat)}
-                        buttons={[
-                            { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY', icon: 'calendar' },
-                            { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY', icon: 'calendar' },
-                        ]}
-                    />
-                </View>
-                
+                <Text variant="titleMedium" style={{ marginLeft: 8 }}>
+                    Measurement Units
+                </Text>
             </View>
-        
+            <Divider style={{marginHorizontal: 8, marginVertical: 4}} />
+            <View style={styles.content}>
+                {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose, 'glucose', setGlucose)}
+                <Divider style={{marginVertical: 4}} />
+                {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight, 'weight', setWeight)}
+                <Divider style={{marginVertical: 4}} />
+                {renderRadioButtons('Clock format', '12h', '24h', clockFormat, 'clockFormat', setClockFormat)}
+                <Divider style={{marginVertical: 4}} />
+
+       
+
+               
+
+
+
+                
+
+                
+
+                <Text variant="labelMedium" style={styles.selectorLabel}>
+                    Date Format
+                </Text>
+                <SegmentedButtons
+                    value={dateFormat}
+                    onValueChange={handleSettingChange('dateFormat', setDateFormat)}
+                    buttons={[
+                        { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY', icon: 'calendar', style: {borderRadius: 0}},
+                        { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY', icon: 'calendar',  style: {borderRadius: 0} },
+                    ]}
+                />
+            </View>
+
+        </View>
+
     );
 }

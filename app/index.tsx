@@ -260,7 +260,7 @@ export default function Index() {
     <SafeAreaProvider>
       <GestureHandlerRootView>
         <PaperProvider theme={customTheme}>
-          <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+          <View style={{ flex: 1 }} edges={['top']}>
             {appData?.session && appData.session.user ? (
               <NavigationContainer>
                 <TabNav appData={appData} setAppData={setAppData} />
@@ -268,7 +268,7 @@ export default function Index() {
             ) : (
               <AuthScreen />
             )}
-          </SafeAreaView>
+          </View>
         </PaperProvider>
       </GestureHandlerRootView>
     </SafeAreaProvider>

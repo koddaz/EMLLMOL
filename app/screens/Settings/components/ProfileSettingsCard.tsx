@@ -3,7 +3,7 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
 import { View } from "react-native";
-import { Button, IconButton, Text, TextInput } from "react-native-paper";
+import { Button, Divider, IconButton, Text, TextInput } from "react-native-paper";
 
 interface ProfileSettingsCardProps {
     appData: AppData;
@@ -54,10 +54,10 @@ export function ProfileSettingsCard({
     }, [editMode]);
 
     return (
-        <View style={[styles.box, { borderBottomWidth: 0 }]}>
+        <View style={styles.box}>
             {error && (
-                <View style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
-                    <View style={styles.content}>
+                <View style={[styles.box, { backgroundColor: theme.colors.errorContainer, borderWidth: 0 }]}>
+                    <View style={[styles.content, { backgroundColor: theme.colors.errorContainer }]}>
                         <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
                             {error}
                         </Text>
@@ -72,9 +72,11 @@ export function ProfileSettingsCard({
                 <MaterialCommunityIcons name="account-details" size={20} color={theme.colors.onSecondary} />
                 </View>
                 <Text variant="titleMedium" style={{ marginLeft: 8 }}>
-                    Personal Information
+                    Profile
                 </Text>
                 </View>
+
+                
                 <IconButton
                     icon="pencil"
                     size={20}
@@ -82,7 +84,9 @@ export function ProfileSettingsCard({
                     style={{ margin: 0 }}
                     onPress={() => setEditMode(!editMode)}
                 />
+                
             </View>
+            <Divider style={{marginHorizontal: 4}} />
             <View style={styles.content}>
                 <TextInput
                     mode="outlined"

@@ -17,7 +17,7 @@ export function DiaryList(
     calendarHook,
     cameraHook,
     setSelectedDiaryData,
-    navigation,
+    diaryNav,
     appData
   }: {
     toggleEntry: (state: boolean) => void,
@@ -25,7 +25,7 @@ export function DiaryList(
     calendarHook: any,
     cameraHook: any,
     setSelectedDiaryData?: (data: DiaryData) => void,
-    navigation: any
+    diaryNav: any
     appData: AppData
   }
 ) {
@@ -99,7 +99,7 @@ export function DiaryList(
           </View>
           <Text variant="titleMedium" style={{
             marginLeft: 8,
-            color: theme.colors.onPrimaryContainer // text on primary container backgrounds
+            color: theme.colors.onSurface // text on primary container backgrounds
           }}>
             No entries yet
           </Text>
@@ -176,15 +176,15 @@ export function DiaryList(
         />
       </View>
       <FAB
-        icon="plus"
+        icon="note-plus"
         onPress={() => {
-          navigation.navigate('DiaryInput');
+          diaryNav.navigate('Input');
         }}
         style={{
           position: 'absolute',
           margin: 16,
-          right: 0,
-          bottom: 0,
+          right: 12,
+          bottom: 16,
           backgroundColor: theme.colors.secondary, // secondary color for FABs
         }}
         color={theme.colors.onSecondary} // white text/icon on secondary background

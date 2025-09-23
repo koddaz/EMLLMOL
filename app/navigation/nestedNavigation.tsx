@@ -9,13 +9,29 @@ import { useCamera } from "../hooks/useCamera";
 import { useAuth } from "../hooks/useAuth";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useNavigation } from "expo-router";
-import { Icon } from "react-native-paper";
+import { Button, Icon, IconButton } from "react-native-paper";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { DiaryData } from "../constants/interface/diaryData";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
+import { View } from "react-native";
+import { useAppTheme } from "../constants/UI/theme";
+import { NavigationProp } from "@react-navigation/native";
 
-const Tab = createBottomTabNavigator()
-const Stack = createNativeStackNavigator()
+// Define navigation types
+export type DiaryStackParamList = {
+  Main: undefined;
+  Input: undefined;
+  Camera: undefined;
+};
+
+export type TabParamList = {
+  Diary: undefined;
+  Statistics: undefined;
+  Settings: undefined;
+};
+
+const Tab = createBottomTabNavigator<TabParamList>()
+const Stack = createNativeStackNavigator<DiaryStackParamList>()
 
 export interface navData {
      appData: AppData
@@ -26,15 +42,17 @@ export interface navData {
 }
 
 export function TabNav(
-     { appData, setAppData, }: navData
+     { appData, setAppData }: navData
 ) {
+
+     const { styles } = useAppTheme()
 
      const dbHook = useDB(appData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
      const authHook = useAuth(appData.session, false);
 
-     const tabNav = useNavigation()
+     const nav = useNavigation()
 
      const Diary = () => (
           <DiaryNav appData={appData} dbHook={dbHook} calendarHook={calendarHook} cameraHook={cameraHook} setAppData={setAppData}
@@ -43,7 +61,7 @@ export function TabNav(
      )
      const Statistics = () => (
           <StatisticsScreen
-               tabNav={tabNav}
+               tabNav={nav}
                appData={appData}
                calendarHook={calendarHook}
                dbHook={dbHook}
@@ -51,7 +69,7 @@ export function TabNav(
      )
      const Settings = () => (
           <SettingsScreen
-               tabNav={tabNav}
+               tabNav={nav}
                appData={appData}
                setAppData={setAppData}
                authHook={authHook}
@@ -63,7 +81,11 @@ export function TabNav(
 
                <Tab.Screen
                     options={{
-                         animation: 'shift'
+
+                         animation: 'shift',
+                         tabBarIcon: ({ color, size }) => (
+                              <Icon source="book-open-variant" size={size} color={color} />
+                         )
                     }}
                     name="Diary"
                     component={
@@ -71,26 +93,28 @@ export function TabNav(
                     } />
 
                <Tab.Screen
-
                     options={{
                          animation: 'shift',
-
+                         tabBarIcon: ({ color, size }) => (
+                              <Icon source="chart-line" size={size} color={color} />
+                         )
                     }}
                     name="Statistics"
                     component={
                          Statistics
                     } />
 
-
                <Tab.Screen
                     options={{
-                         animation: 'shift'
+                         animation: 'shift',
+                         tabBarIcon: ({ color, size }) => (
+                              <Icon source="cog" size={size} color={color} />
+                         )
                     }}
                     name="Settings"
                     component={
                          Settings
                     }
-
                />
 
           </Tab.Navigator>
@@ -102,7 +126,8 @@ export function TabNav(
 export function DiaryNav(
      { appData, dbHook, calendarHook, cameraHook }: navData
 ) {
-     const diaryNav = useNavigation()
+     const diaryNav = useNavigation<NavigationProp<DiaryStackParamList>>()
+     const { styles, theme } = useAppTheme()
 
      const emptyDiaryData: DiaryData = {
           id: '',
@@ -127,7 +152,7 @@ export function DiaryNav(
 
      const Input = () => (
           <InputScreen
-               navigation={diaryNav}
+               diaryNav={diaryNav}
                diaryData={emptyDiaryData}
                appData={appData}
                calendarHook={calendarHook}
@@ -153,21 +178,56 @@ export function DiaryNav(
      return (
           <Stack.Navigator
                screenOptions={{
-                    headerShown: false
+
                }}>
                <Stack.Screen
                     name="Main"
+                    options={{
+                         headerShown: false
+
+                    }}
                     component={Main}
-                    />
-                    <Stack.Screen
+               />
+               <Stack.Screen
                     name="Input"
+                    options={({ navigation }) => ({
+                         headerTitle: "New Entry",
+                         headerLeft: () => (
+                              
+                              <Button
+                                   mode="text"
+                                   onPress={() => navigation.goBack()}
+                                   textColor="#E072A4"
+                              >
+                                   Cancel
+                              </Button>
+                         ),
+                         headerRight: () => (
+                              <View style={styles.row}>
+                                   <Button
+                                        mode="text"
+                                        onPress={() => {/* handle save */ }}
+                                        textColor="#3D3B8E"
+                                   >
+                                        Save
+                                   </Button>
+                                   <IconButton
+                                        icon="camera-plus"
+                                        iconColor={theme.colors.primary}
+                                        onPress={() => navigation.navigate('Camera')}
+                                        />
+                              </View>
+                         )
+                    })}
                     component={Input}
-                    />
-                    <Stack.Screen
+               />
+               <Stack.Screen
                     name="Camera"
+                    options={{ headerShown: false }}
                     component={Camera}
-                    />
-           </Stack.Navigator >
+                    
+               />
+          </Stack.Navigator >
      );
 
 }

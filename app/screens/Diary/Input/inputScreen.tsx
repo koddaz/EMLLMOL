@@ -15,7 +15,7 @@ interface InputScreenProps {
   calendarHook: any;
   dbHook: any;
   cameraHook: any;
-  navigation: any;
+  diaryNav: any;
   route: any;
   onSave: (editingId?: string, formData?: {
     glucose: string;
@@ -33,7 +33,7 @@ export function InputScreen({
   calendarHook,
   dbHook,
   cameraHook,
-  navigation,
+  diaryNav,
   route,
   onSave,
   diaryData
@@ -101,12 +101,12 @@ export function InputScreen({
       console.log('🔸 Save successful, navigating back');
       setTimeout(() => {
         console.log('🔸 Attempting navigation.goBack()');
-        if (navigation.canGoBack()) {
-          navigation.goBack();
+        if (diaryNav.canGoBack()) {
+          diaryNav.goBack();
           console.log('🔸 navigation.goBack() called');
         } else {
           console.log('🔸 Cannot go back, trying navigate to MainDiary');
-          navigation.navigate('MainDiary');
+          diaryNav.navigate('MainDiary');
         }
       }, 100);
 
@@ -114,10 +114,10 @@ export function InputScreen({
       console.error('Save failed:', error);
       // Still navigate back even on error
       setTimeout(() => {
-        if (navigation.canGoBack()) {
-          navigation.goBack();
+        if (diaryNav.canGoBack()) {
+          diaryNav.goBack();
         } else {
-          navigation.navigate('MainDiary');
+          diaryNav.navigate('MainDiary');
         }
       }, 100);
     } finally {
@@ -130,7 +130,7 @@ export function InputScreen({
   return (
     <View style={styles.background}>
       <InputTopContainer
-        navCamera={() => navigation.navigate("DiaryCamera")}
+        navCamera={() => diaryNav.navigate("DiaryCamera")}
         onSave={() => handleSave()}
         editingEntry={editingEntry}
         calendarHook={calendarHook}
