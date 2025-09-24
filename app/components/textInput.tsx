@@ -9,6 +9,7 @@ interface CustomTextInputProps {
   onChangeText: (text: string) => void;
   placeholder?: string;
   disabled?: boolean;
+  label?: string
 
   // Multi-line specific
   multiline?: boolean;
@@ -51,6 +52,7 @@ export function CustomTextInput({
   value,
   onChangeText,
   placeholder = "Enter text...",
+  label = "Hej",
   disabled = false,
 
   // Multi-line
@@ -89,7 +91,7 @@ export function CustomTextInput({
   containerStyle,
   inputStyle
 }: CustomTextInputProps) {
-  const { theme, styles } = useAppTheme();
+  const { theme } = useAppTheme();
 
   // Dynamic height calculation for multiline
   const getInputHeight = () => {
@@ -129,6 +131,7 @@ export function CustomTextInput({
       <TextInput
         mode={mode}
         value={value}
+        label={label}
         onChangeText={onChangeText}
         onFocus={onFocus}
         onBlur={onBlur}

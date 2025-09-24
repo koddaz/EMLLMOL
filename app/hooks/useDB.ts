@@ -10,6 +10,52 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
   // Use entries from appData instead of separate state
   const diaryEntries = appData?.diaryEntries || [];
 
+  // Get all unique dates from entries
+  const allDates = useMemo(() => {
+    const dates = new Set<string>();
+    diaryEntries.forEach((entry: DiaryData) => {
+      const entryDate = new Date(entry.created_at);
+      dates.add(entryDate.toDateString());
+    });
+    return Array.from(dates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
+  }, [diaryEntries]);
+
+  // Create data structure for horizontal pagination
+  const paginatedData = useMemo(() => {
+    return allDates.map(dateString => {
+      const entriesForDate = diaryEntries
+        .filter((item: DiaryData) => {
+          const itemDate = new Date(item.created_at);
+          return itemDate.toDateString() === dateString;
+        })
+        .sort((a: DiaryData, b: DiaryData) => {
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
+      return {
+        date: dateString,
+        entries: entriesForDate
+      };
+    });
+  }, [diaryEntries, allDates]);
+
+  // Get entries for a specific date
+  const getEntriesForDate = useCallback((selectedDate: Date) => {
+    const currentPage = paginatedData.find(page => page.date === selectedDate.toDateString());
+    return currentPage ? currentPage.entries : [];
+  }, [paginatedData]);
+
+  // Calculate summary stats for entries
+  const calculateEntriesStats = useCallback((entries: DiaryData[]) => {
+    return {
+      totalInsulin: entries.reduce((sum: number, entry: DiaryData) => sum + (entry.insulin || 0), 0),
+      totalCarbs: entries.reduce((sum: number, entry: DiaryData) => sum + (entry.carbs || 0), 0),
+      avgGlucose: entries.length > 0
+        ? (entries.reduce((sum: number, entry: DiaryData) => sum + (entry.glucose || 0), 0) / entries.length).toFixed(1)
+        : '0',
+      filteredEntries: entries
+    };
+  }, []);
+
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
@@ -273,6 +319,10 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     error,
     setError,
     diaryEntries,
+    allDates,
+    paginatedData,
+    getEntriesForDate,
+    calculateEntriesStats,
     foodOptions,
     activityOptions,
     toggleInput,

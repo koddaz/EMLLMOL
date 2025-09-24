@@ -60,7 +60,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         padding: 8,
-        backgroundColor: theme.colors.primaryContainer // selected items/highlighted sections
+        backgroundColor: theme.colors.surface // selected items/highlighted sections
     },
     content: {
         padding: 8,

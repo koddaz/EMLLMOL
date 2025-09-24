@@ -6,7 +6,7 @@ import {
     Animated,
     StyleSheet
 } from 'react-native';
-import { Text } from 'react-native-paper';
+import { Icon, Text } from 'react-native-paper';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { AppData } from '@/app/constants/interface/appData';
 
@@ -75,7 +75,7 @@ export function GlucosePicker({
 
     useEffect(() => {
         if (disabled) return;
-        
+
         if (ismmol) {
             const newValue = mmolNumber + (decimal / 10);
             if (newValue >= 2.0 && newValue <= 25.9) {
@@ -134,206 +134,252 @@ export function GlucosePicker({
     if (ismmol) {
         // mmol/L mode with decimal picker
         return (
-            <View style={containerStyle}>
-                <View style={styles.selectionIndicator} />
-                
-                <View style={styles.wholeNumberColumn}>
-                    <FlatList
-                        data={mmolNumbers}
-                        renderItem={({ item }) => renderItem(item, item === mmolNumber)}
-                        keyExtractor={item => `w-${item}`}
-                        snapToInterval={itemHeight}
-                        onMomentumScrollEnd={handleWholeScroll}
-                        contentContainerStyle={styles.listContentContainer}
-                        getItemLayout={(data, index) => ({
-                            length: itemHeight,
-                            offset: itemHeight * index,
-                            index,
-                        })}
-                        initialScrollIndex={Math.max(0, mmolNumbers.indexOf(mmolNumber))}
-                        showsVerticalScrollIndicator={false}
-                        scrollEnabled={!disabled}
-                    />
+            <View style={{ position: 'relative' }}>
+                <View style={containerStyle}>
+                    <View style={styles.selectionIndicator} />
+
+                    <View style={styles.wholeNumberColumn}>
+                        <FlatList
+                            data={mmolNumbers}
+                            renderItem={({ item }) => renderItem(item, item === mmolNumber)}
+                            keyExtractor={item => `w-${item}`}
+                            snapToInterval={itemHeight}
+                            onMomentumScrollEnd={handleWholeScroll}
+                            contentContainerStyle={styles.listContentContainer}
+                            getItemLayout={(data, index) => ({
+                                length: itemHeight,
+                                offset: itemHeight * index,
+                                index,
+                            })}
+                            initialScrollIndex={Math.max(0, mmolNumbers.indexOf(mmolNumber))}
+                            showsVerticalScrollIndicator={false}
+                            scrollEnabled={!disabled}
+                        />
+                    </View>
+
+                    <View style={styles.decimalSeparator}>
+                        <Text style={[styles.decimalPointText, disabled && styles.disabledText]}>.</Text>
+                    </View>
+
+                    <View style={styles.decimalColumn}>
+                        <FlatList
+                            data={mmolDecimals}
+                            renderItem={({ item }) => renderItem(item, item === decimal)}
+                            keyExtractor={item => `d-${item}`}
+                            snapToInterval={itemHeight}
+                            onMomentumScrollEnd={handlemmolDecimalScroll}
+                            contentContainerStyle={styles.listContentContainer}
+                            getItemLayout={(data, index) => ({
+                                length: itemHeight,
+                                offset: itemHeight * index,
+                                index,
+                            })}
+                            initialScrollIndex={Math.max(0, mmolDecimals.indexOf(decimal))}
+                            showsVerticalScrollIndicator={false}
+                            scrollEnabled={!disabled}
+                        />
+                    </View>
+
+                    <View style={styles.unitLabelContainer}>
+                        <Text
+                            variant="labelSmall"
+                            style={[styles.unitLabelText, disabled && styles.disabledText]}
+                        >
+                            mmol/L
+                        </Text>
+                    </View>
+                </View>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        position: 'absolute',
+                        alignItems: 'center',
+                        gap: 8,
+                        top: -6,
+                        left: 12,
+                        backgroundColor: theme.colors.surface,
+                        paddingHorizontal: 4,
+                        zIndex: 4
+                    }}
+                >
+                    <Icon source={"blood-bag"} size={10} />
+                    <Text variant="bodySmall" style={{
+                        color: theme.colors.onSurfaceVariant,
+                        fontSize: 12,
+                        fontWeight: '400',
+                    }}>glucose</Text>
                 </View>
 
-                <View style={styles.decimalSeparator}>
-                    <Text style={[styles.decimalPointText, disabled && styles.disabledText]}>.</Text>
-                </View>
-
-                <View style={styles.decimalColumn}>
-                    <FlatList
-                        data={mmolDecimals}
-                        renderItem={({ item }) => renderItem(item, item === decimal)}
-                        keyExtractor={item => `d-${item}`}
-                        snapToInterval={itemHeight}
-                        onMomentumScrollEnd={handlemmolDecimalScroll}
-                        contentContainerStyle={styles.listContentContainer}
-                        getItemLayout={(data, index) => ({
-                            length: itemHeight,
-                            offset: itemHeight * index,
-                            index,
-                        })}
-                        initialScrollIndex={Math.max(0, mmolDecimals.indexOf(decimal))}
-                        showsVerticalScrollIndicator={false}
-                        scrollEnabled={!disabled}
-                    />
-                </View>
-
-                <View style={styles.unitLabelContainer}>
-                    <Text
-                        variant="labelSmall"
-                        style={[styles.unitLabelText, disabled && styles.disabledText]}
-                    >
-                        mmol/L
-                    </Text>
-                </View>
             </View>
         );
     } else {
         // mg/dL mode with single integer picker
         return (
-            <View style={containerStyle}>
-                <View style={styles.selectionIndicator} />
-                
-                <View style={styles.mgdlColumn}>
-                    <FlatList
-                        data={mgdlNumbers}
-                        renderItem={({ item }) => renderItem(item, item === mgdlNumber)}
-                        keyExtractor={item => `mg-${item}`}
-                        snapToInterval={itemHeight}
-                        onMomentumScrollEnd={handleMgdlScroll}
-                        contentContainerStyle={styles.listContentContainer}
-                        getItemLayout={(data, index) => ({
-                            length: itemHeight,
-                            offset: itemHeight * index,
-                            index,
-                        })}
-                        initialScrollIndex={Math.max(0, mgdlNumbers.indexOf(mgdlNumber))}
-                        showsVerticalScrollIndicator={false}
-                        scrollEnabled={!disabled}
-                    />
-                </View>
+            <View style={{ position: 'relative' }}>
+                <View style={containerStyle}>
+                    <View style={styles.selectionIndicator} />
 
-                <View style={styles.unitLabelContainer}>
-                    <Text
-                        variant="labelSmall"
-                        style={[styles.unitLabelText, disabled && styles.disabledText]}
-                    >
-                        mg/dL
-                    </Text>
+                    <View style={styles.mgdlColumn}>
+                        <FlatList
+                            data={mgdlNumbers}
+                            renderItem={({ item }) => renderItem(item, item === mgdlNumber)}
+                            keyExtractor={item => `mg-${item}`}
+                            snapToInterval={itemHeight}
+                            onMomentumScrollEnd={handleMgdlScroll}
+                            contentContainerStyle={styles.listContentContainer}
+                            getItemLayout={(data, index) => ({
+                                length: itemHeight,
+                                offset: itemHeight * index,
+                                index,
+                            })}
+                            initialScrollIndex={Math.max(0, mgdlNumbers.indexOf(mgdlNumber))}
+                            showsVerticalScrollIndicator={false}
+                            scrollEnabled={!disabled}
+                        />
+                    </View>
+
+                    <View style={styles.unitLabelContainer}>
+                        <Text
+                            variant="labelSmall"
+                            style={[styles.unitLabelText, disabled && styles.disabledText]}
+                        >
+                            mg/dL
+                        </Text>
+                    </View>
+                </View>
+                <View
+                    style={{
+                        flexDirection: 'row',
+                        position: 'absolute',
+                        alignItems: 'center',
+                        gap: 8,
+                        top: -6,
+                        left: 12,
+                        backgroundColor: theme.colors.surface,
+                        paddingHorizontal: 4,
+                        zIndex: 4
+                    }}
+                >
+                    <Icon source={"blood-bag"} size={10} />
+                    <Text variant="bodySmall" style={{
+                        color: theme.colors.onSurfaceVariant,
+                        fontSize: 12,
+                        fontWeight: '400',
+                    }}>glucose</Text>
                 </View>
             </View>
+
         );
     }
 }
 
-export const createGlucosePickerStyles = (theme: any, height: number, itemHeight: number) => 
-  StyleSheet.create({
-    // Container styles
-    mmolContainer: {
-      flexDirection: 'row',
-      height,
-      backgroundColor: theme.colors.surface,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-      marginBottom: 8,
-    },
-    
-    mgdlContainer: {
-      flexDirection: 'row',
-      height,
-      backgroundColor: theme.colors.surface,
-      borderRadius: 4,
-      borderWidth: 1,
-      borderColor: theme.colors.outlineVariant,
-    },
-    
-    // Selection indicator overlay
-    selectionIndicator: {
-      position: 'absolute',
-      top: height / 2 - itemHeight / 2,
-      left: 0,
-      right: 0,
-      height: itemHeight,
-      borderTopWidth: 1,
-      borderBottomWidth: 1,
-      borderColor: theme.colors.primary + '30',
-      backgroundColor: theme.colors.primaryContainer + '15',
-      zIndex: 1,
-      pointerEvents: 'none',
-    },
-    
-    // Picker column styles
-    wholeNumberColumn: {
-      flex: 1,
-    },
-    
-    decimalColumn: {
-      flex: 1,
-    },
-    
-    mgdlColumn: {
-      flex: 2,
-    },
-    
-    // Decimal point separator
-    decimalSeparator: {
-      width: 30,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    
-    decimalPointText: {
-      fontSize: 24,
-      fontWeight: 'bold',
-      color: theme.colors.onSurface,
-    },
-    
-    // Unit label styles
-    unitLabelContainer: {
-      flex: 0.5,
-      justifyContent: 'center',
-      paddingHorizontal: 4,
-    },
-    
-    unitLabelText: {
-      color: theme.colors.onSecondaryContainer,
-      fontWeight: '600',
-      textAlign: 'center',
-    },
-    
-    // FlatList content styles
-    listContentContainer: {
-      paddingTop: height / 2 - itemHeight / 2,
-      paddingBottom: height / 2 - itemHeight / 2,
-    },
-    
-    // Individual item styles
-    itemContainer: {
-      height: itemHeight,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
-    
-    selectedItemText: {
-      fontSize: 20,
-      fontWeight: '600',
-      color: theme.colors.primary,
-    },
-    
-    unselectedItemText: {
-      fontSize: 16,
-      fontWeight: '400',
-      color: theme.colors.onSurface,
-    },
-    
-    // Disabled state styles
-    disabledContainer: {
-      opacity: 0.6,
-    },
-    
-    disabledText: {
-      color: theme.colors.onSurface + '60',
-    },
-  });
+export const createGlucosePickerStyles = (theme: any, height: number, itemHeight: number) =>
+    StyleSheet.create({
+        // Container styles
+        mmolContainer: {
+            flexDirection: 'row',
+            height,
+            backgroundColor: theme.colors.surface,
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: theme.colors.outlineVariant,
+            marginBottom: 8,
+        },
+
+        mgdlContainer: {
+            flexDirection: 'row',
+            height,
+            backgroundColor: theme.colors.surface,
+            borderRadius: 4,
+            borderWidth: 1,
+            borderColor: theme.colors.outlineVariant,
+        },
+
+        // Selection indicator overlay
+        selectionIndicator: {
+            position: 'absolute',
+            top: height / 2 - itemHeight / 2,
+            left: 0,
+            right: 0,
+            height: itemHeight,
+            borderTopWidth: 1,
+            borderBottomWidth: 1,
+            borderColor: theme.colors.primary + '30',
+            backgroundColor: theme.colors.primaryContainer + '15',
+            zIndex: 1,
+            pointerEvents: 'none',
+        },
+
+        // Picker column styles
+        wholeNumberColumn: {
+            flex: 1,
+        },
+
+        decimalColumn: {
+            flex: 1,
+        },
+
+        mgdlColumn: {
+            flex: 2,
+        },
+
+        // Decimal point separator
+        decimalSeparator: {
+            width: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+
+        decimalPointText: {
+            fontSize: 24,
+            fontWeight: 'bold',
+            color: theme.colors.onSurface,
+        },
+
+        // Unit label styles
+        unitLabelContainer: {
+            flex: 0.5,
+            justifyContent: 'center',
+            paddingHorizontal: 4,
+        },
+
+        unitLabelText: {
+            color: theme.colors.onSecondaryContainer,
+            fontWeight: '600',
+            textAlign: 'center',
+        },
+
+        // FlatList content styles
+        listContentContainer: {
+            paddingTop: height / 2 - itemHeight / 2,
+            paddingBottom: height / 2 - itemHeight / 2,
+        },
+
+        // Individual item styles
+        itemContainer: {
+            height: itemHeight,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+
+        selectedItemText: {
+            fontSize: 20,
+            fontWeight: '600',
+            color: theme.colors.primary,
+        },
+
+        unselectedItemText: {
+            fontSize: 16,
+            fontWeight: '400',
+            color: theme.colors.onSurface,
+        },
+
+        // Disabled state styles
+        disabledContainer: {
+            opacity: 0.6,
+        },
+
+        disabledText: {
+            color: theme.colors.onSurface + '60',
+        },
+    });

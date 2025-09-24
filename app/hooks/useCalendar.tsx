@@ -20,6 +20,7 @@ export function useCalendar(appData: AppData) {
       return date.toLocaleDateString('en-GB', {
         day: '2-digit',
         month: '2-digit',
+        year: 'numeric'
 
       });
     } else if (appData.settings.dateFormat === 'MM/DD/YYYY') {

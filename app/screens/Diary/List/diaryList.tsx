@@ -2,8 +2,8 @@ import { LoadingScreen } from "@/app/components/loadingScreen";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useCallback, useMemo } from "react";
-import { FlatList, View } from "react-native";
+import React from "react";
+import { FlatList, Pressable, View } from "react-native";
 import { Divider, FAB, Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
 import { DiaryTopContainer } from "@/app/components/topContainer";
@@ -17,7 +17,7 @@ export function DiaryList(
     calendarHook,
     cameraHook,
     setSelectedDiaryData,
-    navigation,
+    diaryNav,
     appData
   }: {
     toggleEntry: (state: boolean) => void,
@@ -25,61 +25,18 @@ export function DiaryList(
     calendarHook: any,
     cameraHook: any,
     setSelectedDiaryData?: (data: DiaryData) => void,
-    navigation: any
+    diaryNav: any
     appData: AppData
   }
 ) {
   const { theme, styles } = useAppTheme();
-  const { width: screenWidth } = useWindowDimensions(); // Get screen width
 
-  // Get all unique dates from entries
-  const allDates = useMemo(() => {
-    const dates = new Set<string>();
-    dbHook.diaryEntries.forEach((entry: DiaryData) => {
-      const entryDate = new Date(entry.created_at);
-      dates.add(entryDate.toDateString());
-    });
-    return Array.from(dates).sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
-  }, [dbHook.diaryEntries]);
+  // Get current page entries using dbHook functions
+  const currentPageEntries = dbHook.getEntriesForDate(calendarHook.selectedDate);
 
-  // Create data structure for horizontal pagination
-  const paginatedData = useMemo(() => {
-    return allDates.map(dateString => {
-      const entriesForDate = dbHook.diaryEntries
-        .filter((item: DiaryData) => {
-          const itemDate = new Date(item.created_at);
-          return itemDate.toDateString() === dateString;
-        })
-        .sort((a: DiaryData, b: DiaryData) => {
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-        });
-      return {
-        date: dateString,
-        entries: entriesForDate
-      };
-    });
-  }, [dbHook.diaryEntries]);
+  // Calculate stats using dbHook function
+  const entriesStats = dbHook.calculateEntriesStats(currentPageEntries);
 
-  // Get current page index
-  const currentPageIndex = useMemo(() => {
-    return Math.max(0, allDates.findIndex(date => date === calendarHook.selectedDate.toDateString()));
-  }, [allDates, calendarHook.selectedDate]);
-
-  // Get current page entries for the top container
-  const currentPageEntries = useMemo(() => {
-    const currentPage = paginatedData.find(page => page.date === calendarHook.selectedDate.toDateString());
-    return currentPage ? currentPage.entries : [];
-  }, [paginatedData, calendarHook.selectedDate]);
-
-  const handlePageChange = useCallback((event: any) => {
-    const { contentOffset, layoutMeasurement } = event.nativeEvent;
-    const pageIndex = Math.round(contentOffset.x / layoutMeasurement.width);
-
-    if (pageIndex >= 0 && pageIndex < allDates.length) {
-      const newDate = new Date(allDates[pageIndex]);
-      calendarHook.setSelectedDate(newDate);
-    }
-  }, [allDates, calendarHook.setSelectedDate]);
 
   if (dbHook.isLoading) {
     return <LoadingScreen />;
@@ -99,7 +56,7 @@ export function DiaryList(
           </View>
           <Text variant="titleMedium" style={{
             marginLeft: 8,
-            color: theme.colors.onPrimaryContainer // text on primary container backgrounds
+            color: theme.colors.onSurface // text on primary container backgrounds
           }}>
             No entries yet
           </Text>
@@ -121,20 +78,6 @@ export function DiaryList(
 
   return (
     <View style={styles.background}>
-      <DiaryTopContainer
-        calendarHook={calendarHook}
-        entriesData={{
-          totalInsulin: currentPageEntries.reduce((sum: number, entry: any) => sum + (entry.insulin || 0), 0),
-          filteredEntries: currentPageEntries,
-          totalCarbs: currentPageEntries.reduce((sum: number, entry: any) => sum + (entry.carbs || 0), 0),
-          avgGlucose: currentPageEntries.length > 0
-            ? (currentPageEntries.reduce((sum: number, entry: any) => sum + (entry.glucose || 0), 0) / currentPageEntries.length).toFixed(1)
-            : '0'
-        }}
-      />
-      
-      <Divider style={{ marginTop: 2, marginBottom: 8, marginHorizontal: 8 }} />
-
 
       <View style={styles.container}>
         <FlatList
@@ -154,6 +97,7 @@ export function DiaryList(
               uri_array: item.uri_array || []
             };
             return (
+            
               <DiaryListItem
                 appData={appData}
                 diaryData={diaryData}
@@ -176,15 +120,15 @@ export function DiaryList(
         />
       </View>
       <FAB
-        icon="plus"
+        icon="note-plus"
         onPress={() => {
-          navigation.navigate('DiaryInput');
+          diaryNav.navigate('Input');
         }}
         style={{
           position: 'absolute',
           margin: 16,
-          right: 0,
-          bottom: 0,
+          right: 12,
+          bottom: 16,
           backgroundColor: theme.colors.secondary, // secondary color for FABs
         }}
         color={theme.colors.onSecondary} // white text/icon on secondary background

@@ -22,7 +22,7 @@ export function DiaryScreen({
 
 }) {
 
-  const navigation = useNavigation()
+  const diaryNav = useNavigation()
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 
@@ -34,7 +34,7 @@ export function DiaryScreen({
         <View style={styles.centeredWrapper}>
           <View style={styles.centeredContent}>
             <DiaryEntry
-              navigation={navigation}
+              diaryNav={diaryNav}
               appData={appData}
               diaryData={selectedDiaryData}
               calendarHook={calendarHook}
@@ -68,7 +68,7 @@ export function DiaryScreen({
         calendarHook={calendarHook}
         dbHook={dbHook}
         cameraHook={cameraHook}
-        navigation={navigation}
+        diaryNav={diaryNav}
       />
 
       

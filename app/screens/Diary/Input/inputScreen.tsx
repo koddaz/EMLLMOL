@@ -9,35 +9,32 @@ import { GlucosePicker } from './components/decimalPicker';
 import { ButtonPicker } from './components/buttonPicker';
 import { InputTopContainer } from '@/app/components/topContainer';
 import { ImageRow } from '../../Camera/cameraScreen';
+import { NavigationProp, RouteProp } from '@react-navigation/native';
+import { DiaryStackParamList } from '@/app/navigation/nestedNavigation';
 
 interface InputScreenProps {
+  navigation: NavigationProp<DiaryStackParamList>;
+  route: RouteProp<DiaryStackParamList, 'Input'>;
+  diaryData: DiaryData;
   appData: AppData;
   calendarHook: any;
-  dbHook: any;
   cameraHook: any;
-  navigation: any;
-  route: any;
-  onSave: (editingId?: string, formData?: {
-    glucose: string;
-    carbs: string;
-    insulin: string;
-    note: string;
-    activity: string;
-    foodType: string;
-  }) => Promise<void>;
-  diaryData: DiaryData;
+  dbHook: any;
+  onSave: (data: DiaryData) => void;
 }
 
-export function InputScreen({
-  appData,
-  calendarHook,
-  dbHook,
-  cameraHook,
-  navigation,
-  route,
-  onSave,
-  diaryData
-}: InputScreenProps) {
+export function InputScreen(
+  {
+    navigation,
+    appData,
+    calendarHook,
+    dbHook,
+    cameraHook,
+    route,
+    onSave,
+    diaryData,
+  }: InputScreenProps) {
+
   const { theme, styles } = useAppTheme();
   const [isSaving, setIsSaving] = useState(false);
   const [editingEntry, setEditingEntry] = useState<DiaryData | null>(null);
@@ -106,7 +103,7 @@ export function InputScreen({
           console.log('🔸 navigation.goBack() called');
         } else {
           console.log('🔸 Cannot go back, trying navigate to MainDiary');
-          navigation.navigate('MainDiary');
+          navigation.navigate('Main');
         }
       }, 100);
 
@@ -117,7 +114,7 @@ export function InputScreen({
         if (navigation.canGoBack()) {
           navigation.goBack();
         } else {
-          navigation.navigate('MainDiary');
+          navigation.navigate('Main');
         }
       }, 100);
     } finally {
@@ -129,116 +126,106 @@ export function InputScreen({
 
   return (
     <View style={styles.background}>
-      <InputTopContainer
-        navCamera={() => navigation.navigate("DiaryCamera")}
-        onSave={() => handleSave()}
-        editingEntry={editingEntry}
-        calendarHook={calendarHook}
-      />
-      <Divider style={{marginTop: 2, marginBottom: 8, marginHorizontal: 8}} />
+
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        style={styles.background}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 20 }}
+          style={{ flex: 1, marginTop: 12 }}
+          contentContainerStyle={{ paddingBottom: 20, marginTop: 8 }}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.container}>
 
 
-        <GlucosePicker
-          selectedValue={tempGlucose}
-          onValueChange={setTempGlucose}
-          appData={appData}
-          disabled={isSaving}
-          height={72}
-          itemHeight={36}
-        />
+            <GlucosePicker
+              selectedValue={tempGlucose}
+              onValueChange={setTempGlucose}
+              appData={appData}
+              disabled={isSaving}
+              height={72}
+              itemHeight={36}
+            />
 
-        <View style={[styles.row, { gap: 4 }]}>
-          <CustomTextInput
-            value={tempCarbs}
-            onChangeText={setTempCarbs}
-            placeholder="0"
-            keyboardType="numeric"
-            leftIcon="bread-slice"
-            suffix="g"
-            maxLength={4}
-            containerStyle={{ flex: 1 }}
-            disabled={isSaving}
-          />
+            <View style={[styles.row, { gap: 4 }]}>
+              <CustomTextInput
+                label={"carbs (g)"}
+                value={tempCarbs}
+                onChangeText={setTempCarbs}
+                placeholder="0"
+                keyboardType="numeric"
+                leftIcon="bread-slice"
+                suffix="g"
+                maxLength={4}
+                containerStyle={{ flex: 1 }}
+                disabled={isSaving}
+              />
 
-          <CustomTextInput
-            value={tempInsulin}
-            onChangeText={setTempInsulin}
-            placeholder="0"
-            keyboardType="numeric"
-            leftIcon="needle"
-            suffix="units"
-            maxLength={4}
-            containerStyle={{ flex: 1 }}
-            disabled={isSaving}
-          />
-        </View>
+              <CustomTextInput
+                label={"insulin"}
+                value={tempInsulin}
+                onChangeText={setTempInsulin}
+                placeholder="0"
+                keyboardType="numeric"
+                leftIcon="needle"
+                suffix="units"
+                maxLength={4}
+                containerStyle={{ flex: 1 }}
+                disabled={isSaving}
+              />
+            </View>
 
-
-
-        <View style={[styles.row, { gap: 8, alignItems: 'stretch', flex: 1 }]}>
-          <View style={{ flex: 1 }}>
             <CustomTextInput
+              label={"note"}
               value={tempNote}
               onChangeText={setTempNote}
               placeholder="Add any notes about your meal or how you're feeling..."
               multiline
-              numberOfLines={10}
+              numberOfLines={5}
               leftIcon="note-text"
               maxLength={150}
+              maxHeight={100}
+              minHeight={100}
               disabled={isSaving}
-              containerStyle={{ flex: 1 }} 
-              inputStyle={{ flex: 1 }} 
+              containerStyle={{ flex: 1 }}
+              inputStyle={{ flex: 1 }}
             />
-          </View>
 
-          <View style={{ flex: 1 }}>
+
             <ButtonPicker
               value={tempActivity}
               setValue={setTempActivity}
               valueArray={activityArray}
               iconName="run"
+              label="activity level"
             />
-
             <ButtonPicker
               value={tempMeal}
               setValue={setTempMeal}
               valueArray={mealArray}
               iconName="food"
+              label="meal type"
             />
-          </View>
-
-
-        </View>
-    
-        <View style={styles.boxPicker}>
-          {photoURIs.length === 0 ? (
-            <View style={styles.content}>
-              <View style={styles.row}>
-                <View style={{ paddingHorizontal: 4, width: 44 }}>
-                  <Icon source="camera" size={24} />
+            <View style={styles.boxPicker}>
+              {photoURIs.length === 0 ? (
+                <View style={styles.content}>
+                  <View style={styles.row}>
+                    <View style={{ paddingHorizontal: 4, width: 44 }}>
+                      <Icon source="camera" size={24} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                        No photos added yet...
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                    No photos added yet...
-                  </Text>
-                </View>
-              </View>
+              ) : (
+                <ImageRow cameraHook={cameraHook} />
+              )}
             </View>
-          ) : (
-            <ImageRow cameraHook={cameraHook} />
-          )}
-        </View>
 
 
 

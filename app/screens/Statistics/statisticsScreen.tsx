@@ -9,16 +9,12 @@ import Svg, { Circle, Line, Path, Rect, Text as SvgText } from 'react-native-svg
 import * as d3Scale from 'd3-scale';
 import * as d3Shape from 'd3-shape';
 import { StatisticsTopContainer } from "@/app/components/topContainer";
+import { navData } from "@/app/navigation/nestedNavigation";
 
 
-interface StatisticsScreenProps {
-    tabNav: any;
-    dbHook: any;
-    calendarHook: any;
-    appData: AppData;
-}
 
-export function StatisticsScreen({ tabNav, dbHook, appData }: StatisticsScreenProps) {
+
+export function StatisticsScreen({ dbHook, appData, calendarHook }: navData) {
     const { styles, theme } = useAppTheme();
     const { width: screenWidth } = useWindowDimensions();
     const {
@@ -285,7 +281,7 @@ export function StatisticsScreen({ tabNav, dbHook, appData }: StatisticsScreenPr
                                     textAnchor="middle"
                                     fontSize="10"
                                     fill="#666"
-                                    style={{ textTransform: 'capitalize' }}
+                                    //style={{ textTransform: 'capitalize' }}
                                 >
                                     {item.mealType}
                                 </SvgText>
@@ -494,8 +490,8 @@ export function StatisticsScreen({ tabNav, dbHook, appData }: StatisticsScreenPr
                             label: currentSection === 'carbs' || 'summary' ? '7 days' : '14 days',
                         },
                         {
-                            value: currentSection === 'carbs'  || 'summary' ? '14' : '30',
-                            label: currentSection === 'carbs'  || 'summary' ? '14 days' : '30 days',
+                            value: currentSection === 'carbs' || 'summary' ? '14' : '30',
+                            label: currentSection === 'carbs' || 'summary' ? '14 days' : '30 days',
                             style: { borderRadius: 0 },
                         },
                     ]}
@@ -544,42 +540,62 @@ export function StatisticsScreen({ tabNav, dbHook, appData }: StatisticsScreenPr
 
     return (
         <View style={styles.background}>
-            <StatisticsTopContainer
-                period={currentSection === 'glucose' ? `Median: ${medianGlucose.toFixed(1)} ${appData.settings.glucose}` : `${selectedPeriod} days`}
-                content={
-                <SegmentedButtons
-                    value={currentSection}
-                    onValueChange={setCurrentSection}
-                    density="small"
-                    buttons={[
-                        {
-                            value: 'summary',
-                            label: 'Summary',
-                            icon: "chart-pie",
-                            checkedColor: theme.colors.secondary,
-                            uncheckedColor: theme.colors.primary,
-                            style: { borderRadius: 0, borderBottomWidth: 0, borderLeftWidth: 0 }
-                        },
-                        {
-                            value: 'carbs',
-                            label: 'Carbs',
-                            icon: "food",
-                            checkedColor: theme.colors.secondary,
-                            uncheckedColor: theme.colors.primary,
-                            style: { borderRadius: 0, borderBottomWidth: 0, borderRightWidth: 0 }
-                        },
-                        {
-                            value: 'glucose',
-                            label: 'Glucose',
-                            icon: "blood-bag",
-                            checkedColor: theme.colors.secondary,
-                            uncheckedColor: theme.colors.primary,
-                            style: { borderRadius: 0, borderBottomWidth: 0, borderRightWidth: 0 }
-                        },
 
-                    ]}
-                />
-            } />
+            <SegmentedButtons
+                value={currentSection}
+                onValueChange={setCurrentSection}
+                density="regular"
+                buttons={[
+                    {
+
+                        value: 'summary',
+                        label: 'Summary',
+                        icon: "chart-pie",
+                        checkedColor: theme.colors.onSurfaceDisabled,
+                        uncheckedColor: theme.colors.primary,
+                        style: {
+                            borderTopWidth: 0,
+                            borderRadius: 0,
+                            borderBottomWidth: 0,
+                            borderLeftWidth: 0,
+                            backgroundColor: currentSection === 'summary' ? theme.colors.surfaceDisabled : theme.colors.surface,
+                            elevation: currentSection === 'summary' ? 0 : 4
+                        }
+                    },
+                    {
+                        value: 'carbs',
+                        label: 'Carbs',
+                        icon: "food",
+                        checkedColor: theme.colors.onSurfaceDisabled,
+                        uncheckedColor: theme.colors.primary,
+                        style: {
+                            borderTopWidth: 0,
+                            borderRadius: 0,
+                            borderBottomWidth: 0,
+                            borderLeftWidth: 0,
+                            backgroundColor: currentSection === 'carbs' ? theme.colors.surfaceDisabled : theme.colors.surface,
+                            elevation: currentSection === 'carbs' ? 0 : 4
+                        }
+                    },
+                    {
+                        value: 'glucose',
+                        label: 'Glucose',
+                        icon: "blood-bag",
+                        checkedColor: theme.colors.onSurfaceDisabled,
+                        uncheckedColor: theme.colors.primary,
+                        style: {
+                            borderTopWidth: 0,
+                            borderRadius: 0,
+                            borderBottomWidth: 0,
+                            borderLeftWidth: 0,
+                            backgroundColor: currentSection === 'glucose' ? theme.colors.surfaceDisabled : theme.colors.surface,
+                            elevation: currentSection === 'glucose' ? 0 : 4
+                        }
+                    },
+
+                ]}
+            />
+
             <Divider style={{ marginTop: 2, marginBottom: 8, marginHorizontal: 8 }} />
             <View style={styles.container}>
                 {renderStats()}
