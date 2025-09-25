@@ -12,10 +12,11 @@ import { Icon, IconButton, Text } from "react-native-paper";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { DiaryData } from "../constants/interface/diaryData";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
-import { Image, View } from "react-native";
+import { Image, View, Text as RNText } from "react-native";
 import { useAppTheme } from "../constants/UI/theme";
 import { NavigationProp, useNavigation } from "@react-navigation/native";
-import { HeaderBackButton } from "@react-navigation/elements";
+import { Colors } from "react-native/Libraries/NewAppScreen";
+import { use, useState, memo } from "react";
 
 // Define navigation types
 export type DiaryStackParamList = {
@@ -35,67 +36,181 @@ const Stack = createNativeStackNavigator<DiaryStackParamList>()
 
 
 
-function TabTopBar(props: any) {
-     const getDisplayName = (routeName: string) => {
-          switch (routeName) {
-               case 'Diary':
-                    return 'Diary';
-               case 'Statistics':
-                    return 'Statistics';
-               case 'Settings':
-                    return 'Settings';
-               default:
-                    return routeName || 'App';
-          }
-     };
+function TabTopBar({ appData, dbHook, calendarHook }: navData) {
 
-     const routeName = props.route?.name || props.children || 'App';
+     const { theme, styles } = useAppTheme()
 
-     return (
-          <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 16, }}>
-               <Image style={{ width: 40, height: 40 }} resizeMode="cover" source={require('./../../assets/images/logo-head.gif')} />
-               <Text variant={"titleLarge"}>{getDisplayName(routeName)}</Text>
-          </View>
-     )
+     // Separate navigation hooks for clarity
+     const navigation = useNavigation<any>();
+
+     const tabState = navigation.getState();
+     const currentRoute = tabState?.routes[tabState.index];
+     const routeName = currentRoute?.name || 'Stack Screen';
+
+     
+
+     // Get the nested stack route when on Diary tab
+     const stackRoute = (routeName === 'Diary' && currentRoute?.state && currentRoute.state.index !== undefined)
+          ? currentRoute.state.routes[currentRoute.state.index]?.name
+          : null;
+
+
+     if (routeName === 'Statistics') {
+          return (
+               <View style={[styles.row, { justifyContent: 'center', alignItems: 'center', marginTop: 2, paddingHorizontal: 4, backgroundColor: theme.colors.surface }]}>
+                    <View style={{ flex: 1 }}>
+
+                         <IconButton icon={'arrow-left'} onPress={() => navigation.goBack()} />
+
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                         <Image style={{ width: 50, height: 50 }} resizeMode="cover" source={require('./../../assets/images/logo-head.gif')} />
+                         <Text variant={"titleSmall"} style={{ backgroundColor: 'transparent' }}>
+                              emmiSense
+                         </Text>
+
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+
+                    </View>
+               </View>
+          );
+     }
+
+     if (routeName === 'Diary' && stackRoute === 'Camera') {
+          return (
+
+               <View style={[styles.row, { justifyContent: 'space-between', alignItems: 'center', marginTop: 2, paddingVertical: 4, paddingHorizontal: 8, backgroundColor: theme.colors.surface }]}>
+
+                    <IconButton icon={"close"} onPress={() => { }} style={styles.iconButton} />
+
+
+                    <IconButton icon={"flash"} onPress={() => { }} style={styles.iconButton} />
+
+
+               </View>
+          );
+     }
+
+     if (routeName === 'Diary' ||routeName === 'Settings') {
+          return (
+               <View style={[styles.row, { justifyContent: 'center', alignItems: 'center', marginTop: 2, paddingHorizontal: 4, backgroundColor: theme.colors.surface }]}>
+                    <View style={{ flex: 1 }}>
+                         {stackRoute === 'Input' && (
+                              <IconButton icon={'close'} onPress={() => {
+                                   console.log('Navigating back to Main from Input');
+                                   console.log('DiaryEntries count:', appData?.diaryEntries?.length || 0);
+                                   console.log('AppData exists:', !!appData);
+                                   console.log('Can go back:', navigation.canGoBack());
+
+                                   // Force reset to Main screen to avoid navigation state issues
+                                   navigation.reset({
+                                        index: 0,
+                                        routes: [
+                                             {
+                                                  name: 'Diary',
+                                                  state: {
+                                                       routes: [{ name: 'Main' }],
+                                                       index: 0,
+                                                  },
+                                             },
+                                        ],
+                                   });
+                              }} />
+                         )}
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'center' }}>
+                         <Image style={{ width: 50, height: 50 }} resizeMode="cover" source={require('./../../assets/images/logo-head.gif')} />
+                         <Text variant={"titleSmall"} style={{ backgroundColor: 'transparent' }}>
+                              emmiSense
+                         </Text>
+
+                    </View>
+                    <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                         <IconButton icon={'calendar'} onPress={() => calendarHook.toggleCalendar()} iconColor={theme.colors.primary} />
+                    </View>
+               </View>
+
+          );
+     }
+
+
+
+
 }
 
-function StackTopBar({ appData, dbHook, calendarHook }: navData) {
+const StackTopBar = memo(function StackTopBar({ appData, dbHook, calendarHook }: navData) {
 
-     const navigation = useNavigation();
+     const navigation = useNavigation<NavigationProp<DiaryStackParamList>>();
      const state = navigation.getState();
      const currentRoute = state?.routes[state.index];
      const routeName = currentRoute?.name || 'Stack Screen';
 
-     const getDisplayName = (routeName: string) => {
-          switch (routeName) {
-               case 'Main':
-                    return 'Diary';
-               case 'Input':
-                    return 'New Entry';
-               case 'Camera':
-                    return 'Camera';
-               default:
-                    return routeName || 'Stack Screen';
-          }
-     };
+     // Only log when route actually changes
+     const [prevRoute, setPrevRoute] = useState<string>('');
+     if (routeName !== prevRoute) {
+          console.log('StackTopBar - Route changed:', prevRoute, '→', routeName);
+          setPrevRoute(routeName);
+     }
 
-     console.log('StackTopBar - Current route:', routeName);
-     console.log('StackTopBar - appData:', !!appData);
-     console.log('StackTopBar - dbHook:', !!dbHook);
-     console.log('StackTopBar - calendarHook:', !!calendarHook);
+     const { styles, theme } = useAppTheme()
 
-     return (
-          (routeName == 'Main') && (
-               <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center', paddingHorizontal: 16, }}>
-                    <Text variant={"titleLarge"}>
-                         {calendarHook.formatDate(calendarHook.selectedDate)}
-                         </Text>
+     const entriesForSelectedDate = dbHook?.getEntriesForDate(calendarHook.selectedDate) || [];
+     const entriesStats = dbHook?.calculateEntriesStats(entriesForSelectedDate) || { totalCarbs: 0, filteredEntries: [], totalInsulin: 0 };
+
+     if (routeName === 'Main') {
+          return (
+               <View style={{ backgroundColor: theme.colors.surface, elevation: 4, paddingVertical: 4, paddingHorizontal: 4 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                         <IconButton icon={'arrow-left'} size={20} onPress={() => { calendarHook.navigateDate('prev') }} />
+                         <View style={{ flex: 1 }}>
+                              <Text variant={"titleSmall"} style={{ textAlign: 'center', backgroundColor: 'transparent' }}>
+                                   {calendarHook.formatDate(calendarHook.selectedDate)}
+                              </Text>
+                         </View>
+                         <IconButton disabled={new Date().toDateString() === calendarHook.selectedDate.toDateString()} icon={'arrow-right'} size={20} onPress={() => { calendarHook.navigateDate('next') }} />
+                    </View>
+                    <View style={styles.row}>
+
+                         <View style={[styles.chip, { flex: 1 }]}>
+                              <Icon source={"food"} size={14} color={theme.colors.onPrimary} />
+                              <Text variant="labelLarge" style={{ color: theme.colors.onPrimary }}>{entriesStats.totalCarbs} g</Text>
+                         </View>
+                         <View style={[styles.chip, { flex: 1 }]}>
+                              <Icon source={"needle"} size={14} color={theme.colors.onPrimary} />
+                              <Text variant="labelLarge" style={{ color: theme.colors.onPrimary }}>{entriesStats.totalInsulin} units</Text>
+                         </View>
+                         <View style={[styles.chip, { flex: 1 }]}>
+                              <Icon source={"blood-bag"} size={14} color={theme.colors.onPrimary} />
+                              <Text variant="labelLarge" style={{ color: theme.colors.onPrimary }}>{entriesStats.avgGlucose} {appData?.settings.glucose}</Text>
+                         </View>
+
+                    </View>
+
                </View>
-          )
+          );
+     }
+
+     if (routeName === 'Input') {
+          return (
+               <View style={{ flexDirection: 'row', backgroundColor: theme.colors.surface, elevation: 4, paddingHorizontal: 8, }}>
+                    <View style={[styles.row, { flex: 1, gap: 8 }]}>
 
 
-     )
-}
+                         <Icon source={"note-plus"} size={25} />
+                         <Text variant={"titleMedium"}>New Entry</Text>
+
+                         <View style={[styles.row, { flex: 1, justifyContent: 'flex-end', alignContent: 'flex-end' }]}>
+                              <IconButton icon={"camera"} onPress={() => { navigation.navigate('Camera') }} />
+                              <IconButton icon={"floppy"} onPress={() => { dbHook.saveDiaryEntry() }} />
+                         </View>
+                    </View>
+
+               </View>
+          );
+     }
+
+});
 
 export interface navData {
      stackNav?: NavigationProp<DiaryStackParamList>;
@@ -120,75 +235,38 @@ export function TabNav(
      const authHook = useAuth(appData?.session, false);
 
 
-     const Diary = () => (
-          <DiaryNav appData={appData} dbHook={dbHook} calendarHook={calendarHook} cameraHook={cameraHook} setAppData={setAppData}
-          />
-
-     )
-     const Statistics = () => (
-          <StatisticsScreen
-               appData={appData}
-               calendarHook={calendarHook}
-               dbHook={dbHook}
-          />
-     )
-     const Settings = () => (
-          <SettingsScreen
-               appData={appData!}
-               setAppData={setAppData!}
-               authHook={authHook}
-          />
-     )
-
      return (
           <Tab.Navigator
                screenOptions={{
+                    header: () => <TabTopBar appData={appData} dbHook={dbHook} calendarHook={calendarHook} />,
                     headerShown: true,
-                    headerTitle: (route) => <TabTopBar {...route} />,
                     headerShadowVisible: false,
-                    headerStyle: {
-                         elevation: 0,
-                         shadowOpacity: 0,
-                         shadowOffset: { height: 0, width: 0 },
-                         shadowRadius: 0,
-                         backgroundColor: theme.colors.surface,
-                    },
-                    headerTitleContainerStyle: {
-                         flex: 1,
-                         paddingHorizontal: 8,
-                         marginHorizontal: 0,
-                    },
-                    headerLeftContainerStyle: {
-                         margin: 0,
-                         padding: 0,
-                    },
-                    headerRightContainerStyle: {
-                         flex: 0,
-                         paddingRight: 16,
-                    },
-
+                    
                }}
           >
 
                <Tab.Screen
-                    options={{
-
+                    options={(props) => ({
                          animation: 'shift',
-                         headerStyle: {
-                              backgroundColor: theme.colors.surface,
-                         },
+                         
                          tabBarIcon: ({ color, size }) => (
                               <Icon source="book-open-variant" size={size} color={color} />
                          ),
-                         headerRight: () => (
-                              <IconButton icon={'calendar'} onPress={() => calendarHook.toggleCalendar()} iconColor={theme.colors.primary} />
-                         )
-                    }}
+                    })}
                     name="Diary"
                     getId={() => "tab-diary"}
-                    component={
-                         Diary
-                    } />
+               >
+                    {(props) => (
+                         <DiaryNav
+                              {...props}
+                              appData={appData}
+                              dbHook={dbHook}
+                              calendarHook={calendarHook}
+                              cameraHook={cameraHook}
+                              setAppData={setAppData}
+                         />
+                    )}
+               </Tab.Screen>
 
                <Tab.Screen
                     options={({ navigation }) => ({
@@ -196,15 +274,19 @@ export function TabNav(
                          tabBarIcon: ({ color, size }) => (
                               <Icon source="chart-line" size={size} color={color} />
                          ),
-                         headerLeft: () => (
-                              <IconButton icon={'arrow-left-bold'} onPress={() => navigation.navigate('Diary')} iconColor={theme.colors.primary} />
-                         )
                     })}
                     name="Statistics"
                     getId={() => "tab-statistics"}
-                    component={
-                         Statistics
-                    } />
+               >
+                    {(props) => (
+                         <StatisticsScreen
+                              {...props}
+                              appData={appData}
+                              calendarHook={calendarHook}
+                              dbHook={dbHook}
+                         />
+                    )}
+               </Tab.Screen>
 
                <Tab.Screen
                     options={({ navigation }) => ({
@@ -212,16 +294,19 @@ export function TabNav(
                          tabBarIcon: ({ color, size }) => (
                               <Icon source="cog" size={size} color={color} />
                          ),
-                         headerLeft: () => (
-                              <IconButton icon={'arrow-left-bold'} onPress={() => navigation.navigate('Diary')} iconColor={theme.colors.primary} />
-                         )
                     })}
                     name="Settings"
                     getId={() => "tab-settings"}
-                    component={
-                         Settings
-                    }
-               />
+               >
+                    {(props) => (
+                         <SettingsScreen
+                              {...props}
+                              appData={appData!}
+                              setAppData={setAppData!}
+                              authHook={authHook}
+                         />
+                    )}
+               </Tab.Screen>
 
           </Tab.Navigator>
      );
@@ -230,7 +315,6 @@ export function TabNav(
 export function DiaryNav(
      { appData, dbHook, calendarHook, cameraHook }: navData
 ) {
-     const { styles, theme } = useAppTheme()
 
      const emptyDiaryData: DiaryData = {
           id: '',
@@ -246,19 +330,17 @@ export function DiaryNav(
 
      return (
           <Stack.Navigator
-               screenOptions={{
-                    headerShown: true,
-                    headerTitle: () => <StackTopBar appData={appData} dbHook={dbHook} calendarHook={calendarHook} />,
-                    headerShadowVisible: true,
-                    headerStyle: {
-                         backgroundColor: theme.colors.surface,
-                    }
-               }}>
+               screenOptions={
+                    {
+                         headerShown: true,
+                         header: () => <StackTopBar appData={appData} dbHook={dbHook} calendarHook={calendarHook} />,
+                         statusBarHidden: true,
+                    }}>
                <Stack.Screen
                     name="Main"
                     getId={() => "diary-main"}
                     options={{
-                         headerShown: true
+                         headerShown: true,
                     }}
 
                >
@@ -277,35 +359,9 @@ export function DiaryNav(
                     name="Input"
                     getId={() => "diary-input"}
                     options={({ navigation }) => ({
+                         header: () => <StackTopBar appData={appData} dbHook={dbHook} calendarHook={calendarHook} />,
                          headerShown: true,
-                         headerTitle: () => <StackTopBar appData={appData} dbHook={dbHook} calendarHook={calendarHook} />,
                          headerShadowVisible: true,
-                         headerLeft: () => (
-                              <IconButton
-                                   mode={"outlined"}
-                                   icon="close"
-                                   iconColor={theme.colors.primary}
-                                   onPress={() => navigation.goBack()}
-                              />
-
-                         ),
-                         headerRight: () => (
-                              <View style={{ flexDirection: 'row' }}>
-
-                                   <IconButton
-                                        mode={"outlined"}
-                                        icon="camera-plus"
-                                        iconColor={theme.colors.primary}
-                                        onPress={() => navigation.navigate('Camera')}
-                                   />
-                                   <IconButton
-                                        mode={"outlined"}
-                                        icon="floppy"
-                                        iconColor={theme.colors.primary}
-                                        onPress={() => { }}
-                                   />
-                              </View>
-                         )
                     })}
 
                >
@@ -321,6 +377,7 @@ export function DiaryNav(
                          />
                     )}
                </Stack.Screen>
+
                <Stack.Screen
                     name="Camera"
                     getId={() => "diary-camera"}
