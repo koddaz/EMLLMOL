@@ -1,6 +1,7 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
+import { HookData, NavData } from "@/app/navigation/rootNav";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Alert, Dimensions, ScrollView, View } from "react-native";
@@ -100,14 +101,8 @@ export function DiaryEntry({
   diaryData,
   calendarHook,
   dbHook,
-  diaryNav
-}: {
-  appData: AppData,
-  diaryData: DiaryData,
-  calendarHook: any,
-  dbHook: any,
-  diaryNav: any
-}) {
+  navigation
+}: NavData & HookData) {
   const { theme, styles } = useAppTheme();
 
 
@@ -134,7 +129,7 @@ export function DiaryEntry({
 
   const handleEdit = async () => {
     await dbHook.toggleEntry();
-    diaryNav.navigate('DiaryInput', { diaryData });
+    navigation.navigate('DiaryInput', { diaryData });
   }
 
   const handleDelete = () => {
@@ -147,7 +142,7 @@ export function DiaryEntry({
           text: 'Delete',
           style: 'destructive',
           onPress: async () => {
-            await dbHook.removeEntry(diaryData.id?.toString());
+            await dbHook.removeEntry(diaryData?.id?.toString());
             await dbHook.refreshEntries();
             dbHook.toggleEntry;
           }
@@ -159,7 +154,7 @@ export function DiaryEntry({
   const LeftContent = (props: any) => (
     <MaterialCommunityIcons
       {...props}
-      name={getMealIcon(diaryData.meal_type || '')}
+      name={getMealIcon(diaryData?.meal_type || '')}
       size={40}
       color={theme.colors.onPrimary}
     />
@@ -172,18 +167,18 @@ export function DiaryEntry({
         <View style={styles.header}>
           <View style={styles.chip}>
             <MaterialCommunityIcons
-              name={getMealIcon(diaryData.meal_type || '')}
+              name={getMealIcon(diaryData?.meal_type || '')}
               size={16}
               color={theme.colors.onSecondary}
             />
           </View>
           <Text variant="titleMedium" style={styles.cardTitle}>
-            {diaryData.meal_type?.charAt(0).toUpperCase() + diaryData.meal_type?.slice(1) || 'Meal'}
+            {diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1) || 'Meal'}
           </Text>
           <View style={styles.chip}>
             <MaterialCommunityIcons name="clock" size={16} color={theme.colors.onSecondary} />
             <Text variant="bodySmall">
-              {calendarHook.formatTime(diaryData.created_at)}
+              {calendarHook.formatTime(diaryData?.created_at)}
             </Text>
           </View>
           <IconButton
@@ -206,29 +201,29 @@ export function DiaryEntry({
               <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>
                 <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
                 <Text variant="bodySmall">
-                  {diaryData.glucose || '0'} {appData.settings.glucose}
+                  {diaryData?.glucose || '0'} {appData.settings.glucose}
                 </Text>
               </View>
               <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>
                 <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondary} />
                 <Text variant="bodySmall">
-                  {diaryData.carbs || '0'}g carbs
+                  {diaryData?.carbs || '0'}g carbs
                 </Text>
               </View>
               <View style={[styles.chip, { marginRight: 0 }]}>
                 <MaterialCommunityIcons
-                  name={getActivityIcon(diaryData.activity_level || '')}
+                  name={getActivityIcon(diaryData?.activity_level || '')}
                   size={16}
                   color={theme.colors.onSecondary}
                 />
                 <Text variant="bodySmall" style={{ textTransform: 'capitalize' }}>
-                  {diaryData.activity_level || 'None'}
+                  {diaryData?.activity_level || 'None'}
                 </Text>
               </View>
             </View>
 
             {/* Note Content */}
-            {diaryData.note && diaryData.note.trim() !== '' && (
+            {diaryData?.note && diaryData?.note.trim() !== '' && (
               <View style={{ flex: 2, marginLeft: 8 }}>
                 <View style={[styles.box, { marginBottom: 0 }]}>
                   <View style={[styles.content, { paddingVertical: 4 }]}>
@@ -265,7 +260,7 @@ export function DiaryEntry({
             />
           </View>
           <Text variant="bodySmall" style={{ color: theme.colors.onSecondaryContainer, flex: 1, textAlign: 'right' }}>
-            {diaryData.created_at.toLocaleDateString()}
+            {diaryData?.created_at.toLocaleDateString()}
           </Text>
         </View>
       </View>

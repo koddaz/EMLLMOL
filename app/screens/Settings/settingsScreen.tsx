@@ -19,6 +19,7 @@ export function SettingsScreen({
     appData,
     setAppData,
     authHook,
+    dbHook
 }: navData) {
     const {theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);

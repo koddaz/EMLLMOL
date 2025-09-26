@@ -7,22 +7,16 @@ import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
 import { useNavigation } from "@react-navigation/native";
+import { HookData, NavData } from "@/app/navigation/rootNav";
 
 export function DiaryScreen({
+  navigation,
   appData,
   dbHook,
   calendarHook,
   cameraHook,
-}: {
-  appData: AppData,
-  dbHook: any,
-  calendarHook: any,
-  cameraHook: any,
+}: NavData & HookData) {
 
-
-}) {
-
-  const diaryNav = useNavigation()
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
 
@@ -34,7 +28,7 @@ export function DiaryScreen({
         <View style={styles.centeredWrapper}>
           <View style={styles.centeredContent}>
             <DiaryEntry
-              diaryNav={diaryNav}
+              navigation={navigation}
               appData={appData}
               diaryData={selectedDiaryData}
               calendarHook={calendarHook}
@@ -68,7 +62,7 @@ export function DiaryScreen({
         calendarHook={calendarHook}
         dbHook={dbHook}
         cameraHook={cameraHook}
-        diaryNav={diaryNav}
+        navigation={navigation}
       />
 
       

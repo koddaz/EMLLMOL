@@ -1,9 +1,13 @@
 import AuthScreen from '@/app/api/supabase/auth/authScreen';
 import { supabase } from '@/app/api/supabase/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { createStaticNavigation, NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  useNavigation,
+  useNavigationContainerRef,
+} from '@react-navigation/native';
 import { useCameraPermissions } from 'expo-camera';
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
@@ -12,13 +16,12 @@ import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
-import { TabNavigation } from './navigation/tabNavigation';
-import { DiaryNavigation } from './navigation/diaryNavigation';
-import { TabNav } from './navigation/nestedNavigation';
-import { useDB } from './hooks/useDB';
-import { useCalendar } from './hooks/useCalendar';
-import { useCamera } from './hooks/useCamera';
-import { useAuth } from './hooks/useAuth';
+
+
+import { DiaryNav } from './navigation/nestedNavigation';
+import { RootNavigation } from './navigation/rootNav';
+
+
 
 
 
@@ -38,6 +41,9 @@ export default function Index() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const navigationRef = useNavigationContainerRef();
+  const routeNameRef = useRef<string>('Main');
+  const [currentScreen, setCurrentScreen] = useState<string>('Main');
 
 
 
@@ -220,6 +226,7 @@ export default function Index() {
   }, [initializeApp]);
 
 
+
   // Loading state
   if (isLoading) {
     return (
@@ -257,22 +264,43 @@ export default function Index() {
   return (
 
 
-    
-      <GestureHandlerRootView>
-        <PaperProvider theme={customTheme}>
-         
-            {appData?.session && appData.session.user ? (
-              <NavigationContainer>
-                <SafeAreaProvider>
-                <TabNav appData={appData} setAppData={setAppData} />
-                </SafeAreaProvider>
-              </NavigationContainer>
-            ) : (
-              <AuthScreen />
-            )}
-     
-        </PaperProvider>
-      </GestureHandlerRootView>
+
+    <GestureHandlerRootView>
+      <PaperProvider theme={customTheme}>
+        <SafeAreaProvider>
+          {appData?.session && appData.session.user ? (
+
+            <NavigationContainer
+              ref={navigationRef}
+              onReady={() => {
+                const routeName = navigationRef.current?.getCurrentRoute()?.name;
+                if (routeName) {
+                  routeNameRef.current = routeName;
+                  setCurrentScreen(routeName);
+                }
+              }}
+              onStateChange={async () => {
+                const previousRouteName = routeNameRef.current;
+                const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
+
+                if (previousRouteName !== currentRouteName && currentRouteName) {
+                  // Screen changed
+                  routeNameRef.current = currentRouteName;
+                  setCurrentScreen(currentRouteName);
+                  console.log('Screen changed from', previousRouteName, 'to', currentRouteName);
+                }
+              }}
+            >
+
+              <RootNavigation appData={appData} setAppData={setAppData} currentScreen={currentScreen} />
+
+            </NavigationContainer>
+          ) : (
+            <AuthScreen />
+          )}
+        </SafeAreaProvider>
+      </PaperProvider>
+    </GestureHandlerRootView>
 
   );
 

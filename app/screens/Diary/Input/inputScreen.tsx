@@ -1,39 +1,19 @@
-import React, { useState, useEffect } from 'react';
-import { View, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Divider, Icon, IconButton, Text } from 'react-native-paper';
-import { AppData } from '@/app/constants/interface/appData';
+import React, { useState } from 'react';
+import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { Icon, Text } from 'react-native-paper';
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { CustomTextInput } from '@/app/components/textInput';
 import { GlucosePicker } from './components/decimalPicker';
 import { ButtonPicker } from './components/buttonPicker';
-import { InputTopContainer } from '@/app/components/topContainer';
 import { ImageRow } from '../../Camera/cameraScreen';
-import { NavigationProp, RouteProp } from '@react-navigation/native';
-import { DiaryStackParamList } from '@/app/navigation/nestedNavigation';
+import { HookData, NavData } from '@/app/navigation/rootNav';
 
-interface InputScreenProps {
-  navigation: NavigationProp<DiaryStackParamList>;
-  route: RouteProp<DiaryStackParamList, 'Input'>;
-  diaryData: DiaryData;
-  appData: AppData;
-  calendarHook: any;
-  cameraHook: any;
-  dbHook: any;
-  onSave: (data: DiaryData) => void;
-}
 
-export function InputScreen(
-  {
-    navigation,
-    appData,
-    calendarHook,
-    dbHook,
-    cameraHook,
-    route,
-    onSave,
-    diaryData,
-  }: InputScreenProps) {
+
+export function InputScreen({
+  dbHook, cameraHook, calendarHook, appData, diaryData, navigation
+}: HookData & NavData) {
 
   const { theme, styles } = useAppTheme();
   const [isSaving, setIsSaving] = useState(false);
@@ -52,20 +32,7 @@ export function InputScreen(
   const mealArray = ["snack", "breakfast", "lunch", "dinner"];
   const activityArray = ["none", "low", "medium", "high"];
 
-  // Load editing entry if provided
-  useEffect(() => {
-    const editingData = route.params?.editingEntry as DiaryData;
-    if (!editingData) {
-      return;
-    }
-    setEditingEntry(editingData);
-    setTempGlucose(editingData.glucose || (appData.settings.glucose === "mmol" ? 5.6 : 100));
-    setTempCarbs(editingData.carbs?.toString() || "0");
-    setTempInsulin(editingData.insulin?.toString() || "0");
-    setTempNote(editingData.note || "");
-    setTempActivity(editingData.activity_level || "none");
-    setTempMeal(editingData.meal_type || "snack");
-  }, [route.params?.editingEntry, appData.settings.glucose]);
+
 
   const handleSave = async () => {
     if (isSaving) return;
@@ -92,7 +59,7 @@ export function InputScreen(
       dbHook.setFoodType(formData.foodType);
 
       // Call the save function with editing ID and form data
-      await onSave(editingEntry?.id, formData);
+
 
       // Navigate back after successful save with a small delay
       console.log('🔸 Save successful, navigating back');
@@ -122,7 +89,7 @@ export function InputScreen(
     }
   };
 
-  const photoURIs = cameraHook.photoURIs || diaryData.uri_array || [];
+  const photoURIs = cameraHook.photoURIs || diaryData?.uri_array || [];
 
   return (
     <View style={styles.background}>

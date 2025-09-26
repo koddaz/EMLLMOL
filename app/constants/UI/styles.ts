@@ -121,8 +121,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     iconButton: {
         backgroundColor: theme.colors.primaryContainer, // secondary action buttons
         borderRadius: 8,
-        margin: 0,
-        padding: 4,
+        margin: 4,
+        padding: 2,
     },
     primaryButton: {
         backgroundColor: theme.colors.primary, // main action buttons
@@ -326,7 +326,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         borderWidth: 1,
         borderColor: theme.colors.outlineVariant, // subtle borders
         backgroundColor: theme.colors.surface, // card surfaces
-        marginBottom: 8,
+
         borderRadius: 4,
         padding: 8,
     }

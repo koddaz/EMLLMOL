@@ -17,7 +17,7 @@ export function DiaryList(
     calendarHook,
     cameraHook,
     setSelectedDiaryData,
-    diaryNav,
+    navigation,
     appData
   }: {
     toggleEntry: (state: boolean) => void,
@@ -25,7 +25,7 @@ export function DiaryList(
     calendarHook: any,
     cameraHook: any,
     setSelectedDiaryData?: (data: DiaryData) => void,
-    diaryNav: any
+    navigation: any
     appData: AppData
   }
 ) {
@@ -122,7 +122,7 @@ export function DiaryList(
       <FAB
         icon="note-plus"
         onPress={() => {
-          diaryNav.navigate('Input');
+          navigation.navigate('input');
         }}
         style={{
           position: 'absolute',
