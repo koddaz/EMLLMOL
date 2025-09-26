@@ -7,7 +7,7 @@ import { supabase } from "../api/supabase/supabase";
 // Global flag to ensure deep link listeners are only set up once
 let deepLinkListenersSetup = false;
 
-export function useAuth(session?: Session | null, enableDeepLinkHandling: boolean = false) {
+export function useAuth(session?: Session | null, enableDeepLinkHandling: boolean = false, onAuthStateChange?: (event: string, session: Session | null) => void) {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
@@ -83,6 +83,33 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
             subscription?.remove();
             isProcessing = false;
             deepLinkListenersSetup = false;
+        };
+    }, []);
+
+    // Auth state change listener - only set up once
+    useEffect(() => {
+        if (!onAuthStateChange) return;
+
+        let lastEvent = '';
+        let lastSessionId = '';
+
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            const currentSessionId = session?.user?.id || 'no-session';
+
+            // Prevent duplicate events for the same session
+            if (event === lastEvent && currentSessionId === lastSessionId) {
+                return;
+            }
+
+            lastEvent = event;
+            lastSessionId = currentSessionId;
+
+            console.log('🔄 Auth state changed:', event);
+            onAuthStateChange(event, session);
+        });
+
+        return () => {
+            subscription.unsubscribe();
         };
     }, []);
 

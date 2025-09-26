@@ -216,6 +216,7 @@ export function RootNavigation({
                          <SettingsScreen
                               {...props}
                               appData={appData}
+                              setAppData={setAppData}
                               dbHook={dbHook}
                               authHook={authHook}
                          />

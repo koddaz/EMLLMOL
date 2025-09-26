@@ -2,22 +2,17 @@ import { LoadingScreen } from "@/app/components/loadingScreen";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
-import { FlatList, Pressable, View } from "react-native";
-import { Divider, FAB, Text } from "react-native-paper";
+import { FlatList, View } from "react-native";
+import { Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
-import { DiaryTopContainer } from "@/app/components/topContainer";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useWindowDimensions } from 'react-native';
+
 import { AppData } from "@/app/constants/interface/appData";
 
 export function DiaryList(
   { toggleEntry,
     dbHook,
     calendarHook,
-    cameraHook,
     setSelectedDiaryData,
-    navigation,
     appData
   }: {
     toggleEntry: (state: boolean) => void,
@@ -119,20 +114,7 @@ export function DiaryList(
           onRefresh={dbHook.refreshEntries}
         />
       </View>
-      <FAB
-        icon="note-plus"
-        onPress={() => {
-          navigation.navigate('input');
-        }}
-        style={{
-          position: 'absolute',
-          margin: 16,
-          right: 12,
-          bottom: 16,
-          backgroundColor: theme.colors.secondary, // secondary color for FABs
-        }}
-        color={theme.colors.onSecondary} // white text/icon on secondary background
-      />
+      
     </View>
   );
 }

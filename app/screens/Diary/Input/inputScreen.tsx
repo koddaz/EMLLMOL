@@ -1,13 +1,14 @@
-import React, { useState } from 'react';
-import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Icon, IconButton, Text } from 'react-native-paper';
+import { CustomTextInput } from '@/app/components/textInput';
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
-import { CustomTextInput } from '@/app/components/textInput';
-import { GlucosePicker } from './components/decimalPicker';
-import { ButtonPicker } from './components/buttonPicker';
-import { ImageRow } from '../../Camera/cameraScreen';
 import { HookData, NavData } from '@/app/navigation/rootNav';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React, { useState } from 'react';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
+import { Button, Icon, Text } from 'react-native-paper';
+import { ImageRow } from '../../Camera/cameraScreen';
+import { ButtonPicker } from './components/buttonPicker';
+import { GlucosePicker } from './components/decimalPicker';
 
 
 
@@ -201,20 +202,108 @@ export function InputScreen({
 
 
           </View>
+
         </ScrollView>
+        <BottomNavigation />
       </KeyboardAvoidingView>
+
     </View>
 
   );
 }
 
-export function TextInput() {
+const inputNav = createNativeStackNavigator()
 
-  const {theme, styles} = useAppTheme()
+export function InputNavigator() {
+
   return (
 
-    <View style={styles.container}>
-      
+    <inputNav.Navigator
+      initialRouteName='first'
+      screenOptions={{
+        headerShown: false
+      }}>
+
+      <inputNav.Screen
+        name="first">
+        {(props) => (
+          <InputText />
+        )}
+      </inputNav.Screen>
+
+      <inputNav.Screen
+        name="second">
+        {(props) => (
+          <InputScrollPicker />
+        )}
+      </inputNav.Screen>
+
+      <inputNav.Screen
+        name="third">
+        {(props) => (
+          <InputButtonPicker />
+        )}
+      </inputNav.Screen>
+    </inputNav.Navigator>
+  );
+
+}
+
+
+export function InputText() {
+
+  return (
+    <View>
+
+    </View>
+  );
+
+}
+
+export function InputScrollPicker() {
+
+  return (
+    <View>
+
+    </View>
+  );
+
+}
+
+export function InputButtonPicker() {
+
+  return (
+    <View>
+
+    </View>
+  )
+}
+
+export function BottomNavigation() {
+
+  const { theme, styles } = useAppTheme()
+  return (
+
+    <View style={{ position: 'absolute', bottom: 0, right: 8, left: 8, flex: 1, height: 50, backgroundColor: 'transparent' }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+        <Button
+
+          mode="elevated"
+          textColor={theme.colors.onPrimaryContainer}
+          buttonColor={theme.colors.primaryContainer}
+          icon="chevron-left"
+          onPress={() => { }}> Back </Button>
+        <Button
+          contentStyle={{ flexDirection: 'row-reverse' }}
+          mode="elevated"
+          textColor={theme.colors.onPrimaryContainer}
+          buttonColor={theme.colors.primaryContainer}
+          icon="chevron-right"
+          onPress={() => { }}> Next </Button>
+
+      </View>
+
+
     </View>
   )
 }

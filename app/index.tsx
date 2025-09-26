@@ -3,10 +3,9 @@ import { supabase } from '@/app/api/supabase/supabase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   NavigationContainer,
-  useNavigation,
   useNavigationContainerRef,
 } from '@react-navigation/native';
-import { useCameraPermissions } from 'expo-camera';
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import { AppState, Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -22,6 +21,7 @@ import { DiaryNav } from './navigation/nestedNavigation';
 import { RootNavigation } from './navigation/rootNav';
 import { useDB } from './hooks/useDB';
 import { useCalendar } from './hooks/useCalendar';
+import { useAuth } from './hooks/useAuth';
 
 
 
@@ -48,41 +48,26 @@ export default function Index() {
   const routeNameRef = useRef<string>('Main');
   const [currentScreen, setCurrentScreen] = useState<string>('Main');
 
-  // Separate function to fetch diary entries
-  const fetchDiaryEntries = useCallback(async (userId: string): Promise<DiaryData[]> => {
-    try {
-      console.log('📔 Fetching diary entries for user:', userId);
-      const { data, error } = await supabase
-        .from('entries')
-        .select('*')
-        .eq('user_id', userId)  // FIXED: Changed from 'user_id' to 'userId'
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error('❌ Failed to load diary entries:', error);
-        return [];
-      }
-
-      // Transform the data to match DiaryData interface
-      const transformedData: DiaryData[] = (data || []).map(item => ({
-        id: item.id.toString(),
-        created_at: new Date(item.created_at),
-        glucose: item.glucose || 0,
-        carbs: item.carbs || 0,
-        insulin: item.insulin || 0,
-        meal_type: item.meal_type || '',
-        activity_level: item.activity_level || '',
-        note: item.note || '',
-        uri_array: item.uri_array || []
-      }));
-
-      console.log(`✅ Loaded ${transformedData.length} diary entries`);
-      return transformedData;
-    } catch (err) {
-      console.error('❌ Error fetching diary entries:', err);
-      return [];
+  const handleAuthStateChange = async (event: string, session: any) => {
+    if (event === 'SIGNED_OUT') {
+      // Clear user data but keep settings
+      const settings = await loadSettings();
+      setAppData({
+        session: null,
+        profile: null,
+        settings,
+        diaryEntries: [],
+        isEntriesLoaded: false
+      });
+    } else if (event === 'SIGNED_IN' && session?.user?.id) {
+      // Re-initialize when signing in
+      await initializeApp();
     }
-  }, []);
+  };
+
+  const authHook = useAuth(appData?.session, true, handleAuthStateChange)
+  const dbHook = useDB(appData, setAppData)
+
 
     // Separate function to load settings
     const loadSettings = async () => {
@@ -101,34 +86,6 @@ export default function Index() {
       };
     };
 
-    // Separate function to fetch profile
-    const fetchProfile = async (userId: string) => {
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select(`username, full_name, avatar_url`)
-          .eq('id', userId)
-          .single();
-
-        if (error && error.code !== 'PGRST116') {
-          console.error('❌ Profile error:', error);
-          return null;
-        }
-
-        if (data) {
-          return {
-            username: data.username,
-            fullName: data.full_name,
-            avatarUrl: data.avatar_url
-          };
-        }
-
-        return null;
-      } catch (err) {
-        console.error('Profile fetch error:', err);
-        return null;
-      }
-    };
 
     // Main initialization function
     const initializeApp = useCallback(async () => {
@@ -165,23 +122,20 @@ export default function Index() {
           return;
         }
 
-        // User is authenticated - fetch their data
+        // User is authenticated - set session first
         console.log('👤 User authenticated:', session.user.email);
 
-        // Fetch profile and diary entries in parallel
-        const [profile, diaryEntries] = await Promise.all([
-          fetchProfile(session.user.id),
-          fetchDiaryEntries(session.user.id)
-        ]);
-
-        // Set all data
+        // Set session in appData so hooks can use it
         setAppData({
           session,
-          profile,
+          profile: null,
           settings,
-          diaryEntries,
-          isEntriesLoaded: true
+          diaryEntries: [],
+          isEntriesLoaded: false
         });
+
+        // Allow React to re-render with the new session, then fetch data
+        // This will be handled by a useEffect that watches for session changes
 
         console.log('✅ App initialized successfully');
       } catch (error) {
@@ -190,7 +144,7 @@ export default function Index() {
       } finally {
         setIsLoading(false);
       }
-    }, [fetchDiaryEntries]);
+    }, []);
 
     // Refresh entries function that can be passed down
 
@@ -200,31 +154,29 @@ export default function Index() {
       initializeApp();
     }, []);
 
-    // Auth state listener
+
+    // Fetch profile and entries once session is available
     useEffect(() => {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('🔄 Auth state changed:', event);
+      if (appData?.session?.user?.id && !appData.isEntriesLoaded) {
+        console.log('Session available, fetching profile and entries...');
 
-        if (event === 'SIGNED_OUT') {
-          // Clear user data but keep settings
-          const settings = await loadSettings();
-          setAppData({
-            session: null,
-            profile: null,
-            settings,
-            diaryEntries: [],
-            isEntriesLoaded: false
-          });
-        } else if (event === 'SIGNED_IN' && session?.user?.id) {
-          // Re-initialize when signing in
-          await initializeApp();
-        }
-      });
+        const fetchUserData = async () => {
+          try {
+            // Use authHook for profile (now it has the session)
+            await authHook.getProfile();
 
-      return () => {
-        subscription.unsubscribe();
-      };
-    }, [initializeApp]);
+            // Use dbHook for entries (now it has the session via appData)
+            await dbHook.retrieveEntries();
+
+            console.log('✅ User data fetched successfully');
+          } catch (error) {
+            console.error('❌ Failed to fetch user data:', error);
+          }
+        };
+
+        fetchUserData();
+      }
+    }, [appData?.session?.user?.id, appData?.isEntriesLoaded]);
 
 
 
