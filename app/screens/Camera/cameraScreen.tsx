@@ -1,5 +1,6 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
+import { HookData, NavData } from "@/app/navigation/rootNav";
 
 import { Dimensions, Image, TouchableOpacity, View } from "react-native";
 import { FlatList } from "react-native-gesture-handler";
@@ -94,7 +95,7 @@ export function ImageRow(
 
 
 export function CameraScreen(
-    { cameraHook, dbHook, appData, navigation }: { cameraHook: any, dbHook: any, appData: AppData, navigation: any}
+    { cameraHook, dbHook, appData, navigation }: NavData & HookData
 ) {
     const { styles, theme } = useAppTheme();
 

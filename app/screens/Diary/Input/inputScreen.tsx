@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import { Icon, Text } from 'react-native-paper';
+import { Icon, IconButton, Text } from 'react-native-paper';
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { CustomTextInput } from '@/app/components/textInput';
@@ -100,11 +100,13 @@ export function InputScreen({
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
       >
         <ScrollView
-          style={{ flex: 1, marginTop: 12 }}
-          contentContainerStyle={{ paddingBottom: 20, marginTop: 8 }}
+          style={{ flex: 1, marginTop: 0 }}
+          contentContainerStyle={{ paddingBottom: 20, marginTop: 0 }}
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.container}>
+
+
 
 
             <GlucosePicker
@@ -204,6 +206,17 @@ export function InputScreen({
     </View>
 
   );
+}
+
+export function TextInput() {
+
+  const {theme, styles} = useAppTheme()
+  return (
+
+    <View style={styles.container}>
+      
+    </View>
+  )
 }
 
 

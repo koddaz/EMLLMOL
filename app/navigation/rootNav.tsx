@@ -16,6 +16,7 @@ import { CommonActions } from "@react-navigation/native";
 import { useNavigation } from "expo-router";
 import { useAppTheme } from "../constants/UI/theme";
 import { useMemo } from "react";
+import { CameraScreen } from "../screens/Camera/cameraScreen";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
@@ -70,35 +71,62 @@ export function RootNavigation({
                );
                case 'input': return (
 
-                    <View style={styles.boxPicker}>
-                         <View style={{ flexDirection: 'row', flex: 1 }}>
-                              <Text variant="titleLarge">New Entry</Text>
-                         </View>
-                         <View>
+                    <View style={[styles.boxPicker, { position: "relative" }]}>
+
+                         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4, paddingHorizontal: 16 }}>
                               <Text variant="titleLarge">
                                    {calendarHook.formatTime(new Date())}
                               </Text>
-                              <Text variant="titleSmall">
+                              <Text variant="titleLarge" style={{
+                                   color: theme.colors.outline
+                              }}>||</Text>
+                              <Text variant="titleLarge">
                                    {calendarHook.formatDate(new Date())}
                               </Text>
                          </View>
+                         <Text
+                              variant="bodySmall"
+                              style={{
+                                   position: 'absolute',
+                                   top: -8,
+                                   left: 8,
+                                   backgroundColor: theme.colors.primaryContainer,
+                                   paddingHorizontal: 4,
+                                   borderRadius: 4,
+                                   borderColor: theme.colors.outline,
+                                   borderWidth: 0.5,
+                                   color: theme.colors.onPrimary,
+                                   fontSize: 12,
+                                   fontWeight: '400',
+                                   zIndex: 1
+                              }}
+                         >
+                              new entry
+                         </Text>
                     </View>
                )
           }
      }, [])
 
 
-     const TopBar = () => (
+     const MainTopBar = () => (
 
-          <Appbar.Header mode={(currentScreen != 'input') ? "center-aligned" : "small"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
-
+          <Appbar.Header mode={"center-aligned"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
+               {(currentScreen === 'main') && (
+                    <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
+               )}
                {(currentScreen != 'main') && (
                     <Appbar.BackAction style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.goBack() }} />
                )}
                <Appbar.Content title={titleContainer(currentScreen!)} />
                {(currentScreen === 'main') && (
-                    <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
+                    <Appbar.Action icon={'note-plus'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('input') }} />
                )}
+               {(currentScreen === 'input') && (
+                    <Appbar.Action icon={'camera-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('camera') }} />
+               )}
+
+
           </Appbar.Header>
 
 
@@ -110,49 +138,53 @@ export function RootNavigation({
           <root.Navigator
                initialRouteName="diary"
                screenOptions={{
-                    headerShown: true,
-                    header: () => TopBar(),
+                    headerShown: currentScreen != 'camera' ? true : false,
+                    header: () => MainTopBar(),
                }}
                tabBar={({ navigation, state, descriptors, insets }) => (
-                    <BottomNavigation.Bar
-                         navigationState={state}
-                         safeAreaInsets={insets}
+                    (currentScreen != 'camera') && (
+                         <BottomNavigation.Bar
+                              navigationState={state}
+                              safeAreaInsets={insets}
 
-                         onTabPress={({ route, preventDefault }) => {
-                              const event = navigation.emit({
-                                   type: 'tabPress',
-                                   target: route.key,
-                                   canPreventDefault: true,
-                              });
-
-                              if (event.defaultPrevented) {
-                                   preventDefault();
-                              } else {
-                                   navigation.dispatch({
-                                        ...CommonActions.navigate(route.name, route.params),
-                                        target: state.key,
+                              onTabPress={({ route, preventDefault }) => {
+                                   const event = navigation.emit({
+                                        type: 'tabPress',
+                                        target: route.key,
+                                        canPreventDefault: true,
                                    });
-                              }
-                         }}
-                         renderIcon={({ route, focused, color }) =>
-                              descriptors[route.key].options.tabBarIcon?.({
-                                   focused,
-                                   color,
-                                   size: 24,
-                              }) || null
-                         }
-                         getLabelText={({ route }) => {
-                              const { options } = descriptors[route.key];
-                              const label =
-                                   typeof options.tabBarLabel === 'string'
-                                        ? options.tabBarLabel
-                                        : typeof options.title === 'string'
-                                             ? options.title
-                                             : route.name;
 
-                              return label;
-                         }}
-                    />
+                                   if (event.defaultPrevented) {
+                                        preventDefault();
+                                   } else {
+                                        navigation.dispatch({
+                                             ...CommonActions.navigate(route.name, route.params),
+                                             target: state.key,
+                                        });
+                                   }
+                              }}
+                              renderIcon={({ route, focused, color }) =>
+                                   descriptors[route.key].options.tabBarIcon?.({
+                                        focused,
+                                        color,
+                                        size: 24,
+                                   }) || null
+                              }
+                              getLabelText={({ route }) => {
+                                   const { options } = descriptors[route.key];
+                                   const label =
+                                        typeof options.tabBarLabel === 'string'
+                                             ? options.tabBarLabel
+                                             : typeof options.title === 'string'
+                                                  ? options.title
+                                                  : route.name;
+
+                                   return label;
+                              }}
+                         />
+                    )
+
+
                )}>
 
 
@@ -209,11 +241,9 @@ export function RootNavigation({
 }
 
 export function StackNavigation(
-     { appData, setAppData, dbHook, calendarHook, cameraHook }: HookData & NavData
+     { appData, setAppData, dbHook, calendarHook, cameraHook, navigation }: HookData & NavData
 
 ) {
-
-
 
 
      return (
@@ -224,13 +254,10 @@ export function StackNavigation(
                }}
           >
                <stack.Screen
-                    name={"main"}
-                    options={{
-
-                    }} >
-                    {(props) => (
+                    name={"main"}>
+                    {(navigation) => (
                          <DiaryScreen
-                              {...props}
+                              {...navigation}
                               appData={appData}
                               dbHook={dbHook}
                               calendarHook={calendarHook}
@@ -239,16 +266,26 @@ export function StackNavigation(
                     )}
                </stack.Screen>
 
-               <stack.Screen
-                    name={"input"}
-                    options={{}}>
-                    {(props) => (
+               <stack.Screen name={"input"}>
+                    {(navigation) => (
                          <InputScreen
-                              {...props}
+                              {...navigation}
                               appData={appData}
                               dbHook={dbHook}
                               calendarHook={calendarHook}
                               cameraHook={cameraHook} />
+                    )}
+               </stack.Screen>
+
+               <stack.Screen
+                    name={'camera'}>
+                    {(navigation) => (
+                         <CameraScreen
+                              {...navigation}
+                              cameraHook={cameraHook}
+                              dbHook={dbHook}
+                              appData={appData}
+                         />
                     )}
                </stack.Screen>
           </stack.Navigator>
