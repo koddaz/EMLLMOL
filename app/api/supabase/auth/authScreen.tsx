@@ -1,12 +1,14 @@
 import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState } from "react";
-import { Dimensions, Image, ScrollView, StyleSheet, View } from "react-native";
+import { Dimensions, Image, KeyboardAvoidingView, ScrollView, StyleSheet, View } from "react-native";
 import { Button, IconButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
 import { supabase } from "../supabase";
 import { useAuth } from "@/app/hooks/useAuth";
 import { TermsScreen } from "@/app/screens/TermsScreen";
 import { InformationScreen } from "@/app/screens/InformationScreen";
+import { useAppTheme } from "@/app/constants/UI/theme";
+import { ViewSet } from "@/app/components/UI/ViewSet";
 
 
 
@@ -15,6 +17,8 @@ const { width, height } = Dimensions.get('window');
 export default function AuthScreen() {
     const theme = useTheme();
     const styles = customStyles(theme);
+
+    const hej = true
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -55,17 +59,21 @@ export default function AuthScreen() {
     if (showInformation) {
         return (
             <View style={[authStyles.container, { backgroundColor: theme.colors.primary }]}>
-         <InformationScreen onClose={() => setShowInformation(false)} />
-         </View>
+                <InformationScreen onClose={() => setShowInformation(false)} />
+            </View>
         );
     }
 
+    // if (hej === true) return (
+    //     <SignUpScreen />
+    // );
+    
     return (
         <View style={[authStyles.container, { backgroundColor: theme.colors.primary }]}>
-            
-            
-            
-            
+
+
+
+
             <View style={authStyles.logoContainer}>
                 <Image
                     style={authStyles.logo}
@@ -244,6 +252,27 @@ export default function AuthScreen() {
     );
 }
 
+
+export function SignUpScreen() {
+
+    const {styles} = useAppTheme()
+
+    return (
+        <KeyboardAvoidingView style={styles.background}>
+            <ViewSet
+                title="Sign Up"
+                icon="sign"
+                content={
+                    <View>
+
+                    </View>
+                }
+            />
+
+        </KeyboardAvoidingView>
+    )
+
+}
 const authStyles = StyleSheet.create({
     container: {
         flex: 1,

@@ -18,8 +18,8 @@ export default function DiaryCalendar(
 
     return (
         <>
-
-            {calendarHook.showCalendar && (
+            
+            
                 <Surface
                     style={[
                         
@@ -42,7 +42,7 @@ export default function DiaryCalendar(
 
                 </Surface>
 
-            )}
+         
 
 
 

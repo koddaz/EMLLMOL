@@ -245,8 +245,6 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     calendarContainer: {
         backgroundColor: theme.colors.surface,
         borderRadius: 16,
-        marginBottom: 16,
-        borderBottomWidth: 1,
         borderColor: theme.colors.outline
         // marginHorizontal: 8,
     },

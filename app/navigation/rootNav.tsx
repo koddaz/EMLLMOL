@@ -8,15 +8,16 @@ import { DiaryScreen } from "../screens/Diary/diaryScreen";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
 import { StatisticsScreen } from "../screens/Statistics/statisticsScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Appbar, BottomNavigation, Icon, IconButton, Text } from "react-native-paper";
-import { Image, View } from "react-native";
+import { Appbar, BottomNavigation, Button, Icon, IconButton, Text } from "react-native-paper";
+import { Image, Pressable, Touchable, View } from "react-native";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
 import { DiaryData } from "../constants/interface/diaryData";
 import { CommonActions } from "@react-navigation/native";
-import { useNavigation } from "expo-router";
+import { useNavigation } from "@react-navigation/native";
 import { useAppTheme } from "../constants/UI/theme";
 import { useMemo } from "react";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
+import { useStatistics } from "../hooks/useStatistics";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
@@ -34,6 +35,7 @@ export interface HookData {
      calendarHook?: any,
      authHook?: any,
      cameraHook?: any,
+     statsHook?: any,
 }
 
 export function RootNavigation({
@@ -43,29 +45,30 @@ export function RootNavigation({
      const calendarHook = useCalendar(appData!);
      const cameraHook = useCamera(appData!);
      const authHook = useAuth(appData?.session, false);
+     const statsHook = useStatistics(dbHook.diaryEntries || []);
      const { styles, theme } = useAppTheme()
-     const navigation = useNavigation()
+     const navigation = useNavigation() as any
 
 
      const titleContainer = useMemo(() => (title: string) => {
           switch (title) {
                case 'main': return (
-                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
                          <Image source={logo} resizeMethod="scale" style={{ width: 50, height: 50 }} />
-                         <Text variant="labelSmall" style={{ textAlign: 'auto' }}>emmiSense</Text>
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>emmiSense</Text>
                     </View>
                );
                case 'settings': return (
-                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
                          <Icon source={"cog"} size={50} />
-                         <Text variant="labelSmall">Settings</Text>
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>Settings</Text>
                     </View>
 
                );
                case 'stats': return (
-                    <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
                          <Icon source={"chart-bar"} size={50} />
-                         <Text variant="labelSmall">Statistics</Text>
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>Statistics</Text>
                     </View>
 
                );
@@ -111,19 +114,22 @@ export function RootNavigation({
 
      const MainTopBar = () => (
 
-          <Appbar.Header mode={"center-aligned"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
+          <Appbar.Header mode={"small"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
                {(currentScreen === 'main') && (
+
                     <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
+
                )}
                {(currentScreen != 'main') && (
+
                     <Appbar.BackAction style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.goBack() }} />
                )}
                <Appbar.Content title={titleContainer(currentScreen!)} />
-               {(currentScreen === 'main') && (
-                    <Appbar.Action icon={'note-plus'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('input') }} />
+               {(currentScreen === 'main' || currentScreen === 'stats') && (
+                    <Appbar.Action icon={'cog-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('settings') }} />
                )}
                {(currentScreen === 'input') && (
-                    <Appbar.Action icon={'camera-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('camera') }} />
+                    <Appbar.Action icon={'camera-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('diary', { screen: 'camera' }) }} />
                )}
 
 
@@ -142,46 +148,10 @@ export function RootNavigation({
                     header: () => MainTopBar(),
                }}
                tabBar={({ navigation, state, descriptors, insets }) => (
-                    (currentScreen != 'camera') && (
-                         <BottomNavigation.Bar
-                              navigationState={state}
-                              safeAreaInsets={insets}
+                    (currentScreen === 'main' || currentScreen === 'stats') && (
 
-                              onTabPress={({ route, preventDefault }) => {
-                                   const event = navigation.emit({
-                                        type: 'tabPress',
-                                        target: route.key,
-                                        canPreventDefault: true,
-                                   });
+                         <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} />
 
-                                   if (event.defaultPrevented) {
-                                        preventDefault();
-                                   } else {
-                                        navigation.dispatch({
-                                             ...CommonActions.navigate(route.name, route.params),
-                                             target: state.key,
-                                        });
-                                   }
-                              }}
-                              renderIcon={({ route, focused, color }) =>
-                                   descriptors[route.key].options.tabBarIcon?.({
-                                        focused,
-                                        color,
-                                        size: 24,
-                                   }) || null
-                              }
-                              getLabelText={({ route }) => {
-                                   const { options } = descriptors[route.key];
-                                   const label =
-                                        typeof options.tabBarLabel === 'string'
-                                             ? options.tabBarLabel
-                                             : typeof options.title === 'string'
-                                                  ? options.title
-                                                  : route.name;
-
-                                   return label;
-                              }}
-                         />
                     )
 
 
@@ -234,6 +204,7 @@ export function RootNavigation({
                               appData={appData}
                               dbHook={dbHook}
                               calendarHook={calendarHook}
+                              statsHook={statsHook}
                          />
                     )}
                </root.Screen>
@@ -293,4 +264,109 @@ export function StackNavigation(
 
      );
 
+}
+
+
+export function BottomNavBar({ insets, navigation, route, statsHook }: { insets: any, navigation: any, route: string, statsHook: any }) {
+
+     const { theme, styles } = useAppTheme();
+     const { currentSection, setCurrentSection } = statsHook
+
+     const button = (title: string, section: string, icon: string, nav?: boolean, ) => {
+          const isActive = nav ? false : currentSection === section;
+          return (
+               <Pressable style={{
+                    
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: theme.colors.surface,
+                    padding: 8,
+                    elevation: isActive ? 0 : 4,
+                    borderWidth: 0.1,
+                    minWidth: 75,
+                    
+
+               }} onPress={() => {
+                    if (nav) {
+                         if (section === 'input') {
+                              navigation.navigate('diary', { screen: 'input' });
+                         } else {
+                              navigation.navigate(section);
+                         }
+                    } else {
+                         setCurrentSection(section);
+                    }
+               }}>
+                    <View style={{
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                    }}>
+                         <Icon source={icon} size={25} color={isActive ? theme.colors.tertiary : theme.colors.onSurface} />
+                         <Text
+                              variant="labelSmall"
+                              style={{ color: isActive ? theme.colors.tertiary : theme.colors.onSurface }}>
+                              {title}
+                         </Text>
+                    </View>
+               </Pressable>
+          )
+     }
+
+     const renderButtons = (route: string) => {
+          switch (route) {
+               case 'stats':
+                    return (
+                         <>
+                              {button(/* title */ 'Summary', /* section */ 'summary', /* icon */ 'chart-box-outline')}
+                              {button(/* title */ 'Carbs', /* section */ 'carbs', /* icon */ 'bread-slice-outline')}
+                              {button(/* title */ 'Glucose', /* section */ 'glucose', /* icon */ 'water-outline')}
+                         </>
+                    );
+               case 'main':
+                    return (
+                         <>
+                              
+                              {button(/* title */ 'Statistics', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
+                              {button(/* title */ 'New entry', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
+                         </>
+                    );
+               default:
+                    return null;
+          }
+     }
+
+     return (
+          <View style={{
+               
+               position: 'absolute',
+               alignItems: 'flex-end',
+               bottom: insets.bottom + 32,
+               right: insets.right,
+
+               backgroundColor: 'transparent',
+               width: '100%'
+
+
+
+
+
+          }}>
+               <View style={{
+                    flexDirection: 'row',
+                    //gap: 8,
+                    
+
+
+               }}>
+                    <View style={{flex: 1}}></View>
+                    <View style={{width: 32, backgroundColor: theme.colors.surface, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4}}></View>
+                    {renderButtons(route)}
+                    <View style={{flex: 0, width: 64, backgroundColor: theme.colors.surface, elevation: 4}}>
+
+                    </View>
+
+
+               </View>
+          </View>
+     );
 }

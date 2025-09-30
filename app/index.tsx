@@ -15,9 +15,6 @@ import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
 import { DiaryData } from './constants/interface/diaryData';
 import { customTheme, useAppTheme } from './constants/UI/theme';
-
-
-import { DiaryNav } from './navigation/nestedNavigation';
 import { RootNavigation } from './navigation/rootNav';
 import { useDB } from './hooks/useDB';
 import { useCalendar } from './hooks/useCalendar';
@@ -66,7 +63,7 @@ export default function Index() {
   };
 
   const authHook = useAuth(appData?.session, true, handleAuthStateChange)
-  const dbHook = useDB(appData, setAppData)
+  const dbHook = useDB(appData!, setAppData)
 
 
     // Separate function to load settings
@@ -82,7 +79,7 @@ export default function Index() {
         weight: savedWeight || 'kg',
         glucose: savedGlucose || 'mmol',
         clockFormat: savedClockFormat || '24h',
-        dateFormat: savedDateFormat || 'DD/MM/YYYY'
+        dateFormat: savedDateFormat || 'en'
       };
     };
 
@@ -249,7 +246,7 @@ export default function Index() {
 
               </NavigationContainer>
             ) : (
-              <AuthScreen />
+              <AuthScreen  />
             )}
           </SafeAreaProvider>
         </PaperProvider>

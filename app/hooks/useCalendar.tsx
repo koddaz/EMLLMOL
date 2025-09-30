@@ -16,14 +16,12 @@ export function useCalendar(appData: AppData) {
   }, []);
 
   const formatDate = useCallback((date: Date) => {
-    if (appData.settings.dateFormat === 'DD/MM/YYYY') {
+    if (appData.settings.dateFormat === 'en') {
       return date.toISOString().split('T')[0];
-    } else if (appData.settings.dateFormat === 'MM/DD/YYYY') {
-      return date.toLocaleDateString('en-US', {
-        month: '2-digit',
-        day: '2-digit',
-
-      });
+    } else if (appData.settings.dateFormat === 'us') {
+      const isoString = date.toISOString().split('T')[0];
+      const [year, month, day] = isoString.split('-');
+      return `${month}-${day}-${year}`;
     }
   }, [appData.settings.dateFormat]);
 

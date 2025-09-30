@@ -8,6 +8,7 @@ import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
 import { useNavigation } from "@react-navigation/native";
 import { HookData, NavData } from "@/app/navigation/rootNav";
+import { IconButton, Text } from "react-native-paper";
 
 export function DiaryScreen({
   navigation,
@@ -19,6 +20,8 @@ export function DiaryScreen({
 
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
+  const currentDate = calendarHook.formatDate(new Date())
+  const selectedDate = calendarHook.formatDate(new Date(calendarHook.selectedDate))
 
   return (
 
@@ -40,17 +43,30 @@ export function DiaryScreen({
 
 
       <View style={{
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 5,
-        // overflow: 'hidden',
+        flex: 0,
       }}>
-        <DiaryCalendar
-          calendarHook={calendarHook}
-          dbHook={dbHook}
-        />
+
+
+        {calendarHook.showCalendar && (
+          <DiaryCalendar
+            calendarHook={calendarHook}
+            dbHook={dbHook}
+          />
+        )}
+
+
+        <View style={{ flexDirection: 'row', backgroundColor: theme.colors.surface, paddingVertical: 0, paddingHorizontal: 16, justifyContent: 'space-between', alignItems: 'center' }}>
+          <IconButton style={{margin: 0, padding: 0}} size={25} iconColor={theme.colors.onSurface} icon='chevron-left' onPress={() => { calendarHook.navigateDate('prev') }} />
+          <Text variant="titleMedium">{selectedDate}</Text>
+          <IconButton
+            style={{margin: 0, padding: 0}}
+            iconColor={theme.colors.onSurface}
+            size={25}
+            icon='chevron-right'
+            disabled={selectedDate >= currentDate}
+            onPress={() => { calendarHook.navigateDate('next') }}
+          />
+        </View>
       </View>
 
 
@@ -65,7 +81,7 @@ export function DiaryScreen({
         navigation={navigation}
       />
 
-      
+
 
     </View>
   );

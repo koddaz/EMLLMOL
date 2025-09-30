@@ -1,16 +1,11 @@
 import { useState, useCallback, useMemo } from "react";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 
-export function useStatistics(diaryEntries: DiaryData[]) {
+export function useStatistics(diaryEntries?: DiaryData[]) {
   // State management
-  const [glucosePeriod, setGlucosePeriod] = useState(1);
-  const [carbsPeriod, setCarbsPeriod] = useState(7);
-  const [entriesPeriod, setEntriesPeriod] = useState(7);
+  const [selectedPeriod, setSelectedPeriod] = useState(7);
   const [selectedMealTypes, setSelectedMealTypes] = useState(['breakfast', 'lunch', 'dinner', 'snack']);
-  const [currentSection, setCurrentSection] = useState<'summary' | 'carbs' | 'insulin' | 'glucose'>('summary');
-
-  // Calculate the max period to show in header
-  const selectedPeriod = Math.max(glucosePeriod, carbsPeriod, entriesPeriod);
+  const [currentSection, setCurrentSection] = useState<'summary' | 'carbs' | 'glucose'>('summary');
 
   // Meal type colors
   const mealColors = {
@@ -116,7 +111,7 @@ export function useStatistics(diaryEntries: DiaryData[]) {
 
     const endDate = new Date();
     const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - glucosePeriod);
+    startDate.setDate(startDate.getDate() - selectedPeriod);
 
     const glucoseValues = diaryEntries
       .filter(entry => {
@@ -135,7 +130,7 @@ export function useStatistics(diaryEntries: DiaryData[]) {
     return glucoseValues.length % 2 !== 0
       ? glucoseValues[mid]
       : (glucoseValues[mid - 1] + glucoseValues[mid]) / 2;
-  }, [diaryEntries, glucosePeriod]);
+  }, [diaryEntries, selectedPeriod]);
 
   // Process glucose data for chart (combined all meals)
   const processGlucoseChartData = useCallback((entries: DiaryData[], days: number) => {
@@ -193,23 +188,23 @@ export function useStatistics(diaryEntries: DiaryData[]) {
 
   // Memoized processed data
   const glucoseDataByMeal = useMemo(() =>
-    processGlucoseData(diaryEntries || [], glucosePeriod),
-    [diaryEntries, glucosePeriod, processGlucoseData]
+    processGlucoseData(diaryEntries || [], selectedPeriod),
+    [diaryEntries, selectedPeriod, processGlucoseData]
   );
 
   const glucoseChartData = useMemo(() =>
-    processGlucoseChartData(diaryEntries || [], glucosePeriod),
-    [diaryEntries, glucosePeriod, processGlucoseChartData]
+    processGlucoseChartData(diaryEntries || [], selectedPeriod),
+    [diaryEntries, selectedPeriod, processGlucoseChartData]
   );
 
   const carbsDataByMeal = useMemo(() =>
-    processCarbsData(diaryEntries || [], carbsPeriod),
-    [diaryEntries, carbsPeriod, processCarbsData]
+    processCarbsData(diaryEntries || [], selectedPeriod),
+    [diaryEntries, selectedPeriod, processCarbsData]
   );
 
   const entriesDataByMeal = useMemo(() =>
-    processEntriesData(diaryEntries || [], entriesPeriod),
-    [diaryEntries, entriesPeriod, processEntriesData]
+    processEntriesData(diaryEntries || [], selectedPeriod),
+    [diaryEntries, selectedPeriod, processEntriesData]
   );
 
   // Summary statistics calculations
@@ -224,10 +219,9 @@ export function useStatistics(diaryEntries: DiaryData[]) {
       };
     }
 
-    const maxPeriod = Math.max(glucosePeriod, carbsPeriod, entriesPeriod);
     const endDate = new Date();
     const startDate = new Date(endDate);
-    startDate.setDate(startDate.getDate() - maxPeriod);
+    startDate.setDate(startDate.getDate() - selectedPeriod);
 
     const filteredEntries = diaryEntries.filter(entry => {
       const entryDate = new Date(entry.created_at);
@@ -256,21 +250,16 @@ export function useStatistics(diaryEntries: DiaryData[]) {
       carbsByMeal,
       insulinByMeal
     };
-  }, [diaryEntries, glucosePeriod, carbsPeriod, entriesPeriod]);
+  }, [diaryEntries, selectedPeriod]);
 
   return {
     // State
-    glucosePeriod,
-    setGlucosePeriod,
-    carbsPeriod,
-    setCarbsPeriod,
-    entriesPeriod,
-    setEntriesPeriod,
+    selectedPeriod,
+    setSelectedPeriod,
     selectedMealTypes,
     setSelectedMealTypes,
     currentSection,
     setCurrentSection,
-    selectedPeriod,
 
     // Constants
     mealColors,
@@ -290,6 +279,8 @@ export function useStatistics(diaryEntries: DiaryData[]) {
     processGlucoseData,
     processCarbsData,
     processEntriesData,
-    processGlucoseChartData
+    processGlucoseChartData,
+
+
   };
 }

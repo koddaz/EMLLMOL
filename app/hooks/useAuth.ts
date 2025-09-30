@@ -319,11 +319,46 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
         }
     };
 
+    const changeEmail = async (newEmail: string) => {
+        try {
+            setError(null);
+            setIsLoading(true);
+
+            if (!newEmail || !newEmail.includes('@')) {
+                setError('Please enter a valid email address');
+                return;
+            }
+
+            console.log('Changing email to:', newEmail);
+
+            const { data, error } = await supabase.auth.updateUser({
+                email: newEmail
+            });
+
+            if (error) {
+                console.error('Error changing email:', error.message);
+                setError(error.message);
+                return false;
+            }
+
+            console.log('Email change initiated successfully. Check both old and new email for confirmation.');
+            return true;
+
+        } catch (error) {
+            console.error('Unexpected error during email change:', error);
+            setError('An unexpected error occurred. Please try again later.');
+            return false;
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return {
         signIn,
         signUp,
         signOut,
         removeProfile,
+        changeEmail,
         error,
         username,
         fullName,
