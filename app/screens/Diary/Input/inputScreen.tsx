@@ -21,80 +21,38 @@ export function InputScreen({
   const { theme, styles } = useAppTheme();
   const screenWidth = Dimensions.get('window').width;
 
-  const {glucose, setGlucose, insulin, setInsulin, carbs, setCarbs, activity, setActivity, foodType, setFoodType} = useDB()
+  const {
+    glucose, setGlucose, 
+    insulin, setInsulin, 
+    carbs, setCarbs, 
+    activity, setActivity, 
+    foodType, setFoodType, 
+    note, setNote, 
+    foodOptions, activityOptions,
+    isLoading, 
+    error, setError
+  
+  } = dbHook
 
+  const {saveDiaryEntry} = dbHook
 
   const [isSaving, setIsSaving] = useState(false);
   const [editingEntry, setEditingEntry] = useState<DiaryData | null>(null);
 
-  const [tempGlucose, setTempGlucose] = useState(
-    appData?.settings.glucose === "mmol" ? 5.6 : 100
-  );
-  const [tempCarbs, setTempCarbs] = useState("");
-  const [tempInsulin, setTempInsulin] = useState("");
-  const [tempNote, setTempNote] = useState("");
-  const [tempActivity, setTempActivity] = useState("none");
-  const [tempMeal, setTempMeal] = useState("snack");
-
-  const mealArray = ["snack", "breakfast", "lunch", "dinner"];
-  const activityArray = ["none", "low", "medium", "high"];
-
   const [currentSection, setCurrentSection] = useState(1)
 
-  const handleSave = async () => {
-    if (isSaving) return;
-
-    setIsSaving(true);
+  const onSave = async () => {
     try {
-      // Prepare form data
-      const formData = {
-        glucose: tempGlucose.toString(),
-        carbs: tempCarbs,
-        insulin: tempInsulin,
-        note: tempNote,
-        activity: tempActivity,
-        foodType: tempMeal,
-      };
-
-
-      // Update dbHook state with form values (for other components that might need it)
-      dbHook.setGlucose(formData.glucose);
-      dbHook.setCarbs(formData.carbs);
-      dbHook.setInsulin(formData.insulin);
-      dbHook.setNote(formData.note);
-      dbHook.setActivity(formData.activity);
-      dbHook.setFoodType(formData.foodType);
-
-      // Call the save function with editing ID and form data
-
-
-      // Navigate back after successful save with a small delay
-      console.log('🔸 Save successful, navigating back');
-      setTimeout(() => {
-        console.log('🔸 Attempting navigation.goBack()');
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-          console.log('🔸 navigation.goBack() called');
-        } else {
-          console.log('🔸 Cannot go back, trying navigate to MainDiary');
-          navigation.navigate('Main');
-        }
-      }, 100);
-
+      await saveDiaryEntry(photoURIs)
+      // Navigate calendar to today's date so user can see the new entry
+      calendarHook.setSelectedDate(new Date())
+      navigation.goBack()
     } catch (error) {
-      console.error('Save failed:', error);
-      // Still navigate back even on error
-      setTimeout(() => {
-        if (navigation.canGoBack()) {
-          navigation.goBack();
-        } else {
-          navigation.navigate('Main');
-        }
-      }, 100);
-    } finally {
-      setIsSaving(false);
+      setError(error)
     }
-  };
+  }
+
+  
 
   const photoURIs = cameraHook.photoURIs || diaryData?.uri_array || [];
   const carbsRef = useRef<any>(null);
@@ -171,8 +129,8 @@ export function InputScreen({
             content={
               <View>
                 <GlucosePicker
-                  selectedValue={tempGlucose}
-                  onValueChange={setTempGlucose}
+                  selectedValue={glucose}
+                  onValueChange={setGlucose}
                   appData={appData!}
                   disabled={isSaving}
                   height={72}
@@ -202,8 +160,8 @@ export function InputScreen({
                     label="carbs (g)"
                     mode="outlined"
                     maxLength={4}
-                    value={tempCarbs}
-                    onChangeText={setTempCarbs}
+                    value={carbs}
+                    onChangeText={setCarbs}
                     keyboardType='numeric'
                     placeholder="Enter amount of carbs"
                     onSubmitEditing={() => { insulinRef.current?.focus() }}
@@ -217,8 +175,8 @@ export function InputScreen({
                     label="insulin (u)"
                     mode="outlined"
                     maxLength={4}
-                    value={tempInsulin}
-                    onChangeText={setTempInsulin}
+                    value={insulin}
+                    onChangeText={setInsulin}
                     keyboardType='numeric'
                     placeholder="Enter amount of insulin"
                     onSubmitEditing={() => { insulinRef.current?.blur() }}
@@ -228,17 +186,17 @@ export function InputScreen({
                   />
 
                   <ButtonPicker
-                    value={tempMeal}
-                    setValue={setTempMeal}
-                    valueArray={mealArray}
+                    value={foodType}
+                    setValue={setFoodType}
+                    valueArray={foodOptions}
                     iconName="food"
                     label="meal type"
                   />
 
                   <ButtonPicker
-                    value={tempActivity}
-                    setValue={setTempActivity}
-                    valueArray={activityArray}
+                    value={activity}
+                    setValue={setActivity}
+                    valueArray={activityOptions}
                     iconName="run"
                     label="activity level"
                   />
@@ -293,9 +251,9 @@ export function InputScreen({
                       flex: 1
                     }}
                     left={<TextInput.Icon icon={'note'} size={20} />}
-                    right={<TextInput.Affix text={`${tempNote.length}/150`} />}
-                    value={tempNote}
-                    onChangeText={setTempNote}
+                    right={<TextInput.Affix text={`${note.length}/150`} />}
+                    value={note}
+                    onChangeText={setNote}
 
 
 
@@ -310,8 +268,8 @@ export function InputScreen({
           {currentSection === 3 && (
             <View>
               <ViewSet
-                title={tempMeal}
-                icon={getMealIcon(tempMeal)}
+                title={foodType}
+                icon={getMealIcon(foodType)}
                 content={
                   <View>
                     {!photoURIs ? (
@@ -346,15 +304,15 @@ export function InputScreen({
                           <Text variant="bodyMedium">Carbohydrates: </Text>
                         </View>
                         <View style={{gap: 4}}>
-                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{tempGlucose} {appData?.settings.glucose === 'mmol' ? 'mmol/L' : 'mg/Dl'}</Text>
-                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{tempInsulin? tempInsulin : "-"}</Text>
-                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{tempCarbs? `${tempCarbs} g` : "-"}</Text>
+                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{glucose} {appData?.settings.glucose === 'mmol' ? 'mmol/L' : 'mg/Dl'}</Text>
+                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{insulin? insulin : "-"}</Text>
+                          <Text variant="bodyMedium" style={{fontWeight: 'bold'}}>{carbs? `${carbs} g` : "-"}</Text>
                         </View>
                       </View>
-                      <View style={{ padding: 8, backgroundColor: getActivityColors(tempActivity), flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8, borderWidth: 1, borderColor: theme.colors.customDarkTeal }}>
+                      <View style={{ padding: 8, backgroundColor: getActivityColors(activity), flex: 1, justifyContent: 'center', alignItems: 'center', borderRadius: 8, borderWidth: 1, borderColor: theme.colors.customDarkTeal }}>
                         <Text variant="labelMedium" style={{ marginBottom: -8 }}>Activity</Text>
-                        {getActivityIcon(tempActivity)}
-                        <Text variant="labelSmall" style={{ marginTop: -4 }}>{tempActivity}</Text>
+                        {getActivityIcon(activity)}
+                        <Text variant="labelSmall" style={{ marginTop: -4 }}>{activity}</Text>
                       </View>
 
 
@@ -376,7 +334,7 @@ export function InputScreen({
 
 
           <View style={styles.surface}>
-            <SectionButtons currentSection={currentSection} setCurrentSection={setCurrentSection} />
+            <SectionButtons currentSection={currentSection} setCurrentSection={setCurrentSection} onSave={onSave} />
 
           </View>
           <View style={styles.container}>
@@ -412,14 +370,17 @@ export function InputScreen({
 
 
 
-export function SectionButtons({ currentSection, setCurrentSection }: { currentSection: number, setCurrentSection: any }) {
+export function SectionButtons({ currentSection, setCurrentSection, onSave }: { currentSection: number, setCurrentSection: any, onSave: any }) {
 
   const { theme, styles } = useAppTheme()
+
 
   const buttonFunction = (direction: string) => {
     if (direction === 'next') {
       if (currentSection != 3) {
         setCurrentSection(currentSection + 1)
+      } else if (currentSection === 3) {
+        onSave()
       }
 
     } else {

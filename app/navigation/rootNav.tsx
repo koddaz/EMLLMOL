@@ -59,7 +59,7 @@ export function RootNavigation({
      const isSignedIn = !!appData.session?.user;
 
      // Only initialize hooks if we have appData
-     const dbHook = useDB(appData);
+     const dbHook = useDB(appData, setAppData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
      const authHook = useAuth(appData?.session, false);

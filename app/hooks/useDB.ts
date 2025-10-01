@@ -59,7 +59,9 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
   const foodOptions = ["snack", "breakfast", "lunch", "dinner"];
   const activityOptions = ["none", "low", "medium", "high"];
 
-  const [glucose, setGlucose] = useState("");
+  const [glucose, setGlucose] = useState(
+      appData?.settings.glucose === "mmol" ? 5.6 : 100
+    );
   const [carbs, setCarbs] = useState("");
   const [insulin, setInsulin] = useState("");
   const [note, setNote] = useState("");
@@ -130,14 +132,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
     }
   }, [appData?.session?.user?.id, setAppData]);
 
-  const saveDiaryEntry = async (formData: {
-    glucose: string;
-    carbs: string;
-    insulin: string;
-    note: string;
-    activity: string;
-    foodType: string;
-  }, photoURIs: string[] = []) => {
+  const saveDiaryEntry = async (photoURIs: string[] = []) => {
     if (!appData?.session?.user?.id) {
       setError('No user session available');
       return;
@@ -147,25 +142,14 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       setIsLoading(true);
       setError(null);
 
-      // Validation
-      if (!formData.glucose.trim()) {
-        setError('Glucose level is required');
-        return;
-      }
-
-      if (!formData.carbs.trim()) {
-        setError('Carbs amount is required');
-        return;
-      }
-
       const entryData = {
         user_id: appData.session.user.id,  // Fixed: Using 'user_id' to match database
-        glucose: parseFloat(formData.glucose),
-        carbs: parseFloat(formData.carbs),
-        insulin: parseFloat(formData.insulin) || 0,
-        note: formData.note || null,
-        activity_level: formData.activity,
-        meal_type: formData.foodType,
+        glucose: glucose,
+        carbs: carbs,
+        insulin: insulin || 0,
+        note: note || null,
+        activity_level: activity,
+        meal_type: foodType,
         created_at: new Date().toISOString(),
         uri_array: photoURIs.length > 0 ? photoURIs : null,
       };
@@ -186,7 +170,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       console.log('✅ Entries refreshed successfully');
 
       // Clear form
-      setGlucose("");
+      setGlucose(appData?.settings.glucose === "mmol" ? 5.6 : 100);
       setCarbs("");
       setInsulin("");
       setNote("");

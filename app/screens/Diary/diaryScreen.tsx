@@ -1,14 +1,15 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useState } from "react"; // Add useCallback and useMemo
+import { useState, useEffect } from "react"; // Add useCallback and useMemo
 import { View } from "react-native";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { IconButton, Text } from "react-native-paper";
+import { useCallback } from "react";
 
 export function DiaryScreen({
   navigation,
@@ -22,6 +23,13 @@ export function DiaryScreen({
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
   const currentDate = calendarHook.formatDate(new Date())
   const selectedDate = calendarHook.formatDate(new Date(calendarHook.selectedDate))
+
+  // Refresh entries when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      dbHook.refreshEntries();
+    }, [dbHook.refreshEntries])
+  );
 
   return (
 
