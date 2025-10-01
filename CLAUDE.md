@@ -44,6 +44,7 @@ EMLLMOL is a React Native Expo app for diabetes management. The app uses Supabas
 3. Local settings stored in AsyncStorage
 4. Real-time auth state changes handled automatically
 5. Diary entries support image arrays and structured data
+6. **CRITICAL**: useDB hook must receive both `appData` AND `setAppData` parameters to properly update global state
 
 ### Key Interfaces
 - `AppData` - Main app state container with session, profile, settings, diary entries
@@ -63,3 +64,12 @@ EMLLMOL is a React Native Expo app for diabetes management. The app uses Supabas
 - Camera permissions configured for both platforms
 - Gesture handling via react-native-gesture-handler
 - Bundle identifier: `com.knoddaz.emllmol`
+
+### Recent Fixes & UI Improvements
+- **Bottom Navigation Animation**: Implemented slide-out animation for BottomNavBar using React Native Animated API
+- **Image Rendering**: Fixed Image component imports and implemented full-screen width horizontal scrolling in InputScreen
+- **Diary List Refresh Issue**: Fixed critical bug where diary list wouldn't refresh after saving new entries
+  - Root cause: useDB hook in rootNav.tsx was missing `setAppData` parameter
+  - Solution: Added `setAppData` to `useDB(appData, setAppData)` in rootNav.tsx line 62
+  - Added focus listener in DiaryScreen to refresh entries when returning from InputScreen
+  - Added useEffect in DiaryList to properly track diary entry changes
