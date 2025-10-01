@@ -27,7 +27,8 @@ export function ImageRow(
             <View style={{
                 flexDirection: 'row',
                 backgroundColor: 'transparent',
-                paddingHorizontal: 8
+                paddingHorizontal: 8,
+                maxHeight: 50
             }}>
                 {paddedPhotoURIs.map((item, index) => (
                     <View
@@ -45,8 +46,8 @@ export function ImageRow(
                             style={[
                                 styles.imageContainer,
                                 {
-                                    width: '100%',
-                                    height: '100%'
+                                    width: 50,
+                                    height: 50
                                 }
                             ]}
                             disabled={!item}

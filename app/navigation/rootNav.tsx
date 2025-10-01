@@ -9,13 +9,13 @@ import { SettingsScreen } from "../screens/Settings/settingsScreen";
 import { StatisticsScreen } from "../screens/Statistics/statisticsScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Appbar, BottomNavigation, Button, Icon, IconButton, Text } from "react-native-paper";
-import { Image, Pressable, Touchable, View } from "react-native";
+import { Image, Pressable, Touchable, View, Animated } from "react-native";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
 import { DiaryData } from "../constants/interface/diaryData";
 import { CommonActions } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import { useAppTheme } from "../constants/UI/theme";
-import { useMemo } from "react";
+import { useMemo, useState, useRef, useEffect } from "react";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { useStatistics } from "../hooks/useStatistics";
 import AuthScreen from "../api/supabase/auth/authScreen";
@@ -45,7 +45,7 @@ export function RootNavigation({
      appData, setAppData, currentScreen
 }: NavData) {
      const { styles, theme } = useAppTheme()
-     
+
      // Handle loading state
      if (!appData) {
           return (
@@ -145,9 +145,7 @@ export function RootNavigation({
                {(currentScreen === 'main' || currentScreen === 'stats') && (
                     <Appbar.Action icon={'cog-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('settings') }} />
                )}
-               {(currentScreen === 'input') && (
-                    <Appbar.Action icon={'camera-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('diary', { screen: 'camera' }) }} />
-               )}
+
 
 
           </Appbar.Header>
@@ -301,6 +299,16 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
 
      const { theme, styles } = useAppTheme();
      const { currentSection, setCurrentSection } = statsHook
+     const [isVisible, setIsVisible] = useState(false)
+     const slideAnim = useRef(new Animated.Value(0)).current
+
+     useEffect(() => {
+          Animated.timing(slideAnim, {
+               toValue: isVisible ? 1 : 0,
+               duration: 300,
+               useNativeDriver: true,
+          }).start();
+     }, [isVisible, slideAnim])
 
      const button = (title: string, section: string, icon: string, nav?: boolean,) => {
           const isActive = nav ? false : currentSection === section;
@@ -314,13 +322,17 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                     elevation: isActive ? 0 : 4,
                     borderWidth: 0.1,
                     minWidth: 75,
+                    maxWidth: 50,
+                    maxHeight: 50
 
 
                }} onPress={() => {
                     if (nav) {
                          if (section === 'input') {
+                              setIsVisible(!isVisible)
                               navigation.navigate('diary', { screen: 'input' });
                          } else {
+                              
                               navigation.navigate(section);
                          }
                     } else {
@@ -356,8 +368,8 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                     return (
                          <>
 
-                              {button(/* title */ 'Statistics', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
-                              {button(/* title */ 'New entry', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
+                              {button(/* title */ 'Stats', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
+                              {button(/* title */ 'New', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
                          </>
                     );
                default:
@@ -367,36 +379,48 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
 
      return (
           <View style={{
-
                position: 'absolute',
                alignItems: 'flex-end',
                bottom: insets.bottom + 32,
                right: insets.right,
-
                backgroundColor: 'transparent',
-               width: '100%'
-
-
-
-
-
+               flexDirection: 'row',
+               overflow: 'hidden',
           }}>
-               <View style={{
+
+               <Animated.View style={{
                     flexDirection: 'row',
-                    //gap: 8,
-
-
-
+                    
+                    transform: [{
+                         translateX: slideAnim.interpolate({
+                              inputRange: [0, 1],
+                              outputRange: [208, 0],
+                         })
+                    }],
                }}>
-                    <View style={{ flex: 1 }}></View>
-                    <View style={{ width: 32, backgroundColor: theme.colors.surface, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4 }}></View>
-                    {renderButtons(route)}
-                    <View style={{ flex: 0, width: 64, backgroundColor: theme.colors.surface, elevation: 4 }}>
+                    <Pressable style={{
+                         width: 50, minHeight: 50, backgroundColor: theme.colors.primaryContainer, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4, alignItems: 'center', justifyContent: 'center'
+                    }} onPress={() => setIsVisible(!isVisible)}>
+                         <Icon source={isVisible ? "chevron-right" : "menu"} size={25} color={theme.colors.onPrimaryContainer} />
+                    </Pressable>
 
-                    </View>
+                    <Animated.View style={{
+                         flexDirection: 'row',
+                         opacity: slideAnim,
+                    }}>
+                         {renderButtons(route)}
+                         <View style={{ width: 50, backgroundColor: theme.colors.primaryContainer, elevation: 4 }}></View>
+                    </Animated.View>
+               </Animated.View>
 
 
-               </View>
+
+
+
+
+
+
           </View>
+
      );
 }

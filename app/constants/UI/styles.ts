@@ -14,6 +14,12 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         paddingHorizontal: 8,
         backgroundColor: 'transparent'
     },
+    surface: {
+        flex: 1,
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        backgroundColor: theme.colors.surface
+    },
 
 
 
@@ -328,7 +334,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         minHeight: 56, // Match TextInput height
         paddingHorizontal: 8, 
         marginTop: 6,
-        justifyContent: 'flex-end',
+        justifyContent: 'center',
     }
 
 });

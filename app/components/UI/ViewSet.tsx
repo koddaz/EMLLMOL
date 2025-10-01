@@ -14,6 +14,7 @@ interface setProps {
     onPress?: () => void;
     titleText?: string;
     footer?: ReactNode;
+    iconColor?: any;
 
     // Needed
     title: string;
@@ -31,6 +32,7 @@ export function ViewSet({
     headerButtonIcon,
     onPress,
     icon,
+    iconColor,
 
     contentBgColor,
     content,
@@ -41,15 +43,15 @@ export function ViewSet({
     const { theme } = useAppTheme()
     return (
         <View>
-            <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.surfaceVariant, padding: 8, gap: 8 }}>
+            <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.primary, padding: 8, gap: 8 }}>
                 <View style={{ flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center', alignContent: 'center' }}>
                     <View style={{ flexDirection: 'row', gap: 8, flex: 1, }}>
                         <View>
-                            <Icon source={icon} size={25} />
+                            <Icon source={icon} size={25} color={iconColor? iconColor : theme.colors.onPrimary} />
                         </View>
                         <View>
                             <Text variant='titleLarge' style={{
-                                color: headerTextColor ? headerTextColor : theme.colors.onSurfaceVariant
+                                color: headerTextColor ? headerTextColor : theme.colors.onPrimary
                             }}>{title}</Text>
 
                             {titleText && (
@@ -72,7 +74,7 @@ export function ViewSet({
             </View>
 
             {footer && (
-                <View style={{backgroundColor: headerBgColor ? headerBgColor : theme.colors.surfaceVariant, padding: 8}}>
+                <View style={{backgroundColor: headerBgColor ? headerBgColor : theme.colors.primary, padding: 8}}>
                     {footer}
                 </View>
 

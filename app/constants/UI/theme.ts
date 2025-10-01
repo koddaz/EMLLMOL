@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { MD3LightTheme as DefaultTheme, useTheme } from 'react-native-paper';
 import { customStyles } from './styles';
-import { mainStyle } from '@/app/layout';
+
 
 
 
@@ -20,36 +20,44 @@ export const customTheme = {
   ...DefaultTheme,
   colors: {
     ...DefaultTheme.colors,
-    primary: "#3D3B8E", // deep purple-blue
+    primary: "#3d7068", // deep teal-green
     onPrimary: "#FFFFFF",
-    primaryContainer: "#6883BA", // lighter blue
-    onPrimaryContainer: "#FFFFFF",
-    secondary: "#E072A4", // bright pink
-    onSecondary: "#FFFFFF",
-    secondaryContainer: "#F9F9F9", // light gray/white
-    onSecondaryContainer: "#3D3B8E",
+    primaryContainer: "#43c59e", // bright teal
+    onPrimaryContainer: "#14453d",
+    secondary: "#3dfaff", // bright cyan
+    onSecondary: "#14453d",
+    secondaryContainer: "#48beff", // light blue
+    onSecondaryContainer: "#14453d",
     background: "#F9F9F9", // light background
-    onBackground: "#3D3B8E",
+    onBackground: "#14453d",
     surface: "#FFFFFF",
-    onSurface: "#3D3B8E",
+    onSurface: "#14453d",
     surfaceVariant: "#F9F9F9", // light backgrounds for subtle variations
-    onSurfaceVariant: "#3D3B8E",
+    onSurfaceVariant: "#3d7068",
     outline: "#E0E0E0", // subtle borders and dividers
-    // Custom color roles following the guide
-    customBlue: "#6883BA", // info elements, neutral badges
-    customPink: "#E072A4", // error states, delete actions
-    customGreen: "#B0E298", // success states, positive feedback
-    customDark: "#3D3B8E", // high contrast text, emphasis
+    
+    // Custom color roles using your palette
+    customBlue: "#48beff", // light blue for info elements
+    customCyan: "#3dfaff", // bright cyan for highlights
+    customTeal: "#43c59e", // teal for success states
+    customDarkTeal: "#3d7068", // dark teal for emphasis
+    customDarkGreen: "#14453d", // darkest for high contrast text
     customLight: "#F9F9F9", // subtle backgrounds, disabled states
-    customWarning: "#F39C12", // warning states
+    customWarning: "#F39C12", // warning states (keeping from original)
+    
     // Semantic colors for better organization
-    success: "#B0E298",
-    onSuccess: "#3D3B8E",
-    error: "#E072A4", 
+    success: "#43c59e", // teal
+    onSuccess: "#14453d",
+    error: "#E072A4", // keeping pink from original for contrast
     onError: "#FFFFFF",
     warning: "#F39C12",
-    onWarning: "#3D3B8E",
-    info: "#6883BA",
-    onInfo: "#FFFFFF"
+    onWarning: "#14453d",
+    info: "#48beff", // light blue
+    onInfo: "#14453d",
+
+    none:  "#F9F9F9",
+    low:  '#E3F5FF',
+    medium: '#E0F7EF',
+    high: '#D4E7E4'
   }
 };

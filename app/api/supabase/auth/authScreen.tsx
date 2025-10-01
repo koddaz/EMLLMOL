@@ -9,7 +9,7 @@ import { TermsScreen } from "@/app/screens/TermsScreen";
 import { InformationScreen } from "@/app/screens/InformationScreen";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { ViewSet } from "@/app/components/UI/ViewSet";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomTextInput } from "@/app/components/textInput";
 
 
@@ -68,7 +68,7 @@ export default function AuthScreen() {
 
 
     return (
-        <View style={styles.background}>
+        <SafeAreaView style={styles.background}>
             <View style={{ flex: 1, marginTop: insets.top + 16, backgroundColor: theme.colors.surface }}>
                 <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16 }}>
                     <Image
@@ -106,7 +106,7 @@ export default function AuthScreen() {
             )}
 
 
-        </View>
+        </SafeAreaView>
     );
 }
 
