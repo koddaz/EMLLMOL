@@ -81,12 +81,12 @@ export function SettingsScreen({
     const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
     const [avatarUrl, setAvatarUrl] = useState(appData?.profile?.avatarUrl || '');
 
-    const [weight, setWeight] = useState(appData.settings.weight);
-    const [glucose, setGlucose] = useState(appData.settings.glucose);
-    const [clockFormat, setClockFormat] = useState(appData.settings.clockFormat);
-    const [dateFormat, setDateFormat] = useState(appData.settings.dateFormat);
+    const [weight, setWeight] = useState(appData?.settings.weight);
+    const [glucose, setGlucose] = useState(appData?.settings.glucose);
+    const [clockFormat, setClockFormat] = useState(appData?.settings.clockFormat);
+    const [dateFormat, setDateFormat] = useState(appData?.settings.dateFormat);
 
-    const { changeSettings } = useAsync(appData, setAppData!)
+    const { changeSettings } = useAsync(appData!, setAppData!)
 
     const {
         signOut,
@@ -240,13 +240,13 @@ export function SettingsScreen({
                     icon="cog-outline"
                     content={
                         <View style={{ backgroundColor: theme.colors.surface , padding: 8}}>
-                            {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose, 'glucose', setGlucose)}
+                            {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
                             <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight, 'weight', setWeight)}
+                            {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}
                             <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Clock format', '24h', '12h', clockFormat, 'clockFormat', setClockFormat)}
+                            {renderRadioButtons('Clock format', '24h', '12h', clockFormat!, 'clockFormat', setClockFormat)}
                             <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Date format', 'en', 'us', dateFormat, 'dateFormat', setDateFormat)}
+                            {renderRadioButtons('Date format', 'en', 'us', dateFormat!, 'dateFormat', setDateFormat)}
                         </View>
                     } />
 

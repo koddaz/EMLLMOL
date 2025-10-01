@@ -21,7 +21,7 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
     } = statsHook;
 
     const gUnit = () => {
-        return appData.settings.glucose === 'mmol' ? ('mmol/L') : ('mg/Dl');
+        return appData?.settings.glucose === 'mmol' ? ('mmol/L') : ('mg/Dl');
     }
 
     const periodText = () => {
@@ -89,25 +89,17 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
             );
         } else if (currentSection === 'summary') {
             return (
-
                 <>
-
-
                     <ViewSet
                         title={`Summary ${periodText()}`}
                         icon={"chart-pie"}
                         content={
-
                             <View style={{ gap: 8 }}>
                                 {summaryRow(/* title */ "Median Glucose", /* icon */ "water-outline", /* value */ `${medianGlucose.toFixed(1)} ${gUnit()}`)}
                                 {summaryRow(/* title */ "Total Meals", /* icon */ "food-outline", /* value */ summaryStats.totalMeals.toString())}
                                 {summaryRow(/* title */ "Total Insulin", /* icon */ "needle", /* value */ `${summaryStats.totalInsulin.toFixed(1)}u`)}
                                 {summaryRow(/* title */ "Total Carbs", /* icon */ "bread-slice-outline", /* value */ `${summaryStats.totalCarbs.toFixed(1)}g`)}
                             </View>
-
-
-
-
                         } />
                     <ViewSet
                         title="Meal Break Down"
@@ -161,51 +153,8 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
                                         /* Background */ mealColors.snack
                                     )}
                                 </View>
-
                             </>
                         } />
-
-
-
-
-
-
-                    {/* <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
-                       
-                        
-                            <MealTypeChip
-                                mealType="breakfast"
-                                carbs={summaryStats.carbsByMeal.breakfast}
-                                insulin={summaryStats.insulinByMeal.breakfast}
-                            />
-                            <MealTypeChip
-                                mealType="lunch"
-                                carbs={summaryStats.carbsByMeal.lunch}
-                                insulin={summaryStats.insulinByMeal.lunch}
-                            />
-                        </ChipRow>
-
-                        <ChipRow>
-                            <MealTypeChip
-                                mealType="dinner"
-                                carbs={summaryStats.carbsByMeal.dinner}
-                                insulin={summaryStats.insulinByMeal.dinner}
-                            />
-                            <MealTypeChip
-                                mealType="snack"
-                                carbs={summaryStats.carbsByMeal.snack}
-                                insulin={summaryStats.insulinByMeal.snack}
-                            />
-                        </ChipRow>
-
-                        <Text variant="bodySmall" style={{
-                            marginTop: 8,
-                            color: theme.colors.onSurfaceVariant,
-                            textAlign: 'center'
-                        }}>
-                            Summary over {selectedPeriod} {selectedPeriod === 1 ? 'day' : 'days'}
-                        </Text>
-                    </View> */}
                 </>
             );
         }

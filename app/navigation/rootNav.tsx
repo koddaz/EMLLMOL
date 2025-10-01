@@ -18,17 +18,20 @@ import { useAppTheme } from "../constants/UI/theme";
 import { useMemo } from "react";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { useStatistics } from "../hooks/useStatistics";
+import AuthScreen from "../api/supabase/auth/authScreen";
+import { LoadingScreen } from "../components/loadingScreen";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
 const logo = require('../../assets/images/logo-head.gif')
 
 export interface NavData {
-     appData: AppData,
+     appData: AppData | null,
      setAppData?: (AppData: any) => void
      currentScreen?: string,
      diaryData?: DiaryData,
-     navigation?: any
+     navigation?: any,
+     insets?: any,
 }
 export interface HookData {
      dbHook?: any,
@@ -41,12 +44,26 @@ export interface HookData {
 export function RootNavigation({
      appData, setAppData, currentScreen
 }: NavData) {
-     const dbHook = useDB(appData!);
-     const calendarHook = useCalendar(appData!);
-     const cameraHook = useCamera(appData!);
+     const { styles, theme } = useAppTheme()
+     
+     // Handle loading state
+     if (!appData) {
+          return (
+               <View style={styles.background}>
+                    <LoadingScreen />
+               </View>
+          )
+     }
+
+     // Determine if user is signed in
+     const isSignedIn = !!appData.session?.user;
+
+     // Only initialize hooks if we have appData
+     const dbHook = useDB(appData);
+     const calendarHook = useCalendar(appData);
+     const cameraHook = useCamera(appData);
      const authHook = useAuth(appData?.session, false);
      const statsHook = useStatistics(dbHook.diaryEntries || []);
-     const { styles, theme } = useAppTheme()
      const navigation = useNavigation() as any
 
 
@@ -140,74 +157,87 @@ export function RootNavigation({
 
 
 
+
      return (
           <root.Navigator
-               initialRouteName="diary"
+               initialRouteName={isSignedIn ? "diary" : "auth"}
                screenOptions={{
                     headerShown: currentScreen != 'camera' ? true : false,
                     header: () => MainTopBar(),
                }}
-               tabBar={({ navigation, state, descriptors, insets }) => (
-                    (currentScreen === 'main' || currentScreen === 'stats') && (
-
+               tabBar={({ navigation, insets }) => (
+                    isSignedIn && (currentScreen === 'main' || currentScreen === 'stats') && (
                          <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} />
-
                     )
-
-
                )}>
 
+               {!isSignedIn ? (
+                    <root.Screen
+                         name='auth'
+                         options={{
+                              headerShown: false,
+                         }}
+                         component={() => <AuthScreen />}
+                    />
+               ) : (
+                    <>
+                         <root.Screen
+                              name="diary"
+                              options={{
+                                   tabBarIcon: () => <Icon source={"book-open-variant"} size={20} />,
+                              }}
+                         >
+                              {(props) => (
+                                   <StackNavigation
+                                        {...props}
+                                        appData={appData}
+                                        setAppData={setAppData}
+                                        dbHook={dbHook}
+                                        calendarHook={calendarHook}
+                                        cameraHook={cameraHook}
+                                   />
+                              )}
+                         </root.Screen>
 
-               <root.Screen
-                    name="diary"
-                    options={{
-                         tabBarIcon: () => <Icon source={"book-open-variant"} size={20} />,
-                    }}
-               >
-                    {(props) => (
-                         <StackNavigation
-                              {...props}
-                              appData={appData}
-                              setAppData={setAppData}
-                              dbHook={dbHook}
-                              calendarHook={calendarHook}
-                              cameraHook={cameraHook}
-                         />
-                    )}
-               </root.Screen>
+                         <root.Screen
+                              name="settings"
+                              options={{
+                                   tabBarIcon: () => <Icon source={"cog-outline"} size={20} />,
+                                   headerBackButtonDisplayMode: 'minimal',
+                              }} >
+                              {(props) => (
+                                   <SettingsScreen
+                                        {...props}
+                                        appData={appData}
+                                        setAppData={setAppData}
+                                        dbHook={dbHook}
+                                        authHook={authHook}
+                                   />
+                              )}
+                         </root.Screen>
 
-               <root.Screen
-                    name="settings"
-                    options={{
-                         tabBarIcon: () => <Icon source={"cog-outline"} size={20} />,
-                         headerBackButtonDisplayMode: 'minimal',
-                    }} >
-                    {(props) => (
-                         <SettingsScreen
-                              {...props}
-                              appData={appData}
-                              setAppData={setAppData}
-                              dbHook={dbHook}
-                              authHook={authHook}
-                         />
-                    )}
-               </root.Screen>
+                         <root.Screen
+                              name="stats"
+                              options={{
+                                   tabBarIcon: () => <Icon source={"chart-bar"} size={20} />,
+                              }} >
+                              {(props) => (
+                                   <StatisticsScreen
+                                        {...props}
+                                        appData={appData}
+                                        dbHook={dbHook}
+                                        calendarHook={calendarHook}
+                                        statsHook={statsHook}
+                                   />
+                              )}
+                         </root.Screen>
+                    </>
+               )}
 
-               <root.Screen
-                    name="stats"
-                    options={{
-                         tabBarIcon: () => <Icon source={"chart-bar"} size={20} />,
-                    }} >
-                    {(props) => (
-                         <StatisticsScreen
-                              {...props}
-                              appData={appData}
-                              dbHook={dbHook}
-                              calendarHook={calendarHook}
-                              statsHook={statsHook}
-                         />
-                    )}
-               </root.Screen>
+
+
+
+
           </root.Navigator >
      )
 }
@@ -272,11 +302,11 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
      const { theme, styles } = useAppTheme();
      const { currentSection, setCurrentSection } = statsHook
 
-     const button = (title: string, section: string, icon: string, nav?: boolean, ) => {
+     const button = (title: string, section: string, icon: string, nav?: boolean,) => {
           const isActive = nav ? false : currentSection === section;
           return (
                <Pressable style={{
-                    
+
                     alignItems: 'center',
                     justifyContent: 'center',
                     backgroundColor: theme.colors.surface,
@@ -284,7 +314,7 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                     elevation: isActive ? 0 : 4,
                     borderWidth: 0.1,
                     minWidth: 75,
-                    
+
 
                }} onPress={() => {
                     if (nav) {
@@ -325,7 +355,7 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                case 'main':
                     return (
                          <>
-                              
+
                               {button(/* title */ 'Statistics', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
                               {button(/* title */ 'New entry', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
                          </>
@@ -337,7 +367,7 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
 
      return (
           <View style={{
-               
+
                position: 'absolute',
                alignItems: 'flex-end',
                bottom: insets.bottom + 32,
@@ -354,14 +384,14 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                <View style={{
                     flexDirection: 'row',
                     //gap: 8,
-                    
+
 
 
                }}>
-                    <View style={{flex: 1}}></View>
-                    <View style={{width: 32, backgroundColor: theme.colors.surface, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4}}></View>
+                    <View style={{ flex: 1 }}></View>
+                    <View style={{ width: 32, backgroundColor: theme.colors.surface, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4 }}></View>
                     {renderButtons(route)}
-                    <View style={{flex: 0, width: 64, backgroundColor: theme.colors.surface, elevation: 4}}>
+                    <View style={{ flex: 0, width: 64, backgroundColor: theme.colors.surface, elevation: 4 }}>
 
                     </View>
 

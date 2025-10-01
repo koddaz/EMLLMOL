@@ -3,12 +3,13 @@ import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { HookData, NavData } from '@/app/navigation/rootNav';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { Button, Icon, Text } from 'react-native-paper';
+import { Button, Icon, Text, TextInput } from 'react-native-paper';
 import { ImageRow } from '../../Camera/cameraScreen';
 import { ButtonPicker } from './components/buttonPicker';
 import { GlucosePicker } from './components/decimalPicker';
+import { ViewSet } from '@/app/components/UI/ViewSet';
 
 
 
@@ -22,10 +23,10 @@ export function InputScreen({
 
   // Initialize form state from route params or defaults
   const [tempGlucose, setTempGlucose] = useState(
-    appData.settings.glucose === "mmol" ? 5.6 : 100
+    appData?.settings.glucose === "mmol" ? 5.6 : 100
   );
-  const [tempCarbs, setTempCarbs] = useState("0");
-  const [tempInsulin, setTempInsulin] = useState("0");
+  const [tempCarbs, setTempCarbs] = useState("");
+  const [tempInsulin, setTempInsulin] = useState("");
   const [tempNote, setTempNote] = useState("");
   const [tempActivity, setTempActivity] = useState("none");
   const [tempMeal, setTempMeal] = useState("snack");
@@ -92,6 +93,9 @@ export function InputScreen({
 
   const photoURIs = cameraHook.photoURIs || diaryData?.uri_array || [];
 
+  const carbsRef = useRef<any>(null);
+  const insulinRef = useRef<any>(null);
+
   return (
     <View style={styles.background}>
 
@@ -99,53 +103,85 @@ export function InputScreen({
         style={styles.background}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+
       >
+        <ViewSet
+          title="Glucose"
+          icon={"diabetes"}
+          content={
+            <View>
+              <GlucosePicker
+                selectedValue={tempGlucose}
+                onValueChange={setTempGlucose}
+                appData={appData!}
+                disabled={isSaving}
+                height={72}
+                itemHeight={36}
+              />
+            </View>
+          } />
+
+
         <ScrollView
           style={{ flex: 1, marginTop: 0 }}
           contentContainerStyle={{ paddingBottom: 20, marginTop: 0 }}
           showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
         >
+          <ViewSet
+            title="Meal Info"
+            icon="food"
+            content={
+              <View >
+                <TextInput
+                  ref={carbsRef}
+                  label="carbs (g)"
+                  mode="outlined"
+                  maxLength={4}
+                  value={tempCarbs}
+                  onChangeText={setTempCarbs}
+                  keyboardType='numeric'
+                  placeholder="Enter amount of carbs"
+                  onSubmitEditing={() => { insulinRef.current?.focus() }}
+                  returnKeyType="next"
+                  left={<TextInput.Icon icon={"bread-slice"} size={20} />}
+                  right={<TextInput.Affix text="g" />}
+                />
+                <TextInput
+                  
+                  ref={insulinRef}
+                  label="insulin (u)"
+                  mode="outlined"
+                  maxLength={4}
+                  value={tempInsulin}
+                  onChangeText={setTempInsulin}
+                  keyboardType='numeric'
+                  placeholder="Enter amount of insulin"
+                  onSubmitEditing={() => { insulinRef.current?.blur() }}
+                  returnKeyType="done"
+                  left={<TextInput.Icon icon={"needle"} size={20} />}
+                  right={<TextInput.Affix text="units" />}
+                />
+
+                <ButtonPicker
+                  value={tempMeal}
+                  setValue={setTempMeal}
+                  valueArray={mealArray}
+                  iconName="food"
+                  label="meal type"
+                />
+
+              </View>
+            } />
+
           <View style={styles.container}>
 
 
 
 
-            <GlucosePicker
-              selectedValue={tempGlucose}
-              onValueChange={setTempGlucose}
-              appData={appData}
-              disabled={isSaving}
-              height={72}
-              itemHeight={36}
-            />
 
-            <View style={[styles.row, { gap: 4 }]}>
-              <CustomTextInput
-                label={"carbs (g)"}
-                value={tempCarbs}
-                onChangeText={setTempCarbs}
-                placeholder="0"
-                keyboardType="numeric"
-                leftIcon="bread-slice"
-                suffix="g"
-                maxLength={4}
-                containerStyle={{ flex: 1 }}
-                disabled={isSaving}
-              />
 
-              <CustomTextInput
-                label={"insulin"}
-                value={tempInsulin}
-                onChangeText={setTempInsulin}
-                placeholder="0"
-                keyboardType="numeric"
-                leftIcon="needle"
-                suffix="units"
-                maxLength={4}
-                containerStyle={{ flex: 1 }}
-                disabled={isSaving}
-              />
-            </View>
+
 
             <CustomTextInput
               label={"note"}
@@ -171,13 +207,7 @@ export function InputScreen({
               iconName="run"
               label="activity level"
             />
-            <ButtonPicker
-              value={tempMeal}
-              setValue={setTempMeal}
-              valueArray={mealArray}
-              iconName="food"
-              label="meal type"
-            />
+
             <View style={styles.boxPicker}>
               {photoURIs.length === 0 ? (
                 <View style={styles.content}>
@@ -204,7 +234,7 @@ export function InputScreen({
           </View>
 
         </ScrollView>
-        <BottomNavigation />
+       
       </KeyboardAvoidingView>
 
     </View>

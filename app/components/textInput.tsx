@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useImperativeHandle, forwardRef } from 'react';
 import { TextInput, HelperText } from 'react-native-paper';
 import { View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -28,6 +28,9 @@ interface CustomTextInputProps {
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   secureTextEntry?: boolean;
   maxLength?: number;
+  returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send' | 'default';
+  inputRef?: any;
+  onSubmitEditing?: () => void;
 
   // Validation & Error
   error?: boolean;
@@ -72,6 +75,9 @@ export function CustomTextInput({
   autoCapitalize = 'sentences',
   secureTextEntry = false,
   maxLength,
+  returnKeyType = 'default',
+  inputRef,
+  onSubmitEditing,
 
   // Validation
   error = false,
@@ -92,6 +98,10 @@ export function CustomTextInput({
   inputStyle
 }: CustomTextInputProps) {
   const { theme } = useAppTheme();
+  const textInputRef = useRef<any>(null);
+  
+  // Use passed ref if provided, otherwise use internal ref
+  const refToUse = inputRef || textInputRef;
 
   // Dynamic height calculation for multiline
   const getInputHeight = () => {
@@ -129,12 +139,14 @@ export function CustomTextInput({
   return (
     <View style={[{ marginBottom: error && errorText ? 0 : 8 }, containerStyle]}>
       <TextInput
+        ref={refToUse}
         mode={mode}
         value={value}
         label={label}
         onChangeText={onChangeText}
         onFocus={onFocus}
         onBlur={onBlur}
+        onSubmitEditing={onSubmitEditing}
 
         // Colors
         outlineColor={error ? theme.colors.error : theme.colors.outlineVariant}
@@ -152,7 +164,7 @@ export function CustomTextInput({
         autoCapitalize={autoCapitalize}
         secureTextEntry={secureTextEntry}
         maxLength={maxLength}
-        returnKeyType={multiline ? "default" : "done"}
+        returnKeyType={multiline ? "default" : returnKeyType}
         textAlignVertical={multiline ? "top" : "center"}
 
         // Styling

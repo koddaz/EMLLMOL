@@ -10,8 +10,10 @@ interface setProps {
     headerTextColor?: any;
     contentBgColor?: any;
     headerButton?: any;
-    headerButtonIcon?: any,
+    headerButtonIcon?: any;
     onPress?: () => void;
+    titleText?: string;
+    footer?: ReactNode;
 
     // Needed
     title: string;
@@ -22,6 +24,7 @@ interface setProps {
 
 export function ViewSet({
     title,
+    titleText,
     headerBgColor,
     headerTextColor,
     headerButton,
@@ -31,6 +34,7 @@ export function ViewSet({
 
     contentBgColor,
     content,
+    footer,
 
 }: setProps) {
 
@@ -40,10 +44,19 @@ export function ViewSet({
             <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.surfaceVariant, padding: 8, gap: 8 }}>
                 <View style={{ flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center', alignContent: 'center' }}>
                     <View style={{ flexDirection: 'row', gap: 8, flex: 1, }}>
-                        <Icon source={icon} size={25} />
-                        <Text variant='titleLarge' style={{
-                            color: headerTextColor ? headerTextColor : theme.colors.onSurfaceVariant
-                        }}>{title}</Text>
+                        <View>
+                            <Icon source={icon} size={25} />
+                        </View>
+                        <View>
+                            <Text variant='titleLarge' style={{
+                                color: headerTextColor ? headerTextColor : theme.colors.onSurfaceVariant
+                            }}>{title}</Text>
+
+                            {titleText && (
+                                <Text>{titleText}</Text>
+                            )}
+
+                        </View>
                     </View>
                     {headerButton && (
                         <Pressable onPress={onPress}>
@@ -57,6 +70,13 @@ export function ViewSet({
             <View style={{ backgroundColor: contentBgColor ? contentBgColor : theme.colors.surface, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8 }}>
                 {content}
             </View>
+
+            {footer && (
+                <View style={{backgroundColor: headerBgColor ? headerBgColor : theme.colors.surfaceVariant, padding: 8}}>
+                    {footer}
+                </View>
+
+            )}
         </View>
     );
 }

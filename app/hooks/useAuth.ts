@@ -22,7 +22,7 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
         if (!enableDeepLinkHandling || deepLinkListenersSetup) {
             return;
         }
-        
+
         deepLinkListenersSetup = true;
         let isProcessing = false;
 
@@ -39,7 +39,7 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
             if (url.includes('auth/callback') || url.includes('#access_token') || url.includes('?access_token')) {
                 console.log('Auth callback detected');
                 isProcessing = true;
-                
+
                 try {
                     const session = await createSessionFromUrl(url);
                     if (session) {
@@ -151,6 +151,16 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
         }
     };
 
+    const checkInputError = (password: string) => {
+
+        if (/[^a-zA-Z0-9 ]/.test(password)) {
+            setError("")
+            console.log("✅ String contains special characters");
+        } else {
+            setError("Password does not include any special characters")
+        }
+
+    }
     const signUp = async (email: string, password: string) => {
         try {
             setError(null);

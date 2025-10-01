@@ -322,11 +322,13 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
     boxPicker: {
         borderWidth: 1,
-        borderColor: theme.colors.outlineVariant, // subtle borders
-        backgroundColor: theme.colors.surface, // card surfaces
-
+        borderColor: theme.colors.outline, // Match TextInput outline
+        backgroundColor: theme.colors.surfaceVariant,
         borderRadius: 4,
-        padding: 8,
+        minHeight: 56, // Match TextInput height
+        paddingHorizontal: 8, 
+        marginTop: 6,
+        justifyContent: 'flex-end',
     }
 
 });

@@ -18,46 +18,52 @@ export function ButtonPicker({
   const { theme, styles } = useAppTheme();
 
   return (
-    <View style={{ position: 'relative', flex: 1 }}>
-      
-      <View style={[styles.boxPicker, { flex: 1 }]}>
+    <View style={{ position: 'relative' }}>
 
+      <View style={[styles.boxPicker]}>
         <View style={{
           flexDirection: 'row',
-          flexWrap: 'wrap',
-          justifyContent: 'space-around',
-          flex: 1
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flex: 1,
         }}>
-          {valueArray.map((item) => {
-            const isSelected = value === item;
-            return (
-              <View
-                key={item}
-                style={{
-                  alignItems: 'center',
-                  marginBottom: 4
-                }}
-              >
-                <IconButton
-                  icon={isSelected ? "radiobox-marked" : "radiobox-blank"}
-                  iconColor={isSelected ? theme.colors.primary : theme.colors.outline}
-                  size={20}
-                  onPress={() => setValue(item)}
+          <View style={{ paddingLeft: 8, paddingRight: 16 }}>
+            <Icon source={iconName} size={20} />
+          </View>
+          <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between' }}>
+            {valueArray.map((item) => {
+              const isSelected = value === item;
+              return (
+                <View
+                  key={item}
                   style={{
-                    margin: 0,
+                    alignItems: 'center',
+                    paddingVertical: 4,
                   }}
-                />
-                <Text variant={"labelSmall"} style={{
-                  color: isSelected ? theme.colors.primary : theme.colors.onSurface,
-                  textAlign: 'center',
-                  fontWeight: isSelected ? '600' : '400',
-                  marginTop: -4
-                }}>
-                  {item.charAt(0).toUpperCase() + item.slice(1)}
-                </Text>
-              </View>
-            );
-          })}
+                >
+                  <IconButton
+                    icon={isSelected ? "radiobox-marked" : "radiobox-blank"}
+                    iconColor={isSelected ? theme.colors.primary : theme.colors.outline}
+                    size={20}
+                    onPress={() => setValue(item)}
+                    style={{
+                      margin: 0,
+                      padding: 0,
+                    }}
+                  />
+                  <Text variant={"labelSmall"} style={{
+                    color: isSelected ? theme.colors.primary : theme.colors.onSurface,
+                    textAlign: 'center',
+                    fontWeight: isSelected ? '600' : '400',
+                    marginTop: -8,
+                    fontSize: 12,
+                  }}>
+                    {item.charAt(0).toUpperCase() + item.slice(1)}
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
         </View>
       </View>
 
@@ -67,9 +73,9 @@ export function ButtonPicker({
           variant="bodySmall"
           style={{
             position: 'absolute',
-            top: -6,
+            top: -2,
             left: 12,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: 'transparent',
             paddingHorizontal: 4,
             color: theme.colors.onSurfaceVariant,
             fontSize: 12,
