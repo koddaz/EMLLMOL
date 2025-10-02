@@ -5,7 +5,7 @@ import { useRef, useState, useCallback, useMemo } from "react";
 import { Alert, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 
-export function useCamera(appData: AppData) {
+export function useCamera(appData: AppData | null) {
 
   const theme = useTheme();
 

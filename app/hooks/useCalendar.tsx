@@ -1,7 +1,7 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useState, useMemo, useCallback } from "react";
 
-export function useCalendar(appData: AppData) {
+export function useCalendar(appData: AppData | null) {
   const [showCalendar, setShowCalendar] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -16,17 +16,19 @@ export function useCalendar(appData: AppData) {
   }, []);
 
   const formatDate = useCallback((date: Date) => {
-    if (appData.settings.dateFormat === 'en') {
+    const dateFormat = appData?.settings?.dateFormat || 'en';
+    if (dateFormat === 'en') {
       return date.toISOString().split('T')[0];
-    } else if (appData.settings.dateFormat === 'us') {
+    } else if (dateFormat === 'us') {
       const isoString = date.toISOString().split('T')[0];
       const [year, month, day] = isoString.split('-');
       return `${month}-${day}-${year}`;
     }
-  }, [appData.settings.dateFormat]);
+  }, [appData?.settings?.dateFormat]);
 
   const formatTime = useCallback((date: Date) => {
-    if (appData.settings.clockFormat === '12h') {
+    const clockFormat = appData?.settings?.clockFormat || '24h';
+    if (clockFormat === '12h') {
       return date.toLocaleTimeString('en-US', {
         hour: '2-digit',
         minute: '2-digit',
@@ -39,7 +41,7 @@ export function useCalendar(appData: AppData) {
         hour12: false
       });
     }
-  }, [appData.settings.clockFormat]);
+  }, [appData?.settings?.clockFormat]);
 
   const getDaysInMonth = useCallback((date: Date) => {
     return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
@@ -53,6 +55,9 @@ export function useCalendar(appData: AppData) {
     const newMonth = new Date(currentMonth)
     const thisMonth = new Date();
 
+    // Reset to the first day BEFORE changing month to avoid date overflow
+    newMonth.setDate(1);
+
     if (direction === 'prev') {
       newMonth.setMonth(newMonth.getMonth() - 1);
     } else {
@@ -64,7 +69,6 @@ export function useCalendar(appData: AppData) {
         newMonth.setFullYear(thisMonth.getFullYear(), thisMonth.getMonth());
       }
     }
-    newMonth.setDate(1); // Reset to the first day of the month
     setCurrentMonth(newMonth);
   }, [currentMonth]);
 

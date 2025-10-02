@@ -41,7 +41,8 @@
       "Read(C:\\Users\\alber\\Desktop\\PYTHON\\carb-classifier\\data\\unified/**)",
       "Bash(powershell:*)",
       "Bash(mkdir:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Read(//c/Users/alber/Desktop/Programmering/**)"
     ],
     "deny": [],
     "ask": []

@@ -1,8 +1,6 @@
-import { CustomTextInput } from '@/app/components/textInput';
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { HookData, NavData } from '@/app/navigation/rootNav';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import React, { useEffect, useRef, useState } from 'react';
 import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Button, Icon, IconButton, Text, TextInput } from 'react-native-paper';
@@ -10,7 +8,7 @@ import { ImageRow } from '../../Camera/cameraScreen';
 import { ButtonPicker } from './components/buttonPicker';
 import { GlucosePicker } from './components/decimalPicker';
 import { ViewSet } from '@/app/components/UI/ViewSet';
-import { useDB } from '@/app/hooks/useDB';
+
 
 
 
@@ -22,6 +20,7 @@ export function InputScreen({
   const screenWidth = Dimensions.get('window').width;
 
   const {
+    // Input Data
     glucose, setGlucose, 
     insulin, setInsulin, 
     carbs, setCarbs, 
@@ -29,14 +28,19 @@ export function InputScreen({
     foodType, setFoodType, 
     note, setNote, 
     foodOptions, activityOptions,
-    isLoading, 
-    error, setError
+
+    // Boolean
+    isLoading,
+
+    // Strings
+    error, setError,
+
+    // Functions
+    saveDiaryEntry
   
   } = dbHook
 
-  const {saveDiaryEntry} = dbHook
 
-  const [isSaving, setIsSaving] = useState(false);
   const [editingEntry, setEditingEntry] = useState<DiaryData | null>(null);
 
   const [currentSection, setCurrentSection] = useState(1)
@@ -107,10 +111,6 @@ export function InputScreen({
 
   }
 
-
-
-
-
   return (
     <View style={styles.background}>
 
@@ -132,7 +132,6 @@ export function InputScreen({
                   selectedValue={glucose}
                   onValueChange={setGlucose}
                   appData={appData!}
-                  disabled={isSaving}
                   height={72}
                   itemHeight={36}
                 />
@@ -272,7 +271,7 @@ export function InputScreen({
                 icon={getMealIcon(foodType)}
                 content={
                   <View>
-                    {!photoURIs ? (
+                    {photoURIs ? (
                       <FlatList
                         data={photoURIs}
                         horizontal={true}

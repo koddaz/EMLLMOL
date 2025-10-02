@@ -74,9 +74,15 @@ export function CalendarGrid(
             <View key={`prev-${day}`} style={styles.calendarDay}>
                 <Button
                     mode="text"
-                    onPress={() => {
-                        calendarHook.setSelectedDate(date);
-                        calendarHook.setCurrentMonth(prevMonth);
+                    onPress={async () => {
+                        try {
+                            await calendarHook.setCurrentMonth(prevMonth);
+                        } catch (error) {
+                            console.log(error)
+                        } finally {
+                            await calendarHook.setSelectedDate(date);
+                            calendarHook.toggleCalendar();
+                        }
                     }}
                     style={styles.calendarDayButton}
                     contentStyle={styles.calendarDayContent}

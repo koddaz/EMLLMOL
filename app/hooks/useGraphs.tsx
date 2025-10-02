@@ -175,7 +175,7 @@ export function useGraphs(appData: any, statsHook: any) {
                 <View>
                     {/* Period indicator */}
                     <Text variant="bodySmall" style={{ marginTop: 8, color: theme.colors.onSurfaceVariant }}>
-                        Total carbs over {selectedPeriod} {selectedPeriod === 1 ? 'day' : 'days'}
+                        Glucose levels over {selectedPeriod} {selectedPeriod === 1 ? 'day' : 'days'}
                     </Text>
                 </View>
             </View>

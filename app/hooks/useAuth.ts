@@ -1,13 +1,28 @@
 import { Session } from "@supabase/supabase-js";
 import * as QueryParams from "expo-auth-session/build/QueryParams";
-import { useEffect, useState } from "react";
-import { Linking } from "react-native";
+import { useEffect, useState, useCallback } from "react";
+import { Linking, AppState } from "react-native";
 import { supabase } from "../api/supabase/supabase";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AppData } from "../constants/interface/appData";
 
 // Global flag to ensure deep link listeners are only set up once
 let deepLinkListenersSetup = false;
 
-export function useAuth(session?: Session | null, enableDeepLinkHandling: boolean = false, onAuthStateChange?: (event: string, session: Session | null) => void) {
+// Setup Supabase auto-refresh based on app state
+AppState.addEventListener('change', (state) => {
+    if (state === 'active') {
+        supabase.auth.startAutoRefresh()
+    } else {
+        supabase.auth.stopAutoRefresh()
+    }
+})
+
+export function useAuth(
+    session?: Session | null,
+    enableDeepLinkHandling: boolean = false,
+    setAppData?: (data: AppData) => void
+) {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [username, setUsername] = useState<string | null>(null);
@@ -16,6 +31,87 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
 
     // Use custom scheme for both development and production
     const redirectTo = 'com.koddaz.emllmol://auth/callback';
+
+    // Load settings from AsyncStorage
+    const loadSettings = async () => {
+        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
+            AsyncStorage.getItem('weight'),
+            AsyncStorage.getItem('glucose'),
+            AsyncStorage.getItem('clockformat'),
+            AsyncStorage.getItem('dateformat')
+        ]);
+
+        return {
+            weight: savedWeight || 'kg',
+            glucose: savedGlucose || 'mmol',
+            clockFormat: savedClockFormat || '24h',
+            dateFormat: savedDateFormat || 'en'
+        };
+    };
+
+    // Main initialization function
+    const initializeApp = useCallback(async (): Promise<AppData | null> => {
+        console.log('🚀 Initializing app...');
+        setIsLoading(true);
+        setError(null);
+
+        try {
+            // Get session
+            const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+            if (sessionError) {
+                console.error('Session error:', sessionError);
+                setError(sessionError.message);
+                return null;
+            }
+
+            // Load settings (always needed)
+            const settings = await loadSettings();
+            console.log('✅ Settings loaded:', settings);
+
+            // Return initial app data
+            const initialData: AppData = {
+                session: session || null,
+                profile: null,
+                settings,
+                diaryEntries: [],
+                isEntriesLoaded: false
+            };
+
+            console.log('✅ App initialized successfully');
+            return initialData;
+
+        } catch (error) {
+            console.error('❌ Initialization error:', error);
+            setError(error instanceof Error ? error.message : 'Unknown error');
+            return null;
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    // Handle auth state changes
+    const handleAuthStateChange = useCallback(async (event: string, session: Session | null) => {
+        if (event === 'SIGNED_OUT') {
+            // Clear user data but keep settings
+            const settings = await loadSettings();
+            if (setAppData) {
+                setAppData({
+                    session: null,
+                    profile: null,
+                    settings,
+                    diaryEntries: [],
+                    isEntriesLoaded: false
+                });
+            }
+        } else if (event === 'SIGNED_IN' && session?.user?.id) {
+            // Re-initialize when signing in
+            const newAppData = await initializeApp();
+            if (newAppData && setAppData) {
+                setAppData(newAppData);
+            }
+        }
+    }, [setAppData, initializeApp]);
 
     // Handle deep link authentication - only set up when explicitly enabled
     useEffect(() => {
@@ -88,7 +184,7 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
 
     // Auth state change listener - only set up once
     useEffect(() => {
-        if (!onAuthStateChange) return;
+        if (!enableDeepLinkHandling) return; // Only setup in index.tsx
 
         let lastEvent = '';
         let lastSessionId = '';
@@ -105,13 +201,13 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
             lastSessionId = currentSessionId;
 
             console.log('🔄 Auth state changed:', event);
-            onAuthStateChange(event, session);
+            await handleAuthStateChange(event, session);
         });
 
         return () => {
             subscription.unsubscribe();
         };
-    }, []);
+    }, [enableDeepLinkHandling, handleAuthStateChange]);
 
     const createSessionFromUrl = async (url: string) => {
         try {
@@ -379,6 +475,8 @@ export function useAuth(session?: Session | null, enableDeepLinkHandling: boolea
         setAvatarUrl,
         setError,
         getProfile,
-        updateProfile
+        updateProfile,
+        loadSettings,
+        initializeApp
     };
 }

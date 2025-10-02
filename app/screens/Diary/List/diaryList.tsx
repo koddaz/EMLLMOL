@@ -7,6 +7,7 @@ import { Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
 import { useState, useEffect } from "react";
 import { AppData } from "@/app/constants/interface/appData";
+import { ViewSet } from "@/app/components/UI/ViewSet";
 
 export function DiaryList(
   { toggleEntry,
@@ -32,19 +33,26 @@ export function DiaryList(
   useEffect(() => {
     const entries = dbHook.getEntriesForDate(calendarHook.selectedDate);
     setCurrentPageEntries(entries);
-  }, [dbHook.diaryEntries, calendarHook.selectedDate, dbHook.getEntriesForDate]);
+  }, [dbHook.diaryEntries, calendarHook.selectedDate, dbHook.getEntriesForDate]); 
 
-  // Calculate stats using dbHook function
-  const entriesStats = dbHook.calculateEntriesStats(currentPageEntries);
-
-
-  if (dbHook.isLoading) {
-    return <LoadingScreen />;
-  }
 
   const renderEmptyComponent = () => (
     <View style={[styles.container, { justifyContent: 'center', minHeight: 400 }]}>
       <View style={styles.box}>
+        <ViewSet
+          title={"No entries yet..."}
+          icon={"clipboard-plus"}
+          content={
+            <View>
+              <Text variant="bodyMedium" style={{
+                color: theme.colors.onSurface, // text on white surfaces
+                textAlign: 'center',
+                lineHeight: 20
+              }}>
+                Start tracking your glucose and meals by tapping the + button below
+              </Text>
+            </View>
+          } />
         {/* Header with primary container background for highlighted sections */}
         <View style={styles.header}>
           <View style={[styles.chip, { backgroundColor: theme.colors.primary }]}>
@@ -63,13 +71,7 @@ export function DiaryList(
         </View>
         {/* Content with surface background */}
         <View style={styles.content}>
-          <Text variant="bodyMedium" style={{
-            color: theme.colors.onSurface, // text on white surfaces
-            textAlign: 'center',
-            lineHeight: 20
-          }}>
-            Start tracking your glucose and meals by tapping the + button below
-          </Text>
+
         </View>
         <View style={styles.footer}></View>
       </View>
@@ -82,7 +84,7 @@ export function DiaryList(
       <View style={styles.container}>
         <FlatList
           data={currentPageEntries}
-          keyExtractor={(item) => item.id.toString()}
+          keyExtractor={(item) => item.id ? item.id.toString() : "no id"}
           renderItem={({ item }) => {
             const itemDate = new Date(item.created_at);
             const diaryData = {
@@ -97,7 +99,7 @@ export function DiaryList(
               uri_array: item.uri_array || []
             };
             return (
-            
+
               <DiaryListItem
                 appData={appData}
                 diaryData={diaryData}
@@ -119,7 +121,7 @@ export function DiaryList(
           onRefresh={dbHook.refreshEntries}
         />
       </View>
-      
+
     </View>
   );
 }

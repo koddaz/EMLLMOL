@@ -15,6 +15,8 @@ interface setProps {
     titleText?: string;
     footer?: ReactNode;
     iconColor?: any;
+    titleSize?: any;
+    iconSize?: number;
 
     // Needed
     title: string;
@@ -33,6 +35,8 @@ export function ViewSet({
     onPress,
     icon,
     iconColor,
+    titleSize,
+    iconSize,
 
     contentBgColor,
     content,
@@ -41,16 +45,19 @@ export function ViewSet({
 }: setProps) {
 
     const { theme } = useAppTheme()
+
+
+
     return (
         <View>
             <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.primary, padding: 8, gap: 8 }}>
                 <View style={{ flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center', alignContent: 'center' }}>
-                    <View style={{ flexDirection: 'row', gap: 8, flex: 1, }}>
-                        <View>
-                            <Icon source={icon} size={25} color={iconColor? iconColor : theme.colors.onPrimary} />
-                        </View>
-                        <View>
-                            <Text variant='titleLarge' style={{
+                    <View style={{ flexDirection: 'row', gap: 8, flex: 1, justifyContent: 'flex-start', alignItems: 'center' }}>
+                        
+                            <Icon source={icon} size={iconSize? iconSize : 20} color={iconColor? iconColor : theme.colors.onPrimaryContainer} />
+                        
+                        
+                            <Text variant={titleSize? titleSize : 'titleMedium'} style={{
                                 color: headerTextColor ? headerTextColor : theme.colors.onPrimary
                             }}>{title}</Text>
 
@@ -58,7 +65,7 @@ export function ViewSet({
                                 <Text>{titleText}</Text>
                             )}
 
-                        </View>
+                      
                     </View>
                     {headerButton && (
                         <Pressable onPress={onPress}>

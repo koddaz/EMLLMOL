@@ -8,18 +8,18 @@ import { DiaryScreen } from "../screens/Diary/diaryScreen";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
 import { StatisticsScreen } from "../screens/Statistics/statisticsScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Appbar, BottomNavigation, Button, Icon, IconButton, Text } from "react-native-paper";
-import { Image, Pressable, Touchable, View, Animated } from "react-native";
+import { Appbar, Icon, Text } from "react-native-paper";
+import { Image, Pressable, View, Animated } from "react-native";
 import { InputScreen } from "../screens/Diary/Input/inputScreen";
 import { DiaryData } from "../constants/interface/diaryData";
-import { CommonActions } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import { useAppTheme } from "../constants/UI/theme";
-import { useMemo, useState, useRef, useEffect } from "react";
+import { useMemo, useState, useRef, useEffect, useCallback } from "react";
 import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { useStatistics } from "../hooks/useStatistics";
 import AuthScreen from "../api/supabase/auth/authScreen";
 import { LoadingScreen } from "../components/loadingScreen";
+import { BottomNavBar } from "./components/bottomNavBar";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
@@ -46,26 +46,13 @@ export function RootNavigation({
 }: NavData) {
      const { styles, theme } = useAppTheme()
 
-     // Handle loading state
-     if (!appData) {
-          return (
-               <View style={styles.background}>
-                    <LoadingScreen />
-               </View>
-          )
-     }
-
-     // Determine if user is signed in
-     const isSignedIn = !!appData.session?.user;
-
-     // Only initialize hooks if we have appData
-     const dbHook = useDB(appData, setAppData);
+     // Always call hooks unconditionally (Rules of Hooks)
+     const dbHook = useDB(appData || undefined, setAppData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
      const authHook = useAuth(appData?.session, false);
      const statsHook = useStatistics(dbHook.diaryEntries || []);
      const navigation = useNavigation() as any
-
 
      const titleContainer = useMemo(() => (title: string) => {
           switch (title) {
@@ -126,10 +113,9 @@ export function RootNavigation({
                     </View>
                )
           }
-     }, [])
+     }, [calendarHook, styles.boxPicker, theme.colors])
 
-
-     const MainTopBar = () => (
+     const MainTopBar = useCallback(() => (
 
           <Appbar.Header mode={"small"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
                {(currentScreen === 'main') && (
@@ -151,10 +137,19 @@ export function RootNavigation({
           </Appbar.Header>
 
 
-     )
+     ), [currentScreen, calendarHook, navigation, styles.iconButton, theme.colors, titleContainer])
 
+     // Handle loading state - show loading screen while appData is empty
+     if (!appData || Object.keys(appData).length === 0) {
+          return (
+               <View style={styles.background}>
+                    <LoadingScreen />
+               </View>
+          )
+     }
 
-
+     // Determine if user is signed in
+     const isSignedIn = !!appData.session?.user;
 
      return (
           <root.Navigator
@@ -175,7 +170,7 @@ export function RootNavigation({
                          options={{
                               headerShown: false,
                          }}
-                         component={() => <AuthScreen />}
+                         component={AuthScreen}
                     />
                ) : (
                     <>
@@ -185,8 +180,8 @@ export function RootNavigation({
                                    tabBarIcon: () => <Icon source={"book-open-variant"} size={20} />,
                               }}
                          >
-                              {(props) => (
-                                   <StackNavigation
+                              {(props) => 
+                                  <StackNavigation
                                         {...props}
                                         appData={appData}
                                         setAppData={setAppData}
@@ -194,7 +189,10 @@ export function RootNavigation({
                                         calendarHook={calendarHook}
                                         cameraHook={cameraHook}
                                    />
-                              )}
+                         
+                              }
+                                   
+                              
                          </root.Screen>
 
                          <root.Screen
@@ -241,7 +239,7 @@ export function RootNavigation({
 }
 
 export function StackNavigation(
-     { appData, setAppData, dbHook, calendarHook, cameraHook, navigation }: HookData & NavData
+     { appData, dbHook, calendarHook, cameraHook }: HookData & NavData
 
 ) {
 
@@ -295,132 +293,3 @@ export function StackNavigation(
 }
 
 
-export function BottomNavBar({ insets, navigation, route, statsHook }: { insets: any, navigation: any, route: string, statsHook: any }) {
-
-     const { theme, styles } = useAppTheme();
-     const { currentSection, setCurrentSection } = statsHook
-     const [isVisible, setIsVisible] = useState(false)
-     const slideAnim = useRef(new Animated.Value(0)).current
-
-     useEffect(() => {
-          Animated.timing(slideAnim, {
-               toValue: isVisible ? 1 : 0,
-               duration: 300,
-               useNativeDriver: true,
-          }).start();
-     }, [isVisible, slideAnim])
-
-     const button = (title: string, section: string, icon: string, nav?: boolean,) => {
-          const isActive = nav ? false : currentSection === section;
-          return (
-               <Pressable style={{
-
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    backgroundColor: theme.colors.surface,
-                    padding: 8,
-                    elevation: isActive ? 0 : 4,
-                    borderWidth: 0.1,
-                    minWidth: 75,
-                    maxWidth: 50,
-                    maxHeight: 50
-
-
-               }} onPress={() => {
-                    if (nav) {
-                         if (section === 'input') {
-                              setIsVisible(!isVisible)
-                              navigation.navigate('diary', { screen: 'input' });
-                         } else {
-                              
-                              navigation.navigate(section);
-                         }
-                    } else {
-                         setCurrentSection(section);
-                    }
-               }}>
-                    <View style={{
-                         alignItems: 'center',
-                         justifyContent: 'center',
-                    }}>
-                         <Icon source={icon} size={25} color={isActive ? theme.colors.tertiary : theme.colors.onSurface} />
-                         <Text
-                              variant="labelSmall"
-                              style={{ color: isActive ? theme.colors.tertiary : theme.colors.onSurface }}>
-                              {title}
-                         </Text>
-                    </View>
-               </Pressable>
-          )
-     }
-
-     const renderButtons = (route: string) => {
-          switch (route) {
-               case 'stats':
-                    return (
-                         <>
-                              {button(/* title */ 'Summary', /* section */ 'summary', /* icon */ 'chart-box-outline')}
-                              {button(/* title */ 'Carbs', /* section */ 'carbs', /* icon */ 'bread-slice-outline')}
-                              {button(/* title */ 'Glucose', /* section */ 'glucose', /* icon */ 'water-outline')}
-                         </>
-                    );
-               case 'main':
-                    return (
-                         <>
-
-                              {button(/* title */ 'Stats', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
-                              {button(/* title */ 'New', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
-                         </>
-                    );
-               default:
-                    return null;
-          }
-     }
-
-     return (
-          <View style={{
-               position: 'absolute',
-               alignItems: 'flex-end',
-               bottom: insets.bottom + 32,
-               right: insets.right,
-               backgroundColor: 'transparent',
-               flexDirection: 'row',
-               overflow: 'hidden',
-          }}>
-
-               <Animated.View style={{
-                    flexDirection: 'row',
-                    
-                    transform: [{
-                         translateX: slideAnim.interpolate({
-                              inputRange: [0, 1],
-                              outputRange: [208, 0],
-                         })
-                    }],
-               }}>
-                    <Pressable style={{
-                         width: 50, minHeight: 50, backgroundColor: theme.colors.primaryContainer, borderTopLeftRadius: 8, borderBottomLeftRadius: 8, elevation: 4, alignItems: 'center', justifyContent: 'center'
-                    }} onPress={() => setIsVisible(!isVisible)}>
-                         <Icon source={isVisible ? "chevron-right" : "menu"} size={25} color={theme.colors.onPrimaryContainer} />
-                    </Pressable>
-
-                    <Animated.View style={{
-                         flexDirection: 'row',
-                         opacity: slideAnim,
-                    }}>
-                         {renderButtons(route)}
-                         <View style={{ width: 50, backgroundColor: theme.colors.primaryContainer, elevation: 4 }}></View>
-                    </Animated.View>
-               </Animated.View>
-
-
-
-
-
-
-
-
-          </View>
-
-     );
-}

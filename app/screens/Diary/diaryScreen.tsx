@@ -24,6 +24,7 @@ export function DiaryScreen({
   const currentDate = calendarHook.formatDate(new Date())
   const selectedDate = calendarHook.formatDate(new Date(calendarHook.selectedDate))
 
+
   // Refresh entries when screen comes into focus
   useFocusEffect(
     useCallback(() => {
@@ -50,9 +51,7 @@ export function DiaryScreen({
       )}
 
 
-      <View style={{
-        flex: 0,
-      }}>
+      
 
 
         {calendarHook.showCalendar && (
@@ -75,19 +74,21 @@ export function DiaryScreen({
             onPress={() => { calendarHook.navigateDate('next') }}
           />
         </View>
-      </View>
+     
 
 
 
-      <DiaryList
-        appData={appData}
-        toggleEntry={() => { dbHook.toggleEntry() }}
-        setSelectedDiaryData={setSelectedDiaryData}
-        calendarHook={calendarHook}
-        dbHook={dbHook}
-        cameraHook={cameraHook}
-        navigation={navigation}
-      />
+      {appData && (
+        <DiaryList
+          appData={appData}
+          toggleEntry={() => { dbHook.toggleEntry() }}
+          setSelectedDiaryData={setSelectedDiaryData}
+          calendarHook={calendarHook}
+          dbHook={dbHook}
+          cameraHook={cameraHook}
+          navigation={navigation}
+        />
+      )}
 
 
 

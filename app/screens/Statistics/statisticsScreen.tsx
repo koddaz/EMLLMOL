@@ -1,15 +1,13 @@
 import { useAppTheme } from "@/app/constants/UI/theme";
-import React, { useEffect } from "react";
 import { View } from "react-native";
-import { Divider, Icon, SegmentedButtons, Text } from "react-native-paper";
+import { SegmentedButtons, Text } from "react-native-paper";
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { useGraphs } from "@/app/hooks/useGraphs";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ViewSet } from "@/app/components/UI/ViewSet";
 
 
 
-export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: NavData & HookData) {
+export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
     const { styles, theme } = useAppTheme();
     const {
         selectedPeriod,
@@ -28,63 +26,86 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
         return selectedPeriod === 1 ? 'of today' : `of past ${selectedPeriod.toString()} days`
     }
 
-    const summaryRow = (title: string, icon: string, value: string) => (
-        <View style={{ flexDirection: 'row', backgroundColor: theme.colors.customPink, padding: 8, alignContent: 'center' }}>
-            <View style={[styles.row, { flex: 1, alignContent: 'center' }]}>
-                <Icon source={icon} size={25} />
-                <Text variant="titleMedium" style={{ color: theme.colors.onPrimary }}>
-                    {title}
-                </Text>
-            </View>
-            <Text variant="bodyLarge" style={{ color: theme.colors.onPrimary }}>
-                {value}
-            </Text>
-        </View>
-    )
+    const summaryRow = (title: string, icon: string, value: string) => {
+        const numValue = parseFloat(value);
+        const isEmpty = value === '0' || value === '0.0' || !value || numValue === 0 || isNaN(numValue);
+
+        return (
+            <ViewSet
+                title={title}
+                titleSize="titleSmall"
+                icon={icon}
+                headerBgColor={theme.colors.secondaryContainer}
+                headerTextColor={theme.colors.onSecondaryContainer}
+                contentBgColor={theme.colors.surfaceVariant}
+                iconSize={20}
+                content={
+                    <Text variant="bodyMedium" style={{ textAlign: isEmpty ? 'center' : 'left', fontWeight: 'bold' }}>
+                        {isEmpty ? "---" : value}
+                    </Text>
+                } />
+        );
+    }
 
     const mealBox = (title: string, icon: string, values: string[], backgroundColor: string) => (
-        <View style={{ flex: 1, backgroundColor, padding: 8, alignContent: 'center', marginBottom: 8, }}>
-            <View style={{ flexDirection: 'row', gap: 8, paddingBottom: 4 }}>
-                <Icon source={icon} size={18} />
+
+
+
+        <ViewSet
+            title={title}
+            icon={icon}
+            titleSize={"titleSmall"}
+            headerBgColor={backgroundColor}
+            headerTextColor={theme.colors.onPrimary}
+            iconColor={theme.colors.onPrimary}
+            iconSize={20}
+            content={
                 <View>
-                    <Text variant="titleMedium" style={{ color: theme.colors.onSurface, fontSize: 18 }}>{title}</Text>
                     {values.map((value, index) => (
                         <Text key={index} variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
                             {value}
                         </Text>
                     ))}
                 </View>
-            </View>
+            } />
 
-        </View>
     )
 
     const { GlucoseChart, CarbsBarChart } = useGraphs(appData, statsHook);
 
     const renderStats = () => {
+
         if (currentSection === 'glucose') {
             return (
-                <>
-                    <View style={{ backgroundColor: theme.colors.surfaceVariant, alignItems: 'center', padding: 16, flexDirection: 'row', gap: 8 }}>
-                        <Icon source={"food"} size={32} />
-                        <Text variant="headlineSmall" style={{ color: theme.colors.onSurfaceVariant }}>Carbs: </Text>
-                    </View>
-                    <View style={{ minHeight: '40%', backgroundColor: theme.colors.surface }}>
-                        <GlucoseChart />
-                    </View>
-                </>
+
+                <ViewSet
+                    title="Glucose"
+                    icon="water"
+                    content={
+                        <View style={{ height: 300, width: '100%' }}>
+                            <GlucoseChart />
+                        </View>
+                    }
+                />
+
+
             );
         } else if (currentSection === 'carbs') {
             return (
-                <>
-                    <View style={{ backgroundColor: theme.colors.surfaceVariant, alignItems: 'center', padding: 16, flexDirection: 'row', gap: 8 }}>
-                        <Icon source={"food"} size={32} />
-                        <Text variant="headlineSmall" style={{ color: theme.colors.onSurfaceVariant }}>Carbs: </Text>
-                    </View>
-                    <View style={{ minHeight: '40%', backgroundColor: theme.colors.surface }}>
-                        <CarbsBarChart />
-                    </View>
-                </>
+                <ViewSet
+                    title="Carbohydrates"
+                    icon="water"
+                    footer={
+                        <View>
+
+                        </View>
+                    }
+                    content={
+                        <View style={{ height: 300, width: '100%' }}>
+                            <CarbsBarChart />
+                        </View>
+                    }
+                />       
 
             );
         } else if (currentSection === 'summary') {
@@ -94,11 +115,18 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
                         title={`Summary ${periodText()}`}
                         icon={"chart-pie"}
                         content={
-                            <View style={{ gap: 8 }}>
-                                {summaryRow(/* title */ "Median Glucose", /* icon */ "water-outline", /* value */ `${medianGlucose.toFixed(1)} ${gUnit()}`)}
-                                {summaryRow(/* title */ "Total Meals", /* icon */ "food-outline", /* value */ summaryStats.totalMeals.toString())}
-                                {summaryRow(/* title */ "Total Insulin", /* icon */ "needle", /* value */ `${summaryStats.totalInsulin.toFixed(1)}u`)}
-                                {summaryRow(/* title */ "Total Carbs", /* icon */ "bread-slice-outline", /* value */ `${summaryStats.totalCarbs.toFixed(1)}g`)}
+                            <View style={{ flexDirection: 'row', gap: 8 }}>
+                                <View style={{ flex: 1 }}>
+                                    {summaryRow(/* title */ "Median Glucose", /* icon */ "water-outline", /* value */ `${medianGlucose.toFixed(1)} ${gUnit()}`)}
+                                    {summaryRow(/* title */ "Total Meals", /* icon */ "food-outline", /* value */ summaryStats.totalMeals.toString())}
+                                </View>
+                                <View style={{ flex: 1 }}>
+                                    {summaryRow(/* title */ "Total Insulin", /* icon */ "needle", /* value */ `${summaryStats.totalInsulin.toFixed(1)} u`)}
+                                    {summaryRow(/* title */ "Total Carbs", /* icon */ "bread-slice-outline", /* value */ `${summaryStats.totalCarbs.toFixed(1)} g`)}
+                                </View>
+
+
+
                             </View>
                         } />
                     <ViewSet
@@ -106,8 +134,8 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
                         icon="food"
                         content={
 
-                            <>
-                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                            <View style={{ flexDirection: 'row', gap: 8 }}>
+                                <View style={{ flex: 1 }}>
                                     {mealBox(
                                         /* Title */ "Breakfast",
                                         /* Icon */ "food-croissant",
@@ -130,7 +158,7 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
                                         /* Background */ mealColors.lunch
                                     )}
                                 </View>
-                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                                <View style={{ flex: 1 }}>
                                     {mealBox(
                                         /* Title */ "Dinner",
                                         /* Icon */ "food",
@@ -153,7 +181,7 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
                                         /* Background */ mealColors.snack
                                     )}
                                 </View>
-                            </>
+                            </View>
                         } />
                 </>
             );
@@ -167,65 +195,73 @@ export function StatisticsScreen({ dbHook, appData, calendarHook, statsHook }: N
 
     return (
         <View style={styles.background}>
-
-            <View>
-                {renderStats()}
-            </View>
-
             <SegmentedButtons
                 value={selectedPeriod.toString()}
-                style={{ backgroundColor: theme.colors.surface, elevation: 4 }}
                 onValueChange={handlePeriodChange}
+                style={{marginBottom: 8}}
+                
                 buttons={[
                     {
-                        disabled: selectedPeriod === 1 ? true : false,
+                        
                         value: '1',
+                        checkedColor: theme.colors.onPrimary,
+                        uncheckedColor: theme.colors.onPrimaryContainer,
                         label: 'Today',
                         style: {
-                            borderBottomLeftRadius: 8,
-                            borderTopLeftRadius: 0,
-                            borderTopRightRadius: 0,
-                            borderBottomRightRadius: 0,
-                            borderTopWidth: selectedPeriod === 1 ? 0 : 1,
-                            elevation: selectedPeriod === 1 ? 4 : 0
+                            backgroundColor: selectedPeriod === 1 ? theme.colors.primary : theme.colors.primaryContainer,
+                            borderRadius: 0,
+                            borderColor: selectedPeriod === 1 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
                         },
                     },
                     {
-                        disabled: selectedPeriod === 7 ? true : false,
+                       
                         value: '7',
+                        checkedColor: theme.colors.onPrimary,
+                        uncheckedColor: theme.colors.onPrimaryContainer,
                         label: '7 Days',
                         style: {
 
+                            backgroundColor: selectedPeriod === 7 ? theme.colors.primary : theme.colors.primaryContainer,
                             borderRadius: 0,
-                            borderTopWidth: selectedPeriod === 7 ? 0 : 1,
-                            elevation: selectedPeriod === 7 ? 4 : 0
+                            borderColor: selectedPeriod === 7 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
+                           
+                            
                         },
                     },
                     {
-                        disabled: selectedPeriod === 14 ? true : false,
+                       
                         value: '14',
+                        checkedColor: theme.colors.onPrimary,
+                        uncheckedColor: theme.colors.onPrimaryContainer,
                         label: '14 Days',
                         style: {
+                            backgroundColor: selectedPeriod === 14 ? theme.colors.primary : theme.colors.primaryContainer,
                             borderRadius: 0,
-                            borderTopWidth: selectedPeriod === 14 ? 0 : 1,
-                            elevation: selectedPeriod === 14 ? 4 : 0
+                            borderColor: selectedPeriod === 14 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
+                            
+                            
                         },
                     },
                     {
-                        disabled: selectedPeriod === 30 ? true : false,
                         value: '30',
+                        checkedColor: theme.colors.onPrimary,
+                        uncheckedColor: theme.colors.onPrimaryContainer,
                         label: '30 Days',
                         style: {
-                            borderBottomLeftRadius: 0,
-                            borderTopLeftRadius: 0,
-                            borderBottomRightRadius: 8,
-                            borderTopRightRadius: 0,
-                            borderTopWidth: selectedPeriod === 30 ? 0 : 1,
-                            elevation: selectedPeriod === 30 ? 4 : 0
+
+                            backgroundColor: selectedPeriod === 30 ? theme.colors.primary : theme.colors.primaryContainer,
+                            borderRadius: 0,
+                            borderColor: selectedPeriod === 30 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
+                            
                         },
                     },
                 ]}
             />
+
+            {renderStats()}
+
+
+            
         </View>
     );
 }
