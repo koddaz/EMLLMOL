@@ -24,13 +24,13 @@ export default function AuthScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [isSignIn, setIsSignIn] = useState(true);
-    const [isLoading, setIsLoading] = useState(false);
     const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
+    
 
     const [showTerms, setShowTerms] = useState(false);
     const [showInformation, setShowInformation] = useState(false);
 
-    const { signIn, signUp, error, setError } = useAuth(null, true); // Enable deep link handling for auth screen
+    const {  error, emailConfirmed, checkConfirmationEmail } = useAuth(null, true); // Enable deep link handling for auth screen
 
     // Handle successful authentication
     useEffect(() => {
@@ -38,9 +38,14 @@ export default function AuthScreen() {
             (event, session) => {
                 if (event === 'SIGNED_IN' && session) {
                     console.log('User signed in successfully');
+                    checkConfirmationEmail()
+                    if (emailConfirmed) {
+                        setShowConfirmationMessage(false);
+                    } else {
+                        setShowConfirmationMessage(true);
+                    }
                     // Navigation or state update logic here
                 } else if (event === 'SIGNED_OUT') {
-                    console.log('User signed out');
                     setShowConfirmationMessage(false);
                     setEmail('');
                     setPassword('');
@@ -60,9 +65,9 @@ export default function AuthScreen() {
 
     if (showInformation) {
         return (
-            <View style={[authStyles.container, { backgroundColor: theme.colors.primary }]}>
+           
                 <InformationScreen onClose={() => setShowInformation(false)} />
-            </View>
+           
         );
     }
 
@@ -72,13 +77,14 @@ export default function AuthScreen() {
             <View style={{ flex: 1, marginTop: insets.top + 16, backgroundColor: theme.colors.surface }}>
                 <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16 }}>
                     <Image
-                        style={authStyles.logo}
+                        style={{width: 150, height: 150,}}
                         source={require('../../../../assets/images/logo-head.gif')}
                         resizeMode="contain"
                     />
                     <Text variant="headlineMedium">emmi-Sense</Text>
                 </View>
                 <View style={{ flex: 1, padding: 16 }}>
+                    
                     {isSignIn ? (
                         <SignInScreen setIsSignIn={setIsSignIn} />
                     ) : (
@@ -93,13 +99,13 @@ export default function AuthScreen() {
 
             {/* Error Message */}
             {error && (
-                <Surface style={[authStyles.errorContainer, { backgroundColor: theme.colors.errorContainer }]}>
+                <Surface style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
                     <MaterialCommunityIcons
                         name="alert-circle"
                         size={20}
                         color={theme.colors.error}
                     />
-                    <Text style={[authStyles.errorText, { color: theme.colors.error }]}>
+                    <Text style={[styles.box, { color: theme.colors.error }]}>
                         {error}
                     </Text>
                 </Surface>
@@ -135,7 +141,7 @@ export function SignUpScreen(
                 signUp(email, password)
 
             } catch (error: any) {
-                setError("Error" + error + " occured.")
+                setError(`Error ${error} occured.`)
             }
         }
     }
@@ -348,114 +354,24 @@ export function SignInScreen(
         </KeyboardAvoidingView>
     );
 }
-const authStyles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'flex-start',
-    },
-    iconRow: {
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        marginTop: 4,
-        gap: 8,
-    },
-    iconButton: {
-        margin: 0,
-    },
-    logoContainer: {
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        marginBottom: 8,
-    },
-    logo: {
-        width: 100,
-        height: 100,
-        marginBottom: 4,
-    },
-    appSubtitle: {
-        textAlign: 'center',
-        opacity: 0.8,
-        marginBottom: 8,
-    },
-    formContainer: {
-        marginHorizontal: 8,
-        marginBottom: 8,
-        borderRadius: 8,
-        overflow: 'hidden',
-        borderWidth: 1,
-    },
-    formHeader: {
-        paddingVertical: 8,
-        paddingHorizontal: 8,
-        alignItems: 'center',
-    },
-    inputContainer: {
-        gap: 8,
-        padding: 8,
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    },
-    formIcon: {
-        alignSelf: 'center',
-        marginBottom: 4,
-    },
-    formTitle: {
-        textAlign: 'center',
-        fontWeight: '600',
-        marginBottom: 4,
-    },
-    formSubtitle: {
-        textAlign: 'center',
-        opacity: 0.8,
-        marginBottom: 8,
-    },
-    textInput: {
-        backgroundColor: 'transparent',
-        height: 40,
-    },
-    actionContainer: {
-        gap: 8,
 
-    },
+export function ConfirmScreen() {
+    return (
 
-    button: {
-        paddingVertical: 2,
-        margin: 0,
-        borderRadius: 0,
-    },
-    errorContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginHorizontal: 8,
-        marginBottom: 8,
-        padding: 8,
-        borderRadius: 8,
-    },
-    errorText: {
-        marginLeft: 4,
-        flex: 1,
-    },
-    confirmationContainer: {
-        alignItems: 'center',
-        paddingHorizontal: 8,
-        marginBottom: 8,
-    },
-    confirmationIcon: {
-        marginBottom: 8,
-    },
-    confirmationTitle: {
-        textAlign: 'center',
-        fontWeight: '600',
-        marginBottom: 8,
-    },
-    confirmationText: {
-        textAlign: 'center',
-        opacity: 0.8,
-        marginBottom: 8,
-        lineHeight: 20,
-    },
-});
+        <ViewSet
+            title="We've sent you"
+            titleText="a confirmation email"
+            icon={"email-search-outline"}
+            content={
+                <View>
+                    <Text variant="bodyMedium"> 
+                        Please check your email and click the link to start using the app.
+                    </Text>
+                </View>
+            } />
+    );
+}
+
 
 
 

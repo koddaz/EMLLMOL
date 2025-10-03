@@ -29,6 +29,9 @@ export function useAuth(
     const [fullName, setFullName] = useState<string | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+    // Confirmation
+    const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
+
     // Use custom scheme for both development and production
     const redirectTo = 'com.koddaz.emllmol://auth/callback';
 
@@ -283,6 +286,7 @@ export function useAuth(
             setError('An unexpected error occurred. Please try again later.');
         } finally {
             setIsLoading(false);
+
         }
     };
 
@@ -459,24 +463,49 @@ export function useAuth(
         }
     };
 
+    const checkConfirmationEmail = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const isConfirmed = !!session.user.email_confirmed_at;
+                setEmailConfirmed(isConfirmed);
+                return isConfirmed;
+            }
+            return false;
+        } catch (error) {
+            console.error('Error checking email confirmation:', error);
+            return false;
+        }
+    };
+
     return {
+        error,
+        isLoading,
+        setError,
+        
+        // Start up
+        loadSettings,
+        initializeApp,
+
+        // Profile -> Values
+        setUsername,
+        setFullName,
+        setAvatarUrl,
+        username,
+        fullName,
+        avatarUrl,
+        // Profile -> Functions
         signIn,
         signUp,
         signOut,
         removeProfile,
         changeEmail,
-        error,
-        username,
-        fullName,
-        avatarUrl,
-        isLoading,
-        setUsername,
-        setFullName,
-        setAvatarUrl,
-        setError,
         getProfile,
         updateProfile,
-        loadSettings,
-        initializeApp
+
+        // Confirmation -> Email
+        emailConfirmed,
+        setEmailConfirmed,
+        checkConfirmationEmail
     };
 }
