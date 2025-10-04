@@ -42,15 +42,14 @@ export interface HookData {
 }
 
 export function RootNavigation({
-     appData, setAppData, currentScreen
-}: NavData) {
+     appData, setAppData, currentScreen, authHook
+}: NavData & { authHook: any }) {
      const { styles, theme } = useAppTheme()
 
      // Always call hooks unconditionally (Rules of Hooks)
      const dbHook = useDB(appData || undefined, setAppData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
-     const authHook = useAuth(appData?.session, false);
      const statsHook = useStatistics(dbHook.diaryEntries || []);
      const navigation = useNavigation() as any
 

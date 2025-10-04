@@ -5,16 +5,15 @@ import { View } from "react-native";
 import { IconButton, Text, useTheme } from "react-native-paper";
 
 export function CalendarNavigation(
-    { currentMonth, navigateMonth }: {
-        currentMonth: Date;
-        navigateMonth: (direction: 'prev' | 'next') => void;
+    { calendarHook }: {
+        calendarHook: any
     }
 ) {
     const { theme, styles } = useAppTheme();
     const thisMonth = new Date();
-    const disabled = currentMonth.getFullYear() > thisMonth.getFullYear() ||
-        (currentMonth.getFullYear() === thisMonth.getFullYear() &&
-            currentMonth.getMonth() >= thisMonth.getMonth());
+    const disabled = calendarHook.currentMonth.getFullYear() > thisMonth.getFullYear() ||
+        (calendarHook.currentMonth.getFullYear() === thisMonth.getFullYear() &&
+            calendarHook.currentMonth.getMonth() >= thisMonth.getMonth());
 
 
     return (
@@ -22,21 +21,35 @@ export function CalendarNavigation(
             <IconButton
                 iconColor={theme.colors.primary}
                 size={28}
-                icon="chevron-left"
+                icon="calendar-today"
                 mode="contained-tonal"
-                onPress={() => navigateMonth('prev')}
+                onPress={() => {
+                    calendarHook.setSelectedDate(new Date())
+                    calendarHook.toggleCalendar()
+                }}
                 style={{
                     backgroundColor: 'transparent',
                     borderRadius: 12,
                 }}
             />
-            <View style={[styles.container, {flex: 1, alignItems: 'center'}]}>
-                <Text variant="titleLarge" style={{
+            <IconButton
+                iconColor={theme.colors.primary}
+                size={28}
+                icon="chevron-left"
+                mode="contained-tonal"
+                onPress={() => calendarHook.navigateMonth('prev')}
+                style={{
+                    backgroundColor: 'transparent',
+                    borderRadius: 12,
+                }}
+            />
+            <View style={[styles.container, { flex: 1, alignItems: 'center' }]}>
+                <Text variant="titleMedium" style={{
                     color: theme.colors.onSurface,
                     fontWeight: '600',
                     letterSpacing: 0.25
                 }}>
-                    {currentMonth.toLocaleDateString('en-US', {
+                    {calendarHook.currentMonth.toLocaleDateString('en-US', {
                         month: 'long',
                         year: 'numeric'
                     })}
@@ -47,7 +60,7 @@ export function CalendarNavigation(
                 size={28}
                 icon="chevron-right"
                 mode="contained-tonal"
-                onPress={() => navigateMonth('next')}
+                onPress={() => calendarHook.navigateMonth('next')}
                 disabled={disabled}
                 style={{
                     backgroundColor: 'transparent',

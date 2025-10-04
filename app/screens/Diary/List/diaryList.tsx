@@ -5,7 +5,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FlatList, View } from "react-native";
 import { Text } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { AppData } from "@/app/constants/interface/appData";
 import { ViewSet } from "@/app/components/UI/ViewSet";
 
@@ -27,13 +27,11 @@ export function DiaryList(
 ) {
   const { theme, styles } = useAppTheme();
 
-  const [currentPageEntries, setCurrentPageEntries] = useState<DiaryData[]>([]);
-
-  // Update current page entries when diary entries or selected date changes
-  useEffect(() => {
-    const entries = dbHook.getEntriesForDate(calendarHook.selectedDate);
-    setCurrentPageEntries(entries);
-  }, [dbHook.diaryEntries, calendarHook.selectedDate, dbHook.getEntriesForDate]); 
+  // Compute current page entries when diary entries or selected date changes
+  const currentPageEntries = useMemo(() =>
+    dbHook.getEntriesForDate(calendarHook.selectedDate),
+    [dbHook.diaryEntries, calendarHook.selectedDate]
+  ); 
 
 
   const renderEmptyComponent = () => (
@@ -118,7 +116,7 @@ export function DiaryList(
           }}
           style={{ flex: 1 }}
           refreshing={dbHook.isLoading}
-          onRefresh={dbHook.refreshEntries}
+          onRefresh={dbHook.retrieveEntries}
         />
       </View>
 

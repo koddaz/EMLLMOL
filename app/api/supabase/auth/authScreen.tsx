@@ -25,38 +25,14 @@ export default function AuthScreen() {
     const [password, setPassword] = useState('');
     const [isSignIn, setIsSignIn] = useState(true);
     const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
-    
+
 
     const [showTerms, setShowTerms] = useState(false);
     const [showInformation, setShowInformation] = useState(false);
 
-    const {  error, emailConfirmed, checkConfirmationEmail } = useAuth(null, true); // Enable deep link handling for auth screen
-
-    // Handle successful authentication
-    useEffect(() => {
-        const { data: authListener } = supabase.auth.onAuthStateChange(
-            (event, session) => {
-                if (event === 'SIGNED_IN' && session) {
-                    console.log('User signed in successfully');
-                    checkConfirmationEmail()
-                    if (emailConfirmed) {
-                        setShowConfirmationMessage(false);
-                    } else {
-                        setShowConfirmationMessage(true);
-                    }
-                    // Navigation or state update logic here
-                } else if (event === 'SIGNED_OUT') {
-                    setShowConfirmationMessage(false);
-                    setEmail('');
-                    setPassword('');
-                }
-            }
-        );
-
-        return () => {
-            authListener?.subscription?.unsubscribe();
-        };
-    }, []);
+    // Single useAuth instance for the entire auth screen
+    const authHook = useAuth(null, false); // Deep link handling is done in index.tsx
+    const { error, emailConfirmed } = authHook;
 
     // Show modal screens
     if (showTerms) {
@@ -65,35 +41,41 @@ export default function AuthScreen() {
 
     if (showInformation) {
         return (
-           
-                <InformationScreen onClose={() => setShowInformation(false)} />
-           
+
+            <InformationScreen onClose={() => setShowInformation(false)} />
+
         );
+    }
+
+    if (showConfirmationMessage) {
+        return (
+            <ConfirmScreen setShowConfirmationMessage={setShowConfirmationMessage} />
+        )
     }
 
 
     return (
-        <SafeAreaView style={styles.background}>
-            <View style={{ flex: 1, marginTop: insets.top + 16, backgroundColor: theme.colors.surface }}>
-                <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16 }}>
-                    <Image
-                        style={{width: 150, height: 150,}}
-                        source={require('../../../../assets/images/logo-head.gif')}
-                        resizeMode="contain"
-                    />
-                    <Text variant="headlineMedium">emmi-Sense</Text>
-                </View>
-                <View style={{ flex: 1, padding: 16 }}>
-                    
-                    {isSignIn ? (
-                        <SignInScreen setIsSignIn={setIsSignIn} />
-                    ) : (
-                        <SignUpScreen setIsSignIn={setIsSignIn} />
-                    )}
 
-                </View>
+        <View style={{ flex: 1, marginTop: insets.top, backgroundColor: theme.colors.surface }}>
+            <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: theme.colors.primary }}>
+                <Image
+                    style={{ width: 75, height: 75, }}
+                    source={require('../../../../assets/images/logo-head.gif')}
+                    resizeMode="contain"
+                />
+                <Text variant="headlineMedium">emmi-Sense</Text>
+            </View>
+            <View style={{ flex: 1, padding: 16 }}>
+
+                {isSignIn ? (
+                    <SignInScreen setIsSignIn={setIsSignIn} authHook={authHook} />
+                ) : (
+                    <SignUpScreen setIsSignIn={setIsSignIn} setShowConfirmationMessage={setShowConfirmationMessage} authHook={authHook} />
+                )}
 
             </View>
+
+
 
 
 
@@ -111,14 +93,14 @@ export default function AuthScreen() {
                 </Surface>
             )}
 
+        </View>
 
-        </SafeAreaView>
     );
 }
 
 
 export function SignUpScreen(
-    { setIsSignIn }: { setIsSignIn: any }
+    { setIsSignIn, setShowConfirmationMessage, authHook }: { setIsSignIn: any, setShowConfirmationMessage: any, authHook: any }
 ) {
 
     const { styles, theme } = useAppTheme()
@@ -131,7 +113,7 @@ export function SignUpScreen(
     const passwordRef = useRef<any>(null);
     const confirmPasswordRef = useRef<any>(null);
 
-    const { signUp, error, setError } = useAuth()
+    const { signUp, error, setError } = authHook
 
     const handleSignUp = () => {
         if (password != confirmPassword) {
@@ -139,6 +121,7 @@ export function SignUpScreen(
         } else {
             try {
                 signUp(email, password)
+                setShowConfirmationMessage(true)
 
             } catch (error: any) {
                 setError(`Error ${error} occured.`)
@@ -172,7 +155,7 @@ export function SignUpScreen(
                 </View>
                 {error && (
                     <View style={{ backgroundColor: theme.colors.error, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                        <Text variant={"bodyLarge"} style={{color: theme.colors.onError}}>{error}</Text>
+                        <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
                     </View>
                 )}
                 <ViewSet
@@ -220,18 +203,21 @@ export function SignUpScreen(
                                 ref={confirmPasswordRef}
                                 onSubmitEditing={() => confirmPasswordRef.current?.blur()}
                             />
-                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8 }} onPress={handleSignUp}>Sign Up</Button>
+                            <View style={{ flexDirection: 'row' }}>
+                                <View style={{ flex: 1 }} />
+                                <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignUp}>Sign Up</Button>
+                            </View>
                         </View>
                     }
                     footer={
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', paddingRight: 8 }}>
+                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 8 }}>
                             <Button
                                 mode="text"
                                 onPress={() => {
                                     setIsSignIn(true);
                                     setError(null);
                                 }}
-                                labelStyle={{ color: theme.colors.onSurfaceVariant }}
+                                labelStyle={{ color: theme.colors.onPrimary }}
                             >
                                 Already have an account? Sign In
                             </Button>
@@ -246,7 +232,7 @@ export function SignUpScreen(
 }
 
 export function SignInScreen(
-    { setIsSignIn }: { setIsSignIn: any }
+    { setIsSignIn, authHook }: { setIsSignIn: any, authHook: any }
 
 ) {
     const { styles, theme } = useAppTheme()
@@ -259,12 +245,12 @@ export function SignInScreen(
     const passwordRef = useRef<any>(null);
 
 
-    const { signIn, error, setError } = useAuth()
+    const { signIn, error, setError } = authHook
 
     const handleSignIn = () => {
         try {
             signIn(email, password)
-        } catch (error : any) {
+        } catch (error: any) {
             setError(error)
         }
     }
@@ -295,7 +281,7 @@ export function SignInScreen(
 
                 {error && (
                     <View style={{ backgroundColor: theme.colors.error, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                        <Text variant={"bodyLarge"} style={{color: theme.colors.onError}}>{error}</Text>
+                        <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
                     </View>
                 )}
                 <ViewSet
@@ -329,20 +315,25 @@ export function SignInScreen(
                                 ref={passwordRef}
                                 onSubmitEditing={() => passwordRef.current.blur()}
                             />
+                            <View style={{ flexDirection: 'row' }}>
+                                <View style={{ flex: 1 }} />
+                                <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignIn}>Sign In</Button>
+                            </View>
 
-                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8 }} onPress={handleSignIn}>Sign In</Button>
 
                         </View>
                     }
                     footer={
                         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 8 }}>
+
                             <Button
                                 mode="text"
                                 onPress={() => {
                                     setIsSignIn(false);
                                     setError(null);
                                 }}
-                                labelStyle={{ color: theme.colors.onSurfaceVariant }}
+                                textColor={theme.colors.onPrimary}
+                                labelStyle={{ color: theme.colors.onPrimary }}
                             >
                                 Don't have an account? Sign Up
                             </Button>
@@ -355,20 +346,50 @@ export function SignInScreen(
     );
 }
 
-export function ConfirmScreen() {
-    return (
+export function ConfirmScreen(
+    { setShowConfirmationMessage }: { setShowConfirmationMessage: any }
+) {
 
-        <ViewSet
-            title="We've sent you"
-            titleText="a confirmation email"
-            icon={"email-search-outline"}
-            content={
-                <View>
-                    <Text variant="bodyMedium"> 
-                        Please check your email and click the link to start using the app.
-                    </Text>
+    const { theme, styles } = useAppTheme()
+
+    return (
+        <View style={[styles.background, { flex: 1, padding: 16, justifyContent: 'center' }]}>
+
+            <View style={{ gap: 8 }}>
+                <ViewSet
+                    title="Check Your Email"
+                    icon={"email-search-outline"}
+                    headerBgColor={theme.colors.primaryContainer}
+                    headerTextColor={theme.colors.onPrimaryContainer}
+                    content={
+                        <View style={{ gap: 8 }}>
+                            <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
+                                We have sent you an e-mail with a confirmation link.
+                            </Text>
+
+                            <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
+                                Please check your email and click the link to start using the app.
+                            </Text>
+
+                        </View>
+                    } />
+                <View style={styles.row}>
+                    <View style={{ flex: 1 }} />
+                    <View style={{ flex: 1, gap: 8 }} >
+                        <Button contentStyle={{
+                            justifyContent: 'flex-start'
+                        }} icon={"email"} mode="contained-tonal" buttonColor={theme.colors.primary} textColor={theme.colors.onPrimary} style={{ borderRadius: 8 }} onPress={() => { setShowConfirmationMessage(false) }}>
+                            Resend confirmation
+                        </Button>
+                        <Button contentStyle={{
+                            justifyContent: 'flex-start'
+                        }} icon={"chevron-left"} mode="contained-tonal" buttonColor={theme.colors.errorContainer} textColor={theme.colors.onErrorContainer} style={{ borderRadius: 8 }} onPress={() => { setShowConfirmationMessage(false) }}>
+                            Back
+                        </Button>
+                    </View>
                 </View>
-            } />
+            </View>
+        </View>
     );
 }
 

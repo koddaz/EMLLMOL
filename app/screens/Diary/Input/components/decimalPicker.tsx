@@ -86,7 +86,7 @@ export function GlucosePicker({
                 onValueChange(mgdlNumber);
             }
         }
-    }, [mmolNumber, decimal, mgdlNumber, ismmol, disabled]);
+    }, [mmolNumber, decimal, mgdlNumber, ismmol, disabled, onValueChange]);
 
     const handleWholeScroll = (event: any) => {
         if (disabled) return;

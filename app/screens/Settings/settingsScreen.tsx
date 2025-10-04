@@ -1,8 +1,8 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { useState, useRef, useEffect } from "react";
-import { ScrollView, View } from "react-native";
-import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text } from "react-native-paper";
+import { ScrollView, View, Alert } from "react-native";
+import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HookData, NavData } from "@/app/navigation/rootNav";
@@ -76,6 +76,7 @@ export function SettingsScreen({
     const { theme, styles } = useAppTheme();
     const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [editMode, setEditMode] = useState(false);
+    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const [username, setUsername] = useState(appData?.profile?.username || '');
     const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
@@ -90,7 +91,21 @@ export function SettingsScreen({
 
     const {
         signOut,
+        deleteAccount,
+        isLoading
     } = authHook;
+
+    const handleDeleteAccount = async () => {
+        setShowDeleteDialog(false);
+        const success = await deleteAccount();
+        if (!success) {
+            Alert.alert(
+                'Error',
+                'Failed to delete account. Please try again later.',
+                [{ text: 'OK' }]
+            );
+        }
+    };
 
 
     const renderRadioButtons = (title: string, firstValue: string, secondValue: string, currentValue: string, settingKey: keyof AppData["settings"], setValue: (value: string) => void) => {
@@ -214,7 +229,7 @@ export function SettingsScreen({
                                         buttonColor={theme.colors.error}
                                         textColor={theme.colors.onError}
                                         contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={() => { }}>
+                                        onPress={() => setShowDeleteDialog(true)}>
                                         Delete Account
                                     </Button>
                                     <Button
@@ -265,6 +280,36 @@ export function SettingsScreen({
 
 
             </ScrollView>
+
+            <Portal>
+                <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
+                    <Dialog.Icon icon="alert-circle" color={theme.colors.error} size={48} />
+                    <Dialog.Title style={{ textAlign: 'center' }}>Delete Account?</Dialog.Title>
+                    <Dialog.Content>
+                        <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
+                            This action cannot be undone. All your data including diary entries and profile information will be permanently deleted.
+                        </Text>
+                    </Dialog.Content>
+                    <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 16 }}>
+                        <Button
+                            onPress={() => setShowDeleteDialog(false)}
+                            textColor={theme.colors.onSurface}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            onPress={handleDeleteAccount}
+                            buttonColor={theme.colors.error}
+                            textColor={theme.colors.onError}
+                            mode="contained"
+                            loading={isLoading}
+                            disabled={isLoading}
+                        >
+                            Delete Forever
+                        </Button>
+                    </Dialog.Actions>
+                </Dialog>
+            </Portal>
 
             <Snackbar
                 visible={showSuccessMessage}

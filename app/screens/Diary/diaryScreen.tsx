@@ -1,7 +1,7 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useState, useEffect } from "react"; // Add useCallback and useMemo
+import { useState } from "react";
 import { View } from "react-native";
 import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
@@ -28,8 +28,8 @@ export function DiaryScreen({
   // Refresh entries when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      dbHook.refreshEntries();
-    }, [dbHook.refreshEntries])
+      dbHook.retrieveEntries();
+    }, [dbHook.retrieveEntries])
   );
 
   return (

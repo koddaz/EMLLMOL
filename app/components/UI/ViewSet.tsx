@@ -9,7 +9,7 @@ interface setProps {
     headerBgColor?: any;
     headerTextColor?: any;
     contentBgColor?: any;
-    headerButton?: any;
+    headerButton?: boolean;
     headerButtonIcon?: any;
     onPress?: () => void;
     titleText?: string;

@@ -24,7 +24,6 @@ export default function Index() {
   const [currentScreen, setCurrentScreen] = useState<string>('Main');
 
   const authHook = useAuth(appData?.session, true, setAppData)
-  const dbHook = useDB(appData!, setAppData)
 
   // Initial load
   useEffect(() => {
@@ -38,28 +37,21 @@ export default function Index() {
   }, []);
 
 
-  // Fetch profile and entries once session is available
+  // Fetch profile once session is available (entries are fetched by DiaryScreen on focus)
   useEffect(() => {
-    if (appData?.session?.user?.id && !appData.isEntriesLoaded) {
-      console.log('Session available, fetching profile and entries...');
-
-      const fetchUserData = async () => {
+    if (appData?.session?.user?.id) {
+      const fetchProfile = async () => {
         try {
-          // Use authHook for profile (now it has the session)
           await authHook.getProfile();
-
-          // Use dbHook for entries (now it has the session via appData)
-          await dbHook.retrieveEntries();
-
-          console.log('✅ User data fetched successfully');
+          console.log('✅ Profile fetched successfully');
         } catch (error) {
-          console.error('❌ Failed to fetch user data:', error);
+          console.error('❌ Failed to fetch profile:', error);
         }
       };
 
-      fetchUserData();
+      fetchProfile();
     }
-  }, [appData?.session?.user?.id, appData?.isEntriesLoaded]);
+  }, [appData?.session?.user?.id]); // Only run when session user ID changes
 
   // Error state
   if (authHook.error) {
@@ -111,7 +103,7 @@ export default function Index() {
           >
             
 
-              <RootNavigation appData={appData} setAppData={setAppData} currentScreen={currentScreen} />
+              <RootNavigation appData={appData} setAppData={setAppData} currentScreen={currentScreen} authHook={authHook} />
 
           
           </NavigationContainer>

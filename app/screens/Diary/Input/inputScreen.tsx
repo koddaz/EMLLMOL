@@ -1,7 +1,7 @@
 import { DiaryData } from '@/app/constants/interface/diaryData';
 import { useAppTheme } from '@/app/constants/UI/theme';
 import { HookData, NavData } from '@/app/navigation/rootNav';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Button, Icon, IconButton, Text, TextInput } from 'react-native-paper';
 import { ImageRow } from '../../Camera/cameraScreen';
@@ -271,7 +271,7 @@ export function InputScreen({
                 icon={getMealIcon(foodType)}
                 content={
                   <View>
-                    {photoURIs ? (
+                    {photoURIs.length > 0 ? (
                       <FlatList
                         data={photoURIs}
                         horizontal={true}

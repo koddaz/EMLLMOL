@@ -1,21 +1,21 @@
-import { AppData } from "@/app/constants/interface/appData";
+import { ViewSet } from "@/app/components/UI/ViewSet";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Alert, Dimensions, ScrollView, View } from "react-native";
-import { Card, IconButton, Text } from "react-native-paper";
+import { Alert, Dimensions, FlatList, ScrollView, View } from "react-native";
+import { Card, Icon, IconButton, Text } from "react-native-paper";
 
 
-export function PhotoScroll({ diaryData }: { diaryData: DiaryData }) {
+export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const screenWidth = Dimensions.get('window').width;
 
   const { theme, styles } = useAppTheme();
 
   const renderImageCarousel = () => {
-    if (!diaryData.uri_array || diaryData.uri_array.length === 0) {
+    if (!diaryData?.uri_array || diaryData.uri_array.length === 0) {
       return (
         <View style={[styles.imageContainer, { height: 200, justifyContent: 'center', alignItems: 'center' }]}>
           <MaterialCommunityIcons name="image-off" size={48} color={theme.colors.onSurfaceVariant} />
@@ -162,6 +162,45 @@ export function DiaryEntry({
 
   return (
     <View style={styles.container}>
+      <ViewSet
+        title={diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1)}
+        icon={getMealIcon(diaryData?.meal_type || '')}
+        headerButton={true}
+        headerButtonIcon={"close"}
+        onPress={() => {
+          dbHook.toggleEntry()
+        }}
+        content={
+          <View>
+            <PhotoScroll diaryData={diaryData} />
+
+
+            <View style={{flexDirection: 'row', gap: 8}}>
+            <Icon source="clock" size={20} />
+            <Text variant="bodyMedium">{calendarHook.formatTime(diaryData?.created_at)}</Text>
+            </View>
+          </View>
+        }
+        footer={
+          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+            <IconButton
+              icon="delete"
+              size={20}
+              iconColor={theme.colors.onError}
+              style={[styles.iconButton, { backgroundColor: theme.colors.error }]}
+              onPress={handleDelete}
+              disabled={dbHook.isLoading}
+            />
+            <IconButton
+              icon="pencil"
+              size={20}
+              iconColor={theme.colors.onPrimary}
+              style={[styles.iconButton]}
+              onPress={handleEdit}
+            />
+          </View>
+        }
+      />
       <View style={styles.card}>
         {/* Header */}
         <View style={styles.header}>
@@ -201,7 +240,7 @@ export function DiaryEntry({
               <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>
                 <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
                 <Text variant="bodySmall">
-                  {diaryData?.glucose || '0'} {appData.settings.glucose}
+                  {diaryData?.glucose || '0'} {appData?.settings.glucose}
                 </Text>
               </View>
               <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>

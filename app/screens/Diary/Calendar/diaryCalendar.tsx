@@ -1,9 +1,9 @@
-import { Divider, Icon, IconButton, Surface, useTheme } from "react-native-paper";
-import { Platform, ScrollView, StatusBar, Touchable, TouchableOpacity, View } from "react-native";
+import { Surface } from "react-native-paper";
+import { View } from "react-native";
 import { CalendarNavigation } from "./calendarNavigation";
 import { CalendarGrid } from "./calendarGrid";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+
 
 
 export default function DiaryCalendar(
@@ -15,6 +15,8 @@ export default function DiaryCalendar(
     }
 ) {
     const { theme, styles } = useAppTheme();
+
+    const {currentMonth, navigateMonth, setSelectedDate} = calendarHook
 
     return (
         <>
@@ -33,7 +35,7 @@ export default function DiaryCalendar(
                 >
 
                     <View style={{ gap: 0 }}>
-                        <CalendarNavigation currentMonth={calendarHook.currentMonth} navigateMonth={calendarHook.navigateMonth} />
+                        <CalendarNavigation calendarHook={calendarHook} />
                         <CalendarGrid diaryEntries={dbHook.diaryEntries} calendarHook={calendarHook} />
                     </View>
 

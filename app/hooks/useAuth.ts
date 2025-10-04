@@ -108,13 +108,20 @@ export function useAuth(
                 });
             }
         } else if (event === 'SIGNED_IN' && session?.user?.id) {
-            // Re-initialize when signing in
-            const newAppData = await initializeApp();
-            if (newAppData && setAppData) {
-                setAppData(newAppData);
+            // Update session directly without calling initializeApp to avoid loops
+            const settings = await loadSettings();
+            if (setAppData) {
+                console.log('✅ User signed in:', session.user.email);
+                setAppData({
+                    session: session,
+                    profile: null,
+                    settings,
+                    diaryEntries: [],
+                    isEntriesLoaded: false
+                });
             }
         }
-    }, [setAppData, initializeApp]);
+    }, [setAppData]);
 
     // Handle deep link authentication - only set up when explicitly enabled
     useEffect(() => {
@@ -260,6 +267,7 @@ export function useAuth(
         }
 
     }
+
     const signUp = async (email: string, password: string) => {
         try {
             setError(null);
@@ -395,35 +403,59 @@ export function useAuth(
         }
     };
 
-    const removeProfile = async () => {
+    const deleteAccount = async () => {
         try {
             setIsLoading(true);
             if (!session?.user.id) throw new Error('No user on the session!');
 
-            // Delete user entries first - Fixed: use 'user_id' to match database
+            console.log('Starting account deletion process...');
+
+            // Step 1: Delete user entries
             const { error: entriesError } = await supabase
                 .from('entries')
                 .delete()
-                .eq('user_id', session.user.id);  // Fixed: Using 'user_id' to match database
+                .eq('user_id', session.user.id);
 
             if (entriesError) {
                 console.error('Error removing entries:', entriesError.message);
                 setError('Failed to remove user entries: ' + entriesError.message);
                 throw entriesError;
             }
+            console.log('✅ Entries deleted');
 
-            const { error: profileError } = await supabase.from('profiles').delete().eq('id', session.user.id);
+            // Step 2: Delete profile
+            const { error: profileError } = await supabase
+                .from('profiles')
+                .delete()
+                .eq('id', session.user.id);
+
             if (profileError) {
-                setError(profileError.message);
                 console.error('Error removing profile:', profileError.message);
+                setError('Failed to remove profile: ' + profileError.message);
                 throw profileError;
             }
+            console.log('✅ Profile deleted');
 
-            console.log('Profile and all associated entries removed successfully');
+            // Step 3: Delete auth user account
+            const { error: deleteUserError } = await supabase.rpc('delete_user');
+
+            if (deleteUserError) {
+                console.error('Error deleting user account:', deleteUserError.message);
+                setError('Failed to delete user account: ' + deleteUserError.message);
+                throw deleteUserError;
+            }
+            console.log('✅ User account deleted');
+
+            // Step 4: Sign out (this will trigger auth state change and clear local data)
+            await signOut();
+
+            console.log('✅ Account deletion completed successfully');
+            return true;
 
         } catch (error) {
-            console.error('Error removing profile:', error);
-            setError('Failed to remove profile. Please try again later.');
+            console.error('Error deleting account:', error);
+            setError(error instanceof Error ? error.message : 'Failed to delete account. Please try again later.');
+            return false;
         } finally {
             setIsLoading(false);
         }
@@ -482,7 +514,7 @@ export function useAuth(
         error,
         isLoading,
         setError,
-        
+
         // Start up
         loadSettings,
         initializeApp,
@@ -498,7 +530,7 @@ export function useAuth(
         signIn,
         signUp,
         signOut,
-        removeProfile,
+        deleteAccount,
         changeEmail,
         getProfile,
         updateProfile,
