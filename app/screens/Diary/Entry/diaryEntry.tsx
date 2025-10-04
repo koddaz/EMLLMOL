@@ -4,20 +4,173 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Alert, Dimensions, FlatList, ScrollView, View } from "react-native";
+import { Alert, Dimensions, FlatList, Image, ScrollView, View } from "react-native";
 import { Card, Icon, IconButton, Text } from "react-native-paper";
 
 
+// Reusable diary entry content preview
+export function DiaryEntryContent({
+  diaryData,
+  appData,
+  calendarHook,
+
+}: {
+  diaryData: DiaryData | undefined;
+  appData: any;
+  calendarHook: any;
+
+}) {
+  const { theme } = useAppTheme();
+
+
+
+  const getActivityIcon = (activity: any) => {
+    switch (activity?.toLowerCase()) {
+      case 'none': return <Icon source={'sofa-outline'} size={45} color={theme.colors.onSurfaceVariant} />
+      case 'low': return <Icon source={'walk'} size={45} color={theme.colors.customBlue} />
+      case 'medium': return <Icon source={'run'} size={45} color={theme.colors.customTeal} />
+      case 'high': return <Icon source={'run-fast'} size={45} color={theme.colors.primary} />
+    }
+  }
+
+  const getActivityColors = (activityLevel: any) => {
+    switch (activityLevel?.toLowerCase()) {
+      case 'none': return theme.colors.surface;
+      case 'low': return theme.colors.low;
+      case 'medium': return theme.colors.medium;
+      case 'high': return theme.colors.high;
+      default: return theme.colors.surfaceVariant;
+
+    }
+  }
+
+  return (
+    <View style={{ gap: 4 }}>
+      {/* Date/Time Header */}
+      <View style={{
+        flexDirection: 'row',
+        gap: 8,
+        backgroundColor: theme.colors.primaryContainer,
+        padding: 8,
+        borderRadius: 4
+      }}>
+        <Icon source="clock" size={20} color={theme.colors.onPrimaryContainer} />
+        <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+          {calendarHook.formatTime(diaryData?.created_at || new Date())}
+        </Text>
+
+        <Icon source="calendar" size={20} color={theme.colors.onPrimaryContainer} />
+        <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+          {calendarHook.formatDate(diaryData?.created_at || new Date())}
+        </Text>
+      </View>
+
+      <PhotoScroll diaryData={diaryData} />
+
+      {/* Metrics Section */}
+      <View style={{ flexDirection: 'row', gap: 4 }}>
+        <View style={{ flex: 2, gap: 4 }}>
+          {/* Glucose */}
+          <View style={{
+            flexDirection: 'row',
+            gap: 8,
+            backgroundColor: theme.colors.secondaryContainer,
+            padding: 8,
+            borderRadius: 4,
+          }}>
+            <Icon source="diabetes" color={theme.colors.onSecondaryContainer} size={20} />
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+              {diaryData?.glucose} {appData?.settings.glucose === 'mmol' ? 'mmol/L' : 'mg/dL'}
+            </Text>
+          </View>
+
+          {/* Insulin */}
+          <View style={{
+            flexDirection: 'row',
+            gap: 8,
+            backgroundColor: theme.colors.secondaryContainer,
+            padding: 8,
+            borderRadius: 4
+          }}>
+            <Icon source="needle" color={theme.colors.onSecondaryContainer} size={20} />
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+              {diaryData?.insulin || 0} units
+            </Text>
+          </View>
+
+          {/* Carbs */}
+          <View style={{
+            flexDirection: 'row',
+            gap: 8,
+            backgroundColor: theme.colors.secondaryContainer,
+            padding: 8,
+            borderRadius: 4
+          }}>
+            <Icon source="bread-slice-outline" color={theme.colors.onSecondaryContainer} size={20} />
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+              {diaryData?.carbs || 0} g
+            </Text>
+          </View>
+        </View>
+
+        {/* Activity Level */}
+        <View style={{
+          flex: 1,
+          backgroundColor: getActivityColors(diaryData?.activity_level),
+          paddingHorizontal: 16,
+          justifyContent: 'center',
+          alignItems: 'center',
+          borderRadius: 4,
+          borderWidth: 1,
+          borderColor: theme.colors.outline
+        }}>
+          <Text variant="labelMedium" style={{ marginBottom: -4, color: theme.colors.onSurface }}>
+            Activity
+          </Text>
+          {getActivityIcon(diaryData?.activity_level)}
+          <Text variant="labelSmall" style={{ marginTop: -4, textTransform: 'capitalize', color: theme.colors.onSurface }}>
+            {diaryData?.activity_level}
+          </Text>
+        </View>
+      </View>
+
+      {/* Notes Section - Only show if note exists */}
+      {diaryData?.note && diaryData.note.trim() !== '' && (
+        <View style={{
+          flexDirection: 'row',
+          gap: 8,
+          backgroundColor: theme.colors.tertiaryContainer,
+          padding: 8,
+          borderRadius: 4
+        }}>
+          <Icon source="note-outline" color={theme.colors.onTertiaryContainer} size={20} />
+          <Text variant="bodyMedium" style={{
+            color: theme.colors.onTertiaryContainer,
+            textAlign: 'justify',
+            flex: 1
+          }}>
+            {diaryData.note}
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+}
+
 export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const screenWidth = Dimensions.get('window').width;
-
+  const [containerWidth, setContainerWidth] = useState(0);
   const { theme, styles } = useAppTheme();
 
-  const renderImageCarousel = () => {
-    if (!diaryData?.uri_array || diaryData.uri_array.length === 0) {
+  // Prepare data: if no images, show placeholder
+  const images = (!diaryData?.uri_array || diaryData.uri_array.length === 0)
+    ? [{ uri: null, isPlaceholder: true }]
+    : diaryData.uri_array.map(uri => ({ uri, isPlaceholder: false }));
+
+  const renderImageItem = ({ item, index }: { item: { uri: string | null, isPlaceholder: boolean }, index: number }) => {
+    if (item.isPlaceholder) {
       return (
-        <View style={[styles.imageContainer, { height: 200, justifyContent: 'center', alignItems: 'center' }]}>
+        <View style={{ height: 200, borderWidth: 1, borderRadius: 4, width: containerWidth, justifyContent: 'center', alignItems: 'center' }}>
           <MaterialCommunityIcons name="image-off" size={48} color={theme.colors.onSurfaceVariant} />
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
             No image available
@@ -26,74 +179,75 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined })
       );
     }
 
-    if (diaryData.uri_array.length === 1) {
-      return (
-        <View style={styles.imageContainer}>
-          <Card.Cover
-            source={{ uri: diaryData.uri_array.at(0) || 'https://via.placeholder.com/150' }}
-            style={{ height: 200 }}
-          />
-        </View>
-      );
-    }
-
     return (
-      <View style={[styles.imageContainer, { height: 200, position: 'relative' }]}>
-        <ScrollView
-          horizontal
-          pagingEnabled
-          showsHorizontalScrollIndicator={false}
-          onMomentumScrollEnd={(event: any) => {
-            const index = Math.round(event.nativeEvent.contentOffset.x / screenWidth);
-            setCurrentImageIndex(index);
-          }}
-        >
-          {diaryData.uri_array.map((uri, index) => (
-            <Card.Cover
-              key={index}
-              source={{ uri }}
-              style={{
-                width: screenWidth - 16,
-                height: 200
-              }}
-            />
-          ))}
-        </ScrollView>
-
-        {/* Image indicator dots */}
-        <View style={[styles.imageOverlay, {
-          bottom: 8,
-          right: 8,
-          flexDirection: 'row'
-        }]}>
-          {diaryData.uri_array.map((_, index) => (
-            <View
-              key={index}
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 3,
-                backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
-                marginHorizontal: 2,
-              }}
-            />
-          ))}
-        </View>
-
-        {/* Image counter */}
-        <View style={[styles.imageOverlay, {
-          top: 8,
-          right: 8,
-        }]}>
-          <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
-            {currentImageIndex + 1} / {diaryData.uri_array.length}
-          </Text>
-        </View>
+      <View style={{ width: containerWidth, borderWidth: 1, borderRadius: 4, }}>
+        <Image
+          source={{ uri: item.uri || 'https://via.placeholder.com/150' }}
+          style={{ height: 200, width: containerWidth }}
+        />
       </View>
     );
   };
 
-  return renderImageCarousel();
+  return (
+    <View
+      style={{ height: 200, position: 'relative' }}
+      onLayout={(event) => {
+        const { width } = event.nativeEvent.layout;
+        setContainerWidth(width);
+      }}
+    >
+      {containerWidth > 0 && (
+        <FlatList
+          data={images}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          renderItem={renderImageItem}
+          keyExtractor={(item, index) => index.toString()}
+          onMomentumScrollEnd={(event) => {
+            const index = Math.round(event.nativeEvent.contentOffset.x / containerWidth);
+            setCurrentImageIndex(index);
+          }}
+        />
+      )}
+
+      {/* Only show indicators if there are real images */}
+      {images.length > 1 && !images[0].isPlaceholder && (
+        <>
+          {/* Image indicator dots */}
+          <View style={[styles.imageOverlay, {
+            bottom: 8,
+            right: 8,
+            flexDirection: 'row'
+          }]}>
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                  marginHorizontal: 2,
+                }}
+              />
+            ))}
+          </View>
+
+          {/* Image counter */}
+          <View style={[styles.imageOverlay, {
+            top: 8,
+            right: 8,
+          }]}>
+            <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+              {currentImageIndex + 1} / {images.length}
+            </Text>
+          </View>
+        </>
+      )}
+    </View>
+  );
 }
 
 export function DiaryEntry({
@@ -106,8 +260,6 @@ export function DiaryEntry({
   const { theme, styles } = useAppTheme();
 
 
-
-
   const getMealIcon = (mealType: string) => {
     switch (mealType?.toLowerCase()) {
       case 'breakfast': return 'coffee';
@@ -118,14 +270,25 @@ export function DiaryEntry({
     }
   };
 
-  const getActivityIcon = (activityLevel: string) => {
-    switch (activityLevel?.toLowerCase()) {
-      case 'low': return 'walk';
-      case 'medium': return 'run';
-      case 'high': return 'run-fast';
-      default: return 'sleep';
+  const getActivityIcon = (activity: any) => {
+    switch (activity?.toLowerCase()) {
+      case 'none': return <Icon source={'sofa-outline'} size={45} color={theme.colors.onSurfaceVariant} />
+      case 'low': return <Icon source={'walk'} size={45} color={theme.colors.customBlue} />
+      case 'medium': return <Icon source={'run'} size={45} color={theme.colors.customTeal} />
+      case 'high': return <Icon source={'run-fast'} size={45} color={theme.colors.primary} />
     }
-  };
+  }
+
+  const getActivityColors = (activityLevel: any) => {
+    switch (activityLevel?.toLowerCase()) {
+      case 'none': return theme.colors.surface;
+      case 'low': return theme.colors.low;
+      case 'medium': return theme.colors.medium;
+      case 'high': return theme.colors.high;
+      default: return theme.colors.surfaceVariant;
+
+    }
+  }
 
   const handleEdit = async () => {
     await dbHook.toggleEntry();
@@ -151,17 +314,10 @@ export function DiaryEntry({
     );
   };
 
-  const LeftContent = (props: any) => (
-    <MaterialCommunityIcons
-      {...props}
-      name={getMealIcon(diaryData?.meal_type || '')}
-      size={40}
-      color={theme.colors.onPrimary}
-    />
-  );
 
   return (
     <View style={styles.container}>
+
       <ViewSet
         title={diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1)}
         icon={getMealIcon(diaryData?.meal_type || '')}
@@ -171,15 +327,11 @@ export function DiaryEntry({
           dbHook.toggleEntry()
         }}
         content={
-          <View>
-            <PhotoScroll diaryData={diaryData} />
-
-
-            <View style={{flexDirection: 'row', gap: 8}}>
-            <Icon source="clock" size={20} />
-            <Text variant="bodyMedium">{calendarHook.formatTime(diaryData?.created_at)}</Text>
-            </View>
-          </View>
+                <DiaryEntryContent
+        diaryData={diaryData}
+        appData={appData}
+        calendarHook={calendarHook}
+      />
         }
         footer={
           <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
@@ -201,108 +353,8 @@ export function DiaryEntry({
           </View>
         }
       />
-      <View style={styles.card}>
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.chip}>
-            <MaterialCommunityIcons
-              name={getMealIcon(diaryData?.meal_type || '')}
-              size={16}
-              color={theme.colors.onSecondary}
-            />
-          </View>
-          <Text variant="titleMedium" style={styles.cardTitle}>
-            {diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1) || 'Meal'}
-          </Text>
-          <View style={styles.chip}>
-            <MaterialCommunityIcons name="clock" size={16} color={theme.colors.onSecondary} />
-            <Text variant="bodySmall">
-              {calendarHook.formatTime(diaryData?.created_at)}
-            </Text>
-          </View>
-          <IconButton
-            icon="close"
-            size={20}
-            iconColor={theme.colors.onSecondaryContainer}
-            style={styles.iconButton}
-            onPress={() => dbHook.toggleEntry()}
-          />
-        </View>
 
-        {/* Photo Content */}
-        <PhotoScroll diaryData={diaryData} />
 
-        {/* Main Content */}
-        <View style={styles.content}>
-          <View style={styles.row}>
-            {/* Metrics */}
-            <View style={{ flex: 1 }}>
-              <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>
-                <MaterialCommunityIcons name="blood-bag" size={16} color={theme.colors.onSecondary} />
-                <Text variant="bodySmall">
-                  {diaryData?.glucose || '0'} {appData?.settings.glucose}
-                </Text>
-              </View>
-              <View style={[styles.chip, { marginBottom: 4, marginRight: 0 }]}>
-                <MaterialCommunityIcons name="food" size={16} color={theme.colors.onSecondary} />
-                <Text variant="bodySmall">
-                  {diaryData?.carbs || '0'}g carbs
-                </Text>
-              </View>
-              <View style={[styles.chip, { marginRight: 0 }]}>
-                <MaterialCommunityIcons
-                  name={getActivityIcon(diaryData?.activity_level || '')}
-                  size={16}
-                  color={theme.colors.onSecondary}
-                />
-                <Text variant="bodySmall" style={{ textTransform: 'capitalize' }}>
-                  {diaryData?.activity_level || 'None'}
-                </Text>
-              </View>
-            </View>
-
-            {/* Note Content */}
-            {diaryData?.note && diaryData?.note.trim() !== '' && (
-              <View style={{ flex: 2, marginLeft: 8 }}>
-                <View style={[styles.box, { marginBottom: 0 }]}>
-                  <View style={[styles.content, { paddingVertical: 4 }]}>
-                    <Text variant="bodyMedium" style={{
-                      color: theme.colors.onSurface,
-                      lineHeight: 20
-                    }}>
-                      {diaryData.note}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Footer Actions */}
-        <View style={styles.footer}>
-          <View style={styles.actionContainer}>
-            <IconButton
-              icon="pencil"
-              size={20}
-              iconColor={theme.colors.onPrimary}
-              style={[styles.iconButton, { backgroundColor: theme.colors.primary }]}
-              onPress={handleEdit}
-            />
-            <IconButton
-              icon="delete"
-              size={20}
-              iconColor={theme.colors.onError}
-              style={[styles.iconButton, { backgroundColor: theme.colors.errorContainer }]}
-              onPress={handleDelete}
-              disabled={dbHook.isLoading}
-            />
-          </View>
-          <Text variant="bodySmall" style={{ color: theme.colors.onSecondaryContainer, flex: 1, textAlign: 'right' }}>
-            {diaryData?.created_at.toLocaleDateString()}
-          </Text>
-        </View>
-      </View>
     </View>
   );
 }

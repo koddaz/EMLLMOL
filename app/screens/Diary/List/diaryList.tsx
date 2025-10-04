@@ -99,6 +99,7 @@ export function DiaryList(
             return (
 
               <DiaryListItem
+                calendarHook={calendarHook}
                 appData={appData}
                 diaryData={diaryData}
                 onPress={() => {

@@ -58,20 +58,20 @@ export function RootNavigation({
                case 'main': return (
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
                          <Image source={logo} resizeMethod="scale" style={{ width: 50, height: 50 }} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>emmiSense</Text>
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>emmiSense</Text>
                     </View>
                );
                case 'settings': return (
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
-                         <Icon source={"cog"} size={50} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>Settings</Text>
+                         <Icon source={"cog"} size={50} color={theme.colors.onPrimary} />
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>Settings</Text>
                     </View>
 
                );
                case 'stats': return (
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
-                         <Icon source={"chart-bar"} size={50} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto' }}>Statistics</Text>
+                         <Icon source={"chart-bar"} size={50} color={theme.colors.onPrimary} />
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>Statistics</Text>
                     </View>
 
                );
@@ -80,13 +80,13 @@ export function RootNavigation({
                     <View style={[styles.boxPicker, { position: "relative" }]}>
 
                          <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4, paddingHorizontal: 16 }}>
-                              <Text variant="titleLarge">
+                              <Text variant="titleLarge" style={{ color: theme.colors.onSurface, fontWeight: 'bold' }}>
                                    {calendarHook.formatTime(new Date())}
                               </Text>
                               <Text variant="titleLarge" style={{
                                    color: theme.colors.outline
                               }}>||</Text>
-                              <Text variant="titleLarge">
+                              <Text variant="titleLarge" style={{ color: theme.colors.onSurface, fontWeight: 'bold' }}>
                                    {calendarHook.formatDate(new Date())}
                               </Text>
                          </View>
@@ -101,9 +101,9 @@ export function RootNavigation({
                                    borderRadius: 4,
                                    borderColor: theme.colors.outline,
                                    borderWidth: 0.5,
-                                   color: theme.colors.onPrimary,
+                                   color: theme.colors.onPrimaryContainer,
                                    fontSize: 12,
-                                   fontWeight: '400',
+                                   fontWeight: 'bold',
                                    zIndex: 1
                               }}
                          >
@@ -116,7 +116,7 @@ export function RootNavigation({
 
      const MainTopBar = useCallback(() => (
 
-          <Appbar.Header mode={"small"} style={{ marginVertical: 8, paddingHorizontal: 16 }}>
+          <Appbar.Header mode={"small"} style={{ marginVertical: 8, paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
                {(currentScreen === 'main') && (
 
                     <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
