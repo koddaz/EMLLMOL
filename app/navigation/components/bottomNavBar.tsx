@@ -3,20 +3,32 @@ import { useEffect, useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 import { Icon, Text } from "react-native-paper";
 
-export function BottomNavBar({ insets, navigation, route, statsHook }: { insets: any, navigation: any, route: string, statsHook: any }) {
+export function useNavBar() {
+     const [isMenuVisible, setIsMenuVisible] = useState(false)
+
+
+     return {
+
+          setIsMenuVisible,
+          isMenuVisible
+     }
+}
+
+export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook }: { insets: any, navigation: any, route: string, statsHook: any, navBarHook: any }) {
 
      const { theme, styles } = useAppTheme();
      const { currentSection, setCurrentSection } = statsHook
-     const [isVisible, setIsVisible] = useState(false)
+     const {isMenuVisible, setIsMenuVisible, toggleMenu} = navBarHook
      const slideAnim = useRef(new Animated.Value(0)).current
+
 
      useEffect(() => {
           Animated.timing(slideAnim, {
-               toValue: isVisible ? 1 : 0,
+               toValue: isMenuVisible ? 1 : 0,
                duration: 300,
                useNativeDriver: true,
           }).start();
-     }, [isVisible, slideAnim])
+     }, [isMenuVisible, slideAnim])
 
      const button = (title: string, section: string, icon: string, nav?: boolean,) => {
           const isActive = nav ? false : currentSection === section;
@@ -30,10 +42,10 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                }} onPress={() => {
                     if (nav) {
                          if (section === 'input') {
-                              setIsVisible(!isVisible)
+                              setIsMenuVisible(!isMenuVisible)
                               navigation.navigate('diary', { screen: 'input' });
                          } else {
-                              setIsVisible(!isVisible)
+                              setIsMenuVisible(!isMenuVisible)
                               navigation.navigate(section);
                          }
                     } else {
@@ -114,8 +126,8 @@ export function BottomNavBar({ insets, navigation, route, statsHook }: { insets:
                     elevation: 4,
                     alignItems: 'center',
                     justifyContent: 'center',
-               }} onPress={() => setIsVisible(!isVisible)}>
-                    <Icon source={isVisible ? "chevron-right" : "menu"} size={25} color={theme.colors.onPrimaryContainer} />
+               }} onPress={() => setIsMenuVisible(!isMenuVisible)}>
+                    <Icon source={isMenuVisible ? "chevron-right" : "menu"} size={25} color={theme.colors.onPrimaryContainer} />
                </Pressable>
 
 

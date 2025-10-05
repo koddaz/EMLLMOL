@@ -19,7 +19,6 @@ export function InputScreen({
 }: HookData & NavData) {
 
   const { theme, styles } = useAppTheme();
-  const screenWidth = Dimensions.get('window').width;
 
   const {
     // Input Data
@@ -91,7 +90,7 @@ export function InputScreen({
 
 
   return (
-    <View style={styles.background}>
+
 
       <KeyboardAvoidingView
         style={styles.background}
@@ -202,7 +201,7 @@ export function InputScreen({
                             <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
                               No photos added yet...
                             </Text>) : (
-                            <ImageRow cameraHook={cameraHook} />
+                            <ImageRow cameraHook={cameraHook} setSelectedItem={null} setPreview />
                           )}
                         </View>
 
@@ -288,7 +287,7 @@ export function InputScreen({
 
       </KeyboardAvoidingView>
 
-    </View >
+
 
   );
 }

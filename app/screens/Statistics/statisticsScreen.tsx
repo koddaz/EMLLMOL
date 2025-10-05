@@ -4,10 +4,12 @@ import { SegmentedButtons, Text } from "react-native-paper";
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { useGraphs } from "@/app/hooks/useGraphs";
 import { ViewSet } from "@/app/components/UI/ViewSet";
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
 
 
 
-export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
+export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & HookData & { navBarHook: any }) {
     const { styles, theme } = useAppTheme();
     const {
         selectedPeriod,
@@ -17,6 +19,20 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
         summaryStats,
         mealColors,
     } = statsHook;
+
+    const { setIsMenuVisible } = navBarHook;
+
+    useFocusEffect(
+        useCallback(() => {
+            // Open menu when screen is focused
+            setIsMenuVisible(true);
+
+            // Close menu when screen is unfocused (cleanup)
+            return () => {
+                setIsMenuVisible(false);
+            };
+        }, [setIsMenuVisible])
+    );
 
     const gUnit = () => {
         return appData?.settings.glucose === 'mmol' ? ('mmol/L') : ('mg/Dl');
@@ -105,7 +121,7 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                             <CarbsBarChart />
                         </View>
                     }
-                />       
+                />
 
             );
         } else if (currentSection === 'summary') {
@@ -198,11 +214,11 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
             <SegmentedButtons
                 value={selectedPeriod.toString()}
                 onValueChange={handlePeriodChange}
-                style={{marginBottom: 8}}
-                
+                style={{ marginBottom: 8 }}
+
                 buttons={[
                     {
-                        
+
                         value: '1',
                         checkedColor: theme.colors.onPrimary,
                         uncheckedColor: theme.colors.onPrimaryContainer,
@@ -214,7 +230,7 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                         },
                     },
                     {
-                       
+
                         value: '7',
                         checkedColor: theme.colors.onPrimary,
                         uncheckedColor: theme.colors.onPrimaryContainer,
@@ -224,12 +240,12 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                             backgroundColor: selectedPeriod === 7 ? theme.colors.primary : theme.colors.primaryContainer,
                             borderRadius: 0,
                             borderColor: selectedPeriod === 7 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
-                           
-                            
+
+
                         },
                     },
                     {
-                       
+
                         value: '14',
                         checkedColor: theme.colors.onPrimary,
                         uncheckedColor: theme.colors.onPrimaryContainer,
@@ -238,8 +254,8 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                             backgroundColor: selectedPeriod === 14 ? theme.colors.primary : theme.colors.primaryContainer,
                             borderRadius: 0,
                             borderColor: selectedPeriod === 14 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
-                            
-                            
+
+
                         },
                     },
                     {
@@ -252,16 +268,16 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                             backgroundColor: selectedPeriod === 30 ? theme.colors.primary : theme.colors.primaryContainer,
                             borderRadius: 0,
                             borderColor: selectedPeriod === 30 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
-                            
+
                         },
                     },
                 ]}
             />
+            <View style={{ flex: 1, marginTop: 16 }}>
+                {renderStats()}
 
-            {renderStats()}
+            </View>
 
-
-            
         </View>
     );
 }

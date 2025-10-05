@@ -77,7 +77,7 @@ export default function Index() {
 
     <GestureHandlerRootView>
       <PaperProvider theme={customTheme}>
-        <SafeAreaProvider>
+        <SafeAreaProvider >
 
 
           <NavigationContainer

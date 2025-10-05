@@ -17,7 +17,8 @@ export function DiaryScreen({
   dbHook,
   calendarHook,
   cameraHook,
-}: NavData & HookData) {
+  navBarHook,
+}: NavData & HookData & { navBarHook: any }) {
 
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
@@ -36,6 +37,45 @@ export function DiaryScreen({
 
     <View style={styles.background}>
 
+
+      <View style={styles.background}>
+        {calendarHook.showCalendar && (
+          <DiaryCalendar
+            calendarHook={calendarHook}
+            dbHook={dbHook}
+          />
+        )}
+        <View style={{ flexDirection: 'row', backgroundColor: theme.colors.primaryContainer, paddingVertical: 0, paddingHorizontal: 16, justifyContent: 'space-between', alignItems: 'center' }}>
+          <IconButton style={{ margin: 0, padding: 0 }} size={25} iconColor={theme.colors.onPrimaryContainer} icon='chevron-left' onPress={() => { calendarHook.navigateDate('prev') }} />
+          <Text variant="titleMedium" style={{color: theme.colors.onPrimaryContainer}}>{selectedDate}</Text>
+          <IconButton
+            style={{ margin: 0, padding: 0 }}
+            iconColor={theme.colors.onPrimaryContainer}
+            size={25}
+            icon='chevron-right'
+            disabled={selectedDate >= currentDate}
+            onPress={() => { calendarHook.navigateDate('next') }}
+          />
+        </View>
+        <View style={{flex: 1, marginTop: 16}}>
+
+
+          {appData && (
+            <DiaryList
+              appData={appData}
+              toggleEntry={() => { dbHook.toggleEntry() }}
+              setSelectedDiaryData={setSelectedDiaryData}
+              calendarHook={calendarHook}
+              dbHook={dbHook}
+              cameraHook={cameraHook}
+              navigation={navigation}
+            />
+          )}
+        </View>
+
+      </View>
+
+
       {dbHook.showEntry && selectedDiaryData && (
         <View style={styles.centeredWrapper}>
           <View style={styles.centeredContent}>
@@ -49,47 +89,6 @@ export function DiaryScreen({
           </View>
         </View>
       )}
-
-
-      
-
-
-        {calendarHook.showCalendar && (
-          <DiaryCalendar
-            calendarHook={calendarHook}
-            dbHook={dbHook}
-          />
-        )}
-
-
-        <View style={{ flexDirection: 'row', backgroundColor: theme.colors.surface, paddingVertical: 0, paddingHorizontal: 16, justifyContent: 'space-between', alignItems: 'center' }}>
-          <IconButton style={{margin: 0, padding: 0}} size={25} iconColor={theme.colors.onSurface} icon='chevron-left' onPress={() => { calendarHook.navigateDate('prev') }} />
-          <Text variant="titleMedium">{selectedDate}</Text>
-          <IconButton
-            style={{margin: 0, padding: 0}}
-            iconColor={theme.colors.onSurface}
-            size={25}
-            icon='chevron-right'
-            disabled={selectedDate >= currentDate}
-            onPress={() => { calendarHook.navigateDate('next') }}
-          />
-        </View>
-     
-
-
-
-      {appData && (
-        <DiaryList
-          appData={appData}
-          toggleEntry={() => { dbHook.toggleEntry() }}
-          setSelectedDiaryData={setSelectedDiaryData}
-          calendarHook={calendarHook}
-          dbHook={dbHook}
-          cameraHook={cameraHook}
-          navigation={navigation}
-        />
-      )}
-
 
 
     </View>

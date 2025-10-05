@@ -4,10 +4,11 @@ import * as FileSystem from 'expo-file-system';
 import { useRef, useState, useCallback, useMemo } from "react";
 import { Alert, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
+import { useAppTheme } from "../constants/UI/theme";
 
 export function useCamera(appData: AppData | null) {
 
-  const theme = useTheme();
+  const {theme} = useAppTheme();
 
   const [showCamera, setShowCamera] = useState(false);
 
@@ -136,15 +137,17 @@ export function useCamera(appData: AppData | null) {
         return "flash-off";
     }
   };
+
+
   // Get the color for the flash icon based on the flash state
   const getFlashIconColor = () => {
     switch (flash) {
       case "on":
-        return theme.colors.primary;
+        return theme.colors.flash;
       case "off":
-        return theme.colors.onSurfaceVariant;
+        return theme.colors.flashOff;
       case "auto":
-        return theme.colors.secondary;
+        return theme.colors.flashAuto;
       default:
         return theme.colors.onSurfaceVariant;
     }

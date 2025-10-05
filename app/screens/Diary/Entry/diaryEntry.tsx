@@ -49,18 +49,19 @@ export function DiaryEntryContent({
       {/* Date/Time Header */}
       <View style={{
         flexDirection: 'row',
+        alignItems: 'center',
         gap: 8,
         backgroundColor: theme.colors.primaryContainer,
         padding: 8,
         borderRadius: 4
       }}>
         <Icon source="clock" size={20} color={theme.colors.onPrimaryContainer} />
-        <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onPrimaryContainer, fontWeight: 'bold' }}>
           {calendarHook.formatTime(diaryData?.created_at || new Date())}
         </Text>
 
         <Icon source="calendar" size={20} color={theme.colors.onPrimaryContainer} />
-        <Text variant="bodyMedium" style={{ color: theme.colors.onPrimaryContainer }}>
+        <Text variant="bodyLarge" style={{ color: theme.colors.onPrimaryContainer, fontWeight: 'bold' }}>
           {calendarHook.formatDate(diaryData?.created_at || new Date())}
         </Text>
       </View>
@@ -79,7 +80,7 @@ export function DiaryEntryContent({
             borderRadius: 4,
           }}>
             <Icon source="diabetes" color={theme.colors.onSecondaryContainer} size={20} />
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
               {diaryData?.glucose} {appData?.settings.glucose === 'mmol' ? 'mmol/L' : 'mg/dL'}
             </Text>
           </View>
@@ -93,7 +94,7 @@ export function DiaryEntryContent({
             borderRadius: 4
           }}>
             <Icon source="needle" color={theme.colors.onSecondaryContainer} size={20} />
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
               {diaryData?.insulin || 0} units
             </Text>
           </View>
@@ -107,8 +108,8 @@ export function DiaryEntryContent({
             borderRadius: 4
           }}>
             <Icon source="bread-slice-outline" color={theme.colors.onSecondaryContainer} size={20} />
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer }}>
-              {diaryData?.carbs || 0} g
+            <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
+              {diaryData?.carbs || 0} grams
             </Text>
           </View>
         </View>
@@ -124,11 +125,11 @@ export function DiaryEntryContent({
           borderWidth: 1,
           borderColor: theme.colors.outline
         }}>
-          <Text variant="labelMedium" style={{ marginBottom: -4, color: theme.colors.onSurface }}>
+          <Text variant="labelMedium" style={{ color: theme.colors.onSurface }}>
             Activity
           </Text>
           {getActivityIcon(diaryData?.activity_level)}
-          <Text variant="labelSmall" style={{ marginTop: -4, textTransform: 'capitalize', color: theme.colors.onSurface }}>
+          <Text variant="labelSmall" style={{ textTransform: 'capitalize', color: theme.colors.onSurface }}>
             {diaryData?.activity_level}
           </Text>
         </View>
@@ -270,25 +271,6 @@ export function DiaryEntry({
     }
   };
 
-  const getActivityIcon = (activity: any) => {
-    switch (activity?.toLowerCase()) {
-      case 'none': return <Icon source={'sofa-outline'} size={45} color={theme.colors.onSurfaceVariant} />
-      case 'low': return <Icon source={'walk'} size={45} color={theme.colors.customBlue} />
-      case 'medium': return <Icon source={'run'} size={45} color={theme.colors.customTeal} />
-      case 'high': return <Icon source={'run-fast'} size={45} color={theme.colors.primary} />
-    }
-  }
-
-  const getActivityColors = (activityLevel: any) => {
-    switch (activityLevel?.toLowerCase()) {
-      case 'none': return theme.colors.surface;
-      case 'low': return theme.colors.low;
-      case 'medium': return theme.colors.medium;
-      case 'high': return theme.colors.high;
-      default: return theme.colors.surfaceVariant;
-
-    }
-  }
 
   const handleEdit = async () => {
     await dbHook.toggleEntry();
@@ -319,6 +301,8 @@ export function DiaryEntry({
     <View style={styles.container}>
 
       <ViewSet
+        topRadius={12}
+        bottomRadius={12}
         title={diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1)}
         icon={getMealIcon(diaryData?.meal_type || '')}
         headerButton={true}
@@ -327,11 +311,13 @@ export function DiaryEntry({
           dbHook.toggleEntry()
         }}
         content={
-                <DiaryEntryContent
-        diaryData={diaryData}
-        appData={appData}
-        calendarHook={calendarHook}
-      />
+ 
+            <DiaryEntryContent
+              diaryData={diaryData}
+              appData={appData}
+              calendarHook={calendarHook}
+            />
+
         }
         footer={
           <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>

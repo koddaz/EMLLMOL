@@ -19,7 +19,7 @@ import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { useStatistics } from "../hooks/useStatistics";
 import AuthScreen from "../api/supabase/auth/authScreen";
 import { LoadingScreen } from "../components/loadingScreen";
-import { BottomNavBar } from "./components/bottomNavBar";
+import { BottomNavBar, useNavBar } from "./components/bottomNavBar";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
@@ -50,6 +50,7 @@ export function RootNavigation({
      const dbHook = useDB(appData || undefined, setAppData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
+     const navBarHook = useNavBar();
      const statsHook = useStatistics(dbHook.diaryEntries || []);
      const navigation = useNavigation() as any
 
@@ -116,7 +117,7 @@ export function RootNavigation({
 
      const MainTopBar = useCallback(() => (
 
-          <Appbar.Header mode={"small"} style={{ marginVertical: 8, paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
+          <Appbar.Header mode={"small"} style={{paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
                {(currentScreen === 'main') && (
 
                     <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
@@ -153,13 +154,14 @@ export function RootNavigation({
      return (
           <root.Navigator
                initialRouteName={isSignedIn ? "diary" : "auth"}
+               
                screenOptions={{
                     headerShown: currentScreen != 'camera' ? true : false,
                     header: () => MainTopBar(),
                }}
                tabBar={({ navigation, insets }) => (
                     isSignedIn && (currentScreen === 'main' || currentScreen === 'stats') && (
-                         <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} />
+                         <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} navBarHook={navBarHook} />
                     )
                )}>
 
@@ -179,7 +181,7 @@ export function RootNavigation({
                                    tabBarIcon: () => <Icon source={"book-open-variant"} size={20} />,
                               }}
                          >
-                              {(props) => 
+                              {(props) =>
                                   <StackNavigation
                                         {...props}
                                         appData={appData}
@@ -187,8 +189,9 @@ export function RootNavigation({
                                         dbHook={dbHook}
                                         calendarHook={calendarHook}
                                         cameraHook={cameraHook}
+                                        navBarHook={navBarHook}
                                    />
-                         
+
                               }
                                    
                               
@@ -207,6 +210,7 @@ export function RootNavigation({
                                         setAppData={setAppData}
                                         dbHook={dbHook}
                                         authHook={authHook}
+                                        navBarHook={navBarHook}
                                    />
                               )}
                          </root.Screen>
@@ -223,6 +227,7 @@ export function RootNavigation({
                                         dbHook={dbHook}
                                         calendarHook={calendarHook}
                                         statsHook={statsHook}
+                                        navBarHook={navBarHook}
                                    />
                               )}
                          </root.Screen>
@@ -238,7 +243,7 @@ export function RootNavigation({
 }
 
 export function StackNavigation(
-     { appData, dbHook, calendarHook, cameraHook }: HookData & NavData
+     { appData, dbHook, calendarHook, cameraHook, navBarHook }: HookData & NavData & { navBarHook: any }
 
 ) {
 
@@ -259,6 +264,7 @@ export function StackNavigation(
                               dbHook={dbHook}
                               calendarHook={calendarHook}
                               cameraHook={cameraHook}
+                              navBarHook={navBarHook}
                          />
                     )}
                </stack.Screen>

@@ -58,6 +58,10 @@ export const customTheme = {
     none:  "#F9F9F9",
     low:  '#E3F5FF',
     medium: '#E0F7EF',
-    high: '#D4E7E4'
+    high: '#D4E7E4',
+
+    flashAuto: '#dbc716ff',
+    flash: '#fffb00ff',
+    flashOff: '#000000ff'
   }
 };

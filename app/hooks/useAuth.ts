@@ -25,9 +25,20 @@ export function useAuth(
 ) {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [success, setSuccess] = useState("")
+    const [showSuccess, setShowSuccess] = useState(false)
+
+    // User information
     const [username, setUsername] = useState<string | null>(null);
     const [fullName, setFullName] = useState<string | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+
+
+    // Update password:
+    const [oldPass, setOldPass] = useState("")
+    const [newPass, setNewPass] = useState("")
+    const [confirmPass, setConfirmPass] = useState("")
 
     // Confirmation
     const [emailConfirmed, setEmailConfirmed] = useState<boolean | null>(null);
@@ -259,13 +270,16 @@ export function useAuth(
 
     const checkInputError = (password: string) => {
 
-        if (/[^a-zA-Z0-9 ]/.test(password)) {
-            setError("")
-            console.log("✅ String contains special characters");
+        if (password.length < 6) {
+            setError("Password needs to be longer than 6 characters. ")
         } else {
-            setError("Password does not include any special characters")
+            if (/[^a-zA-Z0-9 ]/.test(password)) {
+                setError("")
+                console.log("✅ String contains special characters");
+            } else {
+                setError("Password does not include any special characters")
+            }
         }
-
     }
 
     const signUp = async (email: string, password: string) => {
@@ -461,6 +475,78 @@ export function useAuth(
         }
     };
 
+    const passwordRecovery = async (email: string) => {
+        try {
+            setError(null)
+            setIsLoading(true)
+
+            if (!email || !email.includes('@')) {
+                setError('Please enter a valid email address');
+                return;
+            }
+
+
+            let { data, error } = await supabase.auth.resetPasswordForEmail(email)
+
+            if (error) {
+                console.error('Error resetting password:', error.message);
+                setError(error.message);
+                return false;
+            }
+
+            console.log("Sent recovery link to: ", email + data)
+        } catch (error) {
+            console.error('Unexpected error during password change:', error);
+            setError('An unexpected error occurred. Please try again later.');
+            return false;
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const changePassword = async () => {
+        try {
+            if (!session?.user?.email) throw new Error('No user email found');
+
+            if (newPass != confirmPass) {
+                setError('Passwords does not match')
+                return
+            }
+
+            const { error: signInError } = await supabase.auth.signInWithPassword({
+                email: session.user.email,
+                password: oldPass
+            });
+
+            if (signInError) {
+                setError("Current password is inccorect")
+                
+                return
+            }
+
+            const { error: updateError } = await supabase.auth.updateUser({
+                password: newPass
+                
+            })
+
+            if (updateError) { 
+                setError("Something: " + updateError) 
+            }
+            
+            return { success: true };
+        } catch (error) {
+            console.error("Password change error: ", error)
+            return { success: false, error }
+        } finally {
+            setOldPass("")
+            setNewPass("")
+            setConfirmPass("")
+            setShowSuccess(true)
+            setSuccess("Password updated successfully")
+            
+        }
+    }
+
     const changeEmail = async (newEmail: string) => {
         try {
             setError(null);
@@ -514,10 +600,24 @@ export function useAuth(
         error,
         isLoading,
         setError,
+        success,
+        setSuccess,
+        showSuccess,
+        setShowSuccess,
 
         // Start up
         loadSettings,
         initializeApp,
+
+        // Edit values
+        changePassword,
+
+        setConfirmPass,
+        confirmPass,
+        setOldPass,
+        oldPass,
+        setNewPass,
+        newPass,
 
         // Profile -> Values
         setUsername,

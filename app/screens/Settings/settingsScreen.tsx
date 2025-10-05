@@ -1,13 +1,14 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { ScrollView, View, Alert } from "react-native";
-import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal } from "react-native-paper";
+import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { CustomTextInput } from "@/app/components/textInput";
 import { ViewSet } from "@/app/components/UI/ViewSet";
+import { useFocusEffect } from "@react-navigation/native";
 
 
 
@@ -66,15 +67,84 @@ export function useAsync(appData: AppData, setAppData: (data: AppData) => void) 
     };
 }
 
+export function AuthUpdate(
+    { type, authHook, setEditSection }: HookData & { type?: string, setEditSection: any }
+) {
 
+    const { theme, styles } = useAppTheme()
+
+    const oldPassRef = useRef<any>(null);
+    const newPassRef = useRef<any>(null);
+    const confirmPassRef = useRef<any>(null)
+
+    const {
+        changePassword,
+        setOldPass,
+        setNewPass,
+        oldPass,
+        newPass,
+        confirmPass,
+        setConfirmPass,
+    } = authHook;
+
+    if (type === "email") return (
+        <View>
+
+        </View>
+
+    );
+
+    if (type === "pass") return (
+        <View>
+            <TextInput
+                ref={oldPassRef}
+                mode="outlined"
+                value={oldPass}
+                onChangeText={(text) => { setOldPass(text) }}
+                secureTextEntry
+                label="Current password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <TextInput
+                ref={newPassRef}
+                mode="outlined"
+                value={newPass}
+                onChangeText={(text) => { setNewPass(text) }}
+                secureTextEntry
+                label="New password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <TextInput
+                ref={confirmPassRef}
+                mode="outlined"
+                value={confirmPass}
+                onChangeText={(text) => { setConfirmPass(text) }}
+                secureTextEntry
+                label="Confirm password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditSection('none') }}>Cancel</Button>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={() => { changePassword() }}>Save</Button>
+            </View>
+        </View>
+    )
+    return (
+
+        <View>
+
+        </View>
+
+    );
+}
 
 export function SettingsScreen({
     appData,
     setAppData,
-    authHook
-}: NavData & HookData) {
+    authHook,
+    navBarHook
+}: NavData & HookData & { navBarHook: any }) {
     const { theme, styles } = useAppTheme();
-    const [showSuccessMessage, setShowSuccessMessage] = useState(false);
     const [editMode, setEditMode] = useState(false);
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
@@ -89,11 +159,23 @@ export function SettingsScreen({
 
     const { changeSettings } = useAsync(appData!, setAppData!)
 
+    const [editSection, setEditSection] = useState<'password' | 'email' | 'none'>('none')
+
     const {
         signOut,
         deleteAccount,
-        isLoading
+        isLoading,
+        success,
+        showSuccess,
+        setShowSuccess
     } = authHook;
+
+    // Close nav menu when settings screen is focused
+    useFocusEffect(
+        useCallback(() => {
+            navBarHook.setIsMenuVisible(false);
+        }, [navBarHook])
+    );
 
     const handleDeleteAccount = async () => {
         setShowDeleteDialog(false);
@@ -141,13 +223,14 @@ export function SettingsScreen({
     }
 
     return (
-        <View style={styles.background}>
+        <View style={{ flex: 1, marginTop: 16 }}>
 
             <ScrollView
                 style={styles.background}
                 contentContainerStyle={{ paddingBottom: 100 }}
                 showsVerticalScrollIndicator={false}
             >
+
 
                 {/* ACCOUNT SETTINGS */}
                 <ViewSet
@@ -159,6 +242,7 @@ export function SettingsScreen({
                     content={
                         <>
                             <View style={{ backgroundColor: theme.colors.surface, paddingVertical: 8 }}>
+
                                 <CustomTextInput
                                     mode="outlined"
                                     value={appData?.session?.user.email || ''}
@@ -216,9 +300,15 @@ export function SettingsScreen({
                                         buttonColor={theme.colors.primaryContainer}
                                         textColor={theme.colors.onPrimaryContainer}
                                         contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={() => { }}>
+                                        onPress={() => {
+                                            setEditSection('password')
+                                        }}>
                                         Change Password
                                     </Button>
+                                    {editSection === 'password' && (
+                                        <AuthUpdate authHook={authHook} type={"pass"} setEditSection={setEditSection} />
+
+                                    )}
 
                                     <Text variant="labelMedium">Danger Zone</Text>
 
@@ -254,7 +344,7 @@ export function SettingsScreen({
                     title="App Settings"
                     icon="cog-outline"
                     content={
-                        <View style={{ backgroundColor: theme.colors.surface , padding: 8}}>
+                        <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
                             {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
                             <Divider style={{ marginVertical: 4 }} />
                             {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}
@@ -273,7 +363,7 @@ export function SettingsScreen({
 
 
 
-                
+
 
 
 
@@ -309,16 +399,34 @@ export function SettingsScreen({
                         </Button>
                     </Dialog.Actions>
                 </Dialog>
+
+            </Portal>
+            <Portal>
+                <Dialog visible={showSuccess} onDismiss={() => setShowSuccess(false)}>
+                    <Dialog.Icon icon="check-circle" color={theme.colors.success} size={48} />
+                    <Dialog.Title style={{ textAlign: 'center' }}>Success!</Dialog.Title>
+                    <Dialog.Content>
+                        <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
+                            {success}
+                        </Text>
+                    </Dialog.Content>
+                    <Dialog.Actions style={{ justifyContent: 'center', paddingHorizontal: 16 }}>
+                        <Button
+                            onPress={() => {
+                                setShowSuccess(false)
+                            }}
+                            buttonColor={theme.colors.success}
+                            textColor={theme.colors.onSuccess}
+                            mode="contained"
+                        >
+                            Ok!
+                        </Button>
+                    </Dialog.Actions>
+
+                </Dialog>
             </Portal>
 
-            <Snackbar
-                visible={showSuccessMessage}
-                onDismiss={() => setShowSuccessMessage(false)}
-                duration={3000}
-                style={{ backgroundColor: theme.colors.primary }}
-            >
-                Profile updated successfully!
-            </Snackbar>
+
         </View>
     );
 }

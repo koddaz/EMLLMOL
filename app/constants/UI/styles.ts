@@ -332,9 +332,354 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         backgroundColor: theme.colors.surfaceVariant,
         borderRadius: 4,
         minHeight: 56, // Match TextInput height
-        paddingHorizontal: 8, 
+        paddingHorizontal: 8,
         marginTop: 6,
         justifyContent: 'center',
-    }
+    },
+
+    // FLEX LAYOUTS
+    rowContainer: {
+        flexDirection: 'row',
+    },
+    rowCenter: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    rowCenterBetween: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    rowCenterStart: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+    },
+    rowCenterEnd: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+    },
+    columnCenter: {
+        flexDirection: 'column',
+        alignItems: 'center',
+    },
+    columnCenterBetween: {
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    flex1: {
+        flex: 1,
+    },
+    flex2: {
+        flex: 2,
+    },
+    centerContent: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    alignCenter: {
+        alignItems: 'center',
+    },
+    justifyCenter: {
+        justifyContent: 'center',
+    },
+    justifyBetween: {
+        justifyContent: 'space-between',
+    },
+
+    // GAPS
+    gap4: {
+        gap: 4,
+    },
+    gap8: {
+        gap: 8,
+    },
+    gap12: {
+        gap: 12,
+    },
+    gap16: {
+        gap: 16,
+    },
+
+    // PADDING
+    padding4: {
+        padding: 4,
+    },
+    padding8: {
+        padding: 8,
+    },
+    padding12: {
+        padding: 12,
+    },
+    padding16: {
+        padding: 16,
+    },
+    paddingHorizontal4: {
+        paddingHorizontal: 4,
+    },
+    paddingHorizontal8: {
+        paddingHorizontal: 8,
+    },
+    paddingHorizontal12: {
+        paddingHorizontal: 12,
+    },
+    paddingHorizontal16: {
+        paddingHorizontal: 16,
+    },
+    paddingVertical4: {
+        paddingVertical: 4,
+    },
+    paddingVertical8: {
+        paddingVertical: 8,
+    },
+    paddingVertical12: {
+        paddingVertical: 12,
+    },
+    noPadding: {
+        padding: 0,
+    },
+
+    // MARGIN
+    margin4: {
+        margin: 4,
+    },
+    margin8: {
+        margin: 8,
+    },
+    margin12: {
+        margin: 12,
+    },
+    margin16: {
+        margin: 16,
+    },
+    marginHorizontal4: {
+        marginHorizontal: 4,
+    },
+    marginHorizontal8: {
+        marginHorizontal: 8,
+    },
+    marginHorizontal12: {
+        marginHorizontal: 12,
+    },
+    marginHorizontal16: {
+        marginHorizontal: 16,
+    },
+    marginVertical4: {
+        marginVertical: 4,
+    },
+    marginVertical12: {
+        marginVertical: 12,
+    },
+    marginVertical16: {
+        marginVertical: 16,
+    },
+    noMargin: {
+        margin: 0,
+    },
+
+    // BORDER RADIUS
+    roundedSmall: {
+        borderRadius: 4,
+    },
+    roundedMedium: {
+        borderRadius: 8,
+    },
+    roundedLarge: {
+        borderRadius: 12,
+    },
+    roundedXL: {
+        borderRadius: 16,
+    },
+    roundedFull: {
+        borderRadius: 9999,
+    },
+
+    // BORDER WIDTH
+    thinBorder: {
+        borderWidth: 1,
+    },
+    mediumBorder: {
+        borderWidth: 2,
+    },
+    thickBorder: {
+        borderWidth: 4,
+    },
+    noBorder: {
+        borderWidth: 0,
+    },
+
+    // BORDER COLOR
+    borderPrimary: {
+        borderColor: theme.colors.primary,
+    },
+    borderOutline: {
+        borderColor: theme.colors.outline,
+    },
+    borderError: {
+        borderColor: theme.colors.error,
+    },
+
+    // BACKGROUNDS
+    bgPrimary: {
+        backgroundColor: theme.colors.primary,
+    },
+    bgPrimaryContainer: {
+        backgroundColor: theme.colors.primaryContainer,
+    },
+    bgSecondary: {
+        backgroundColor: theme.colors.secondary,
+    },
+    bgSecondaryContainer: {
+        backgroundColor: theme.colors.secondaryContainer,
+    },
+    bgTertiary: {
+        backgroundColor: theme.colors.tertiary,
+    },
+    bgTertiaryContainer: {
+        backgroundColor: theme.colors.tertiaryContainer,
+    },
+    bgSurfaceVariant: {
+        backgroundColor: theme.colors.surfaceVariant,
+    },
+    bgError: {
+        backgroundColor: theme.colors.error,
+    },
+    bgErrorContainer: {
+        backgroundColor: theme.colors.errorContainer,
+    },
+    bgSuccess: {
+        backgroundColor: theme.colors.success,
+    },
+    bgWarning: {
+        backgroundColor: theme.colors.warning,
+    },
+    bgTransparent: {
+        backgroundColor: 'transparent',
+    },
+
+    // TEXT STYLES
+    textOnPrimary: {
+        color: theme.colors.onPrimary,
+    },
+    textOnPrimaryContainer: {
+        color: theme.colors.onPrimaryContainer,
+    },
+    textOnSecondary: {
+        color: theme.colors.onSecondary,
+    },
+    textOnSecondaryContainer: {
+        color: theme.colors.onSecondaryContainer,
+    },
+    textOnSurface: {
+        color: theme.colors.onSurface,
+    },
+    textOnSurfaceVariant: {
+        color: theme.colors.onSurfaceVariant,
+    },
+    textOnError: {
+        color: theme.colors.onError,
+    },
+    textPrimary: {
+        color: theme.colors.primary,
+    },
+    textError: {
+        color: theme.colors.error,
+    },
+    textCenter: {
+        textAlign: 'center',
+    },
+    textLeft: {
+        textAlign: 'left',
+    },
+    textRight: {
+        textAlign: 'right',
+    },
+    textJustify: {
+        textAlign: 'justify',
+    },
+
+    // FONT WEIGHT
+    fontLight: {
+        fontWeight: '300',
+    },
+    fontNormal: {
+        fontWeight: '400',
+    },
+    fontMedium: {
+        fontWeight: '500',
+    },
+    fontSemiBold: {
+        fontWeight: '600',
+    },
+    fontBold: {
+        fontWeight: 'bold',
+    },
+
+    // FONT SIZE
+    fontSize10: {
+        fontSize: 10,
+    },
+    fontSize12: {
+        fontSize: 12,
+    },
+    fontSize14: {
+        fontSize: 14,
+    },
+    fontSize16: {
+        fontSize: 16,
+    },
+    fontSize18: {
+        fontSize: 18,
+    },
+    fontSize20: {
+        fontSize: 20,
+    },
+    fontSize24: {
+        fontSize: 24,
+    },
+
+    // ELEVATION
+    elevation0: {
+        elevation: 0,
+    },
+    elevation2: {
+        elevation: 2,
+    },
+    elevation4: {
+        elevation: 4,
+    },
+    elevation8: {
+        elevation: 8,
+    },
+
+    // POSITIONING
+    positionAbsolute: {
+        position: 'absolute',
+    },
+    positionRelative: {
+        position: 'relative',
+    },
+
+    // OVERFLOW
+    overflowHidden: {
+        overflow: 'hidden',
+    },
+    overflowVisible: {
+        overflow: 'visible',
+    },
+
+    // DIMENSIONS
+    fullWidth: {
+        width: '100%',
+    },
+    fullHeight: {
+        height: '100%',
+    },
+    fullSize: {
+        width: '100%',
+        height: '100%',
+    },
 
 });
