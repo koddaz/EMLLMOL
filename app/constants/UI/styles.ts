@@ -241,10 +241,11 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
 
     // CALENDAR STYLES
     calendarNavigationContainer: {
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.primaryContainer,
         flexDirection: 'row',
         //padding: 8,
         alignItems: 'center',
+        paddingHorizontal: 8
 
         //marginHorizontal: 8,
     },

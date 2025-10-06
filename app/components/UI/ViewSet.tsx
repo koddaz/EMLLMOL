@@ -56,7 +56,7 @@ export function ViewSet({
     return (
         <View>
             <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.primaryContainer, padding: 8, gap: 8, borderTopStartRadius: topRadius ? topRadius : 0, borderTopEndRadius: topRadius ? topRadius : 0 }}>
-                <View style={{ flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center', alignContent: 'center' }}>
+                <View style={{ flexDirection: 'row', paddingHorizontal: 16, alignItems: 'center', alignContent: 'center' }}>
                     <View style={{ flexDirection: 'row', gap: 8, flex: 1, justifyContent: 'flex-start', alignItems: 'center' }}>
                         
                             <Icon source={icon} size={iconSize? iconSize : 20} color={iconColor? iconColor : theme.colors.onPrimaryContainer} />
@@ -81,7 +81,7 @@ export function ViewSet({
 
                 </View>
             </View>
-            <View style={{ backgroundColor: contentBgColor ? contentBgColor : theme.colors.surface, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 8, borderBottomStartRadius: bottomRadius && !footer ? bottomRadius : 0, borderBottomEndRadius: bottomRadius && !footer ? bottomRadius : 0 }}>
+            <View style={{ backgroundColor: contentBgColor ? contentBgColor : theme.colors.surface, paddingHorizontal: 16, paddingVertical: 16, borderBottomStartRadius: bottomRadius && !footer ? bottomRadius : 0, borderBottomEndRadius: bottomRadius && !footer ? bottomRadius : 0 }}>
                 {content}
             </View>
 

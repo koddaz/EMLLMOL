@@ -24,6 +24,7 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
 
      const { theme, styles } = useAppTheme();
      const {
+          settingsSection,
           setSettingsSection,
           statsSection,
           setStatsSection,
@@ -44,14 +45,18 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
      }, [isMenuVisible, slideAnim])
 
      const button = (title: string, section: string, icon: string, nav?: boolean,) => {
-          const isActive = nav ? false : statsSection === section;
+          const isActive = nav ? false : 
+               route === 'stats' ? statsSection === section :
+               route === 'settings' ? settingsSection === section :
+               false;
           return (
                <Pressable disabled={isActive ? true : false} style={{
 
                     justifyContent: 'center',
                     backgroundColor: theme.colors.surface,
-
-
+                    borderRadius: 8,
+                    elevation: 4,
+                    borderWidth: 1,
                }} onPress={() => {
                     if (nav) {
                          if (section === 'input') {
@@ -70,6 +75,8 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
                     <View style={{
                          alignItems: 'center',
                          justifyContent: 'center',
+                         padding: 16,
+                         minWidth: 75,
                     }}>
                          <Icon source={icon} size={20} color={isActive ? theme.colors.tertiary : theme.colors.onSurface} />
                          <Text
@@ -87,7 +94,7 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
           switch (route) {
                case 'stats':
                     return (
-                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
+                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
                               {button(/* title */ 'Summary', /* section */ 'summary', /* icon */ 'chart-box-outline')}
                               {button(/* title */ 'Carbs', /* section */ 'carbs', /* icon */ 'bread-slice-outline')}
                               {button(/* title */ 'Glucose', /* section */ 'glucose', /* icon */ 'water-outline')}
@@ -95,7 +102,7 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
                     );
                case 'main':
                     return (
-                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
+                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
                               {button(/* title */ 'Stats', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
                               {button(/* title */ 'New', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
                          </View>
@@ -103,7 +110,7 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
 
                case 'settings':
                     return (
-                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
+                         <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1, gap: 4 }}>
                               {button(/* title */ 'App', /* section */ 'app', /* icon */ 'cog')}
                               {button(/* title */ 'New', /* section */ 'profile', /* icon */ 'account')}
                          </View>
@@ -121,17 +128,16 @@ export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets
                flexDirection: 'row',
 
           }}>
-               <View style={{ flex: route === 'main' ? 2 : 1 }}></View>
-
+             
+               <View style={{flex:1}} />
                <Animated.View style={{
                     justifyContent: 'center',
                     height: 50,
-                    flex: 1,
+                    
 
                     marginRight: 8,
-                    backgroundColor: theme.colors.surface,
+                    backgroundColor: 'transparent',
                     borderRadius: 8,
-                    elevation: 4,
                     opacity: slideAnim,
                     transform: [{
                          scaleX: slideAnim

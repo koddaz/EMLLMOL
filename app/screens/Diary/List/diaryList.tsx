@@ -31,49 +31,32 @@ export function DiaryList(
   const currentPageEntries = useMemo(() =>
     dbHook.getEntriesForDate(calendarHook.selectedDate),
     [dbHook.diaryEntries, calendarHook.selectedDate]
-  ); 
+  );
 
 
   const renderEmptyComponent = () => (
-    <View style={[styles.container, { justifyContent: 'center', minHeight: 400 }]}>
-      <View style={styles.box}>
-        <ViewSet
-          title={"No entries yet..."}
-          icon={"clipboard-plus"}
-          content={
-            <View>
-              <Text variant="bodyMedium" style={{
-                color: theme.colors.onSurface, // text on white surfaces
-                textAlign: 'center',
-                lineHeight: 20
-              }}>
-                Start tracking your glucose and meals by tapping the + button below
-              </Text>
-            </View>
-          } />
-        {/* Header with primary container background for highlighted sections */}
-        <View style={styles.header}>
-          <View style={[styles.chip, { backgroundColor: theme.colors.primary }]}>
-            <MaterialCommunityIcons
-              name="clipboard-plus"
-              size={24}
-              color={theme.colors.onPrimary}
-            />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ViewSet
+        topRadius={12}
+        bottomRadius={12}
+        headerTextColor={theme.colors.onPrimaryContainer}
+        iconColor={theme.colors.onPrimaryContainer}
+        title={"No entries yet..."}
+        icon={"clipboard-plus"}
+        content={
+          <View>
+            <Text variant="bodyMedium" style={{
+              color: theme.colors.onSurface, // text on white surfaces
+              textAlign: 'justify',
+              lineHeight: 20
+            }}>
+              Start tracking your glucose and meals by tapping the "New" button in the menu
+            </Text>
           </View>
-          <Text variant="titleMedium" style={{
-            marginLeft: 8,
-            color: theme.colors.onSurface // text on primary container backgrounds
-          }}>
-            No entries yet
-          </Text>
-        </View>
-        {/* Content with surface background */}
-        <View style={styles.content}>
-
-        </View>
-        <View style={styles.footer}></View>
-      </View>
+        } />
     </View>
+
+
   );
 
   return (

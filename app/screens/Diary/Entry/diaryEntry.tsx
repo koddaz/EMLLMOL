@@ -49,7 +49,7 @@ export function DiaryEntryContent({
       {/* Date/Time Header */}
       <View style={{
         flexDirection: 'row',
-        alignItems: 'center',
+
         gap: 8,
         backgroundColor: theme.colors.primaryContainer,
         padding: 8,

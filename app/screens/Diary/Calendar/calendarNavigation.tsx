@@ -19,8 +19,8 @@ export function CalendarNavigation(
     return (
         <View style={styles.calendarNavigationContainer}>
             <IconButton
-                iconColor={theme.colors.primary}
-                size={28}
+                iconColor={theme.colors.onPrimaryContainer}
+                size={25}
                 icon="calendar-today"
                 mode="contained-tonal"
                 onPress={() => {
@@ -30,11 +30,12 @@ export function CalendarNavigation(
                 style={{
                     backgroundColor: 'transparent',
                     borderRadius: 12,
+                    
                 }}
             />
             <IconButton
-                iconColor={theme.colors.primary}
-                size={28}
+                iconColor={theme.colors.onPrimaryContainer}
+                size={25}
                 icon="chevron-left"
                 mode="contained-tonal"
                 onPress={() => calendarHook.navigateMonth('prev')}
@@ -45,7 +46,7 @@ export function CalendarNavigation(
             />
             <View style={[styles.container, { flex: 1, alignItems: 'center' }]}>
                 <Text variant="titleMedium" style={{
-                    color: theme.colors.onSurface,
+                    color: theme.colors.onPrimaryContainer,
                     fontWeight: '600',
                     letterSpacing: 0.25
                 }}>
@@ -56,10 +57,10 @@ export function CalendarNavigation(
                 </Text>
             </View>
             <IconButton
-                iconColor={disabled ? theme.colors.onSurfaceDisabled : theme.colors.primary}
-                size={28}
+                iconColor={disabled ? theme.colors.onSurfaceDisabled : theme.colors.onPrimaryContainer}
+                size={25}
                 icon="chevron-right"
-                mode="contained-tonal"
+                mode="contained"
                 onPress={() => calendarHook.navigateMonth('next')}
                 disabled={disabled}
                 style={{
