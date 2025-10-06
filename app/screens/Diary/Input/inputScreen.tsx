@@ -4,7 +4,7 @@ import { HookData, NavData } from '@/app/navigation/rootNav';
 import React, { useRef, useState } from 'react';
 import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { Button, Icon, IconButton, Text, TextInput } from 'react-native-paper';
-import { ImageRow } from '../../Camera/cameraScreen';
+import { CameraScreen, ImageRow } from '../../Camera/cameraScreen';
 import { ButtonPicker } from './components/buttonPicker';
 import { GlucosePicker } from './components/decimalPicker';
 import { ViewSet } from '@/app/components/UI/ViewSet';
@@ -20,14 +20,17 @@ export function InputScreen({
 
   const { theme, styles } = useAppTheme();
 
+
+  const { showCamera, toggleCamera } = cameraHook
+
   const {
     // Input Data
-    glucose, setGlucose, 
-    insulin, setInsulin, 
-    carbs, setCarbs, 
-    activity, setActivity, 
-    foodType, setFoodType, 
-    note, setNote, 
+    glucose, setGlucose,
+    insulin, setInsulin,
+    carbs, setCarbs,
+    activity, setActivity,
+    foodType, setFoodType,
+    note, setNote,
     foodOptions, activityOptions,
 
     // Boolean
@@ -38,7 +41,7 @@ export function InputScreen({
 
     // Functions
     saveDiaryEntry
-  
+
   } = dbHook
 
 
@@ -57,7 +60,7 @@ export function InputScreen({
     }
   }
 
-  
+
 
   const photoURIs = cameraHook.photoURIs || diaryData?.uri_array || [];
   const carbsRef = useRef<any>(null);
@@ -74,194 +77,198 @@ export function InputScreen({
   };
 
 
-  // Create preview diary data from current form state
-  const previewData: DiaryData = {
-    id: '',
-    created_at: new Date(),
-    glucose: parseFloat(glucose.toString()) || 0,
-    carbs: parseFloat(carbs) || 0,
-    insulin: parseFloat(insulin) || 0,
-    meal_type: foodType,
-    activity_level: activity,
-    note: note,
-    uri_array: photoURIs
-  };
+
+
+  if (showCamera) {
+    return (
+      <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 }}>
+        <CameraScreen appData={appData} cameraHook={cameraHook} navigation={navigation} />
+      </View>
+    );
+  }
 
 
 
   return (
 
 
-      <KeyboardAvoidingView
-        style={styles.background}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+    <KeyboardAvoidingView
+      style={styles.background}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
 
+    >
+      {currentSection === 1 && (
+        <ViewSet
+          headerBgColor={theme.colors.primaryContainer}
+          headerTextColor={theme.colors.onPrimaryContainer}
+          iconColor={theme.colors.onPrimaryContainer}
+          title="Glucose"
+          icon={"diabetes"}
+          content={
+            <View>
+              <GlucosePicker
+                selectedValue={glucose}
+                onValueChange={setGlucose}
+                appData={appData!}
+                height={72}
+                itemHeight={36}
+                dbHook={dbHook}
+              />
+            </View>
+          } />
+      )}
+
+
+
+      <ScrollView
+        style={{ flex: 1, marginTop: 0 }}
+        contentContainerStyle={{ paddingBottom: 20, marginTop: 0 }}
+        showsVerticalScrollIndicator={false}
+        nestedScrollEnabled={true}
       >
         {currentSection === 1 && (
+
           <ViewSet
-            headerBgColor={theme.colors.primary}
-            headerTextColor={theme.colors.onPrimary}
-            title="Glucose"
-            icon={"diabetes"}
+            headerBgColor={theme.colors.primaryContainer}
+            headerTextColor={theme.colors.onPrimaryContainer}
+            iconColor={theme.colors.onPrimaryContainer}
+            title="Meal Info"
+            icon="food"
             content={
-              <View>
-                <GlucosePicker
-                  selectedValue={glucose}
-                  onValueChange={setGlucose}
-                  appData={appData!}
-                  height={72}
-                  itemHeight={36}
+              <View >
+                <TextInput
+                  ref={carbsRef}
+                  label="carbs (g)"
+                  mode="outlined"
+                  maxLength={4}
+                  value={carbs}
+                  onChangeText={setCarbs}
+                  keyboardType='numeric'
+                  placeholder="Enter amount of carbs"
+                  onSubmitEditing={() => { insulinRef.current?.focus() }}
+                  returnKeyType="next"
+                  left={<TextInput.Icon icon={"bread-slice"} size={20} />}
+                  right={<TextInput.Affix text="g" />}
                 />
+                <TextInput
+
+                  ref={insulinRef}
+                  label="insulin (u)"
+                  mode="outlined"
+                  maxLength={4}
+                  value={insulin}
+                  onChangeText={setInsulin}
+                  keyboardType='numeric'
+                  placeholder="Enter amount of insulin"
+                  onSubmitEditing={() => { insulinRef.current?.blur() }}
+                  returnKeyType="done"
+                  left={<TextInput.Icon icon={"needle"} size={20} />}
+                  right={<TextInput.Affix text="units" />}
+                />
+
+                <ButtonPicker
+                  value={foodType}
+                  setValue={setFoodType}
+                  valueArray={foodOptions}
+                  iconName="food"
+                  label="meal type"
+                />
+
+                <ButtonPicker
+                  value={activity}
+                  setValue={setActivity}
+                  valueArray={activityOptions}
+                  iconName="run"
+                  label="activity level"
+                />
+
               </View>
             } />
         )}
 
-
-
-        <ScrollView
-          style={{ flex: 1, marginTop: 0 }}
-          contentContainerStyle={{ paddingBottom: 20, marginTop: 0 }}
-          showsVerticalScrollIndicator={false}
-          nestedScrollEnabled={true}
-        >
-          {currentSection === 1 && (
-
-            <ViewSet
-              title="Meal Info"
-              icon="food"
-              content={
-                <View >
-                  <TextInput
-                    ref={carbsRef}
-                    label="carbs (g)"
-                    mode="outlined"
-                    maxLength={4}
-                    value={carbs}
-                    onChangeText={setCarbs}
-                    keyboardType='numeric'
-                    placeholder="Enter amount of carbs"
-                    onSubmitEditing={() => { insulinRef.current?.focus() }}
-                    returnKeyType="next"
-                    left={<TextInput.Icon icon={"bread-slice"} size={20} />}
-                    right={<TextInput.Affix text="g" />}
-                  />
-                  <TextInput
-
-                    ref={insulinRef}
-                    label="insulin (u)"
-                    mode="outlined"
-                    maxLength={4}
-                    value={insulin}
-                    onChangeText={setInsulin}
-                    keyboardType='numeric'
-                    placeholder="Enter amount of insulin"
-                    onSubmitEditing={() => { insulinRef.current?.blur() }}
-                    returnKeyType="done"
-                    left={<TextInput.Icon icon={"needle"} size={20} />}
-                    right={<TextInput.Affix text="units" />}
-                  />
-
-                  <ButtonPicker
-                    value={foodType}
-                    setValue={setFoodType}
-                    valueArray={foodOptions}
-                    iconName="food"
-                    label="meal type"
-                  />
-
-                  <ButtonPicker
-                    value={activity}
-                    setValue={setActivity}
-                    valueArray={activityOptions}
-                    iconName="run"
-                    label="activity level"
-                  />
-
-                </View>
-              } />
-          )}
-
-          {currentSection === 2 && (
-            <ViewSet
-              title="Extra"
-              icon="plus-circle-outline"
-              content={
-                <View>
-                  <View style={{ flexDirection: 'row', marginBottom: 6, gap: 8, alignItems: 'center', }}>
-                    <View style={[styles.boxPicker, { flex: 1 }]}>
-                      <View style={styles.row}>
-                        <View style={{ paddingHorizontal: 4, width: 44 }}>
-                          <Icon source="camera" size={24} />
-                        </View>
-
-
-                        <View style={{ flex: 1 }}>
-                          {photoURIs.length === 0 ? (
-                            <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
-                              No photos added yet...
-                            </Text>) : (
-                            <ImageRow cameraHook={cameraHook} setSelectedItem={null} setPreview />
-                          )}
-                        </View>
-
-
-
+        {currentSection === 2 && (
+          <ViewSet
+            title="Extra"
+            icon="plus-circle-outline"
+            content={
+              <View>
+                <View style={{ flexDirection: 'row', marginBottom: 6, gap: 8, alignItems: 'center', }}>
+                  <View style={[styles.boxPicker, { flex: 1 }]}>
+                    <View style={styles.row}>
+                      <View style={{ paddingHorizontal: 4, width: 44 }}>
+                        <Icon source="camera" size={24} />
                       </View>
+
+
+                      <View style={{ flex: 1 }}>
+                        {photoURIs.length === 0 ? (
+                          <Text variant="bodyMedium" style={{ color: theme.colors.onSurface }}>
+                            No photos added yet...
+                          </Text>) : (
+                          <ImageRow cameraHook={cameraHook} setSelectedItem={null} setPreview />
+                        )}
+                      </View>
+
+
+
                     </View>
-                    <IconButton style={styles.iconButton} iconColor={theme.colors.onPrimary} icon="camera-plus-outline" onPress={() => { navigation.navigate('diary', { screen: 'camera' }) }} />
                   </View>
-
-                  <TextInput
-                    multiline={true}
-                    maxLength={150}
-                    mode="outlined"
-                    numberOfLines={5}
-                    contentStyle={{
-                      paddingTop: 12,
-                      paddingBottom: 8,
-                      paddingHorizontal: 8,
-                    }}
-                    style={{
-                      maxHeight: 100,
-                      minHeight: 100,
-                      flex: 1
-                    }}
-                    left={<TextInput.Icon icon={'note'} size={20} />}
-                    right={<TextInput.Affix text={`${note.length}/150`} />}
-                    value={note}
-                    onChangeText={setNote}
-
-
-
-                    placeholder="Add any notes about your meal or how you're feeling..."
-                  />
-
-
+                  <IconButton style={styles.iconButton} iconColor={theme.colors.onPrimary} icon="camera-plus-outline" onPress={() => { toggleCamera() }} />
                 </View>
-              } />
-          )}
 
-          {currentSection === 3 && (
-            <ViewSet
-              title={foodType.charAt(0).toUpperCase() + foodType.slice(1)}
-              icon={getMealIcon(foodType)}
-              content={
-                <DiaryEntryContent
-                  diaryData={previewData}
-                  appData={appData}
-                  calendarHook={calendarHook}
+                <TextInput
+                  multiline={true}
+                  maxLength={150}
+                  mode="outlined"
+                  numberOfLines={5}
+                  contentStyle={{
+                    paddingTop: 12,
+                    paddingBottom: 8,
+                    paddingHorizontal: 8,
+                  }}
+                  style={{
+                    maxHeight: 100,
+                    minHeight: 100,
+                    flex: 1
+                  }}
+                  left={<TextInput.Icon icon={'note'} size={20} />}
+                  right={<TextInput.Affix text={`${note.length}/150`} />}
+                  value={note}
+                  onChangeText={setNote}
+
+
+
+                  placeholder="Add any notes about your meal or how you're feeling..."
                 />
-              }
-            />
-          )}
 
 
-          <View style={styles.surface}>
-            <SectionButtons currentSection={currentSection} setCurrentSection={setCurrentSection} onSave={onSave} />
+              </View>
+            } />
+        )}
 
-          </View>
-          <View style={styles.container}>
+        {currentSection === 3 && (
+          <ViewSet
+            headerBgColor={theme.colors.primaryContainer}
+            title={foodType.charAt(0).toUpperCase() + foodType.slice(1)}
+            icon={getMealIcon(foodType)}
+            content={
+              <DiaryEntryContent
+                diaryData={diaryData}
+                appData={appData}
+                calendarHook={calendarHook}
+              />
+            }
+          />
+        )}
+
+        {currentSection === 4 && (
+          <CameraScreen appData={appData} cameraHook={cameraHook} navigation={navigation} />
+        )}
+        <View style={{ flex: 1, padding: 16 }}>
+          <SectionButtons currentSection={currentSection} setCurrentSection={setCurrentSection} onSave={onSave} />
+        </View>
+      </ScrollView>
 
 
 
@@ -272,20 +279,7 @@ export function InputScreen({
 
 
 
-
-
-
-
-
-
-
-
-
-          </View>
-
-        </ScrollView>
-
-      </KeyboardAvoidingView>
+    </KeyboardAvoidingView>
 
 
 

@@ -54,21 +54,21 @@ export default function Index() {
   }, [appData?.session?.user?.id]); // Only run when session user ID changes
 
   // Error state
-  if (authHook.error) {
-    return (
-      <SafeAreaProvider>
-        <PaperProvider theme={customTheme}>
-          <View style={styles.background}>
-            <View style={styles.container}>
-              <Text style={{ color: 'red', textAlign: 'center' }}>
-                Failed to initialize app: {authHook.error}
-              </Text>
-            </View>
-          </View>
-        </PaperProvider>
-      </SafeAreaProvider>
-    );
-  }
+  // if (authHook.error) {
+  //   return (
+  //     <SafeAreaProvider>
+  //       <PaperProvider theme={customTheme}>
+  //         <View style={styles.background}>
+  //           <View style={styles.container}>
+  //             <Text style={{ color: 'red', textAlign: 'center' }}>
+  //               Failed to initialize app: {authHook.error}
+  //             </Text>
+  //           </View>
+  //         </View>
+  //       </PaperProvider>
+  //     </SafeAreaProvider>
+  //   );
+  // }
 
   // Main render
   return (

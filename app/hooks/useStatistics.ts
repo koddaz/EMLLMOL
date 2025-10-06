@@ -5,7 +5,7 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
   // State management
   const [selectedPeriod, setSelectedPeriod] = useState(7);
   const [selectedMealTypes, setSelectedMealTypes] = useState(['breakfast', 'lunch', 'dinner', 'snack']);
-  const [currentSection, setCurrentSection] = useState<'summary' | 'carbs' | 'glucose'>('summary');
+
 
   // Meal type colors
   const mealColors = {
@@ -258,8 +258,6 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
     setSelectedPeriod,
     selectedMealTypes,
     setSelectedMealTypes,
-    currentSection,
-    setCurrentSection,
 
     // Constants
     mealColors,

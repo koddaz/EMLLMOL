@@ -32,6 +32,7 @@ export function useAuth(
     const [username, setUsername] = useState<string | null>(null);
     const [fullName, setFullName] = useState<string | null>(null);
     const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+    const [email, setEmail] = useState("")
 
 
 
@@ -268,18 +269,19 @@ export function useAuth(
         }
     };
 
-    const checkInputError = (password: string) => {
-
+    const checkInputError = (password: string): boolean => {
         if (password.length < 6) {
-            setError("Password needs to be longer than 6 characters. ")
-        } else {
-            if (/[^a-zA-Z0-9 ]/.test(password)) {
-                setError("")
-                console.log("✅ String contains special characters");
-            } else {
-                setError("Password does not include any special characters")
-            }
+            setError("Password needs to be longer than 6 characters.");
+            return false;
+        } 
+        
+        if (!/[^a-zA-Z0-9 ]/.test(password)) {
+            setError("Password must include at least one special character.");
+            return false;
         }
+        
+        setError("");
+        return true;
     }
 
     const signUp = async (email: string, password: string) => {
@@ -287,7 +289,10 @@ export function useAuth(
             setError(null);
             setIsLoading(true);
 
-            console.log('Signing up with redirect URL:', redirectTo);
+            // Validate password first
+            if (!checkInputError(password)) {
+                return; // Stop here if validation fails
+            }
 
             const { data, error } = await supabase.auth.signUp({
                 email,
@@ -308,7 +313,6 @@ export function useAuth(
             setError('An unexpected error occurred. Please try again later.');
         } finally {
             setIsLoading(false);
-
         }
     };
 
@@ -506,11 +510,22 @@ export function useAuth(
 
     const changePassword = async () => {
         try {
-            if (!session?.user?.email) throw new Error('No user email found');
+            setIsLoading(true);
+            setError(null);
 
-            if (newPass != confirmPass) {
-                setError('Passwords does not match')
-                return
+            if (!session?.user?.email) {
+                setError('No user email found');
+                return { success: false };
+            }
+
+            if (newPass !== confirmPass) {
+                setError('Passwords do not match');
+                return { success: false };
+            }
+
+            // Validate new password
+            if (!checkInputError(newPass)) {
+                return { success: false }; // Stop here if validation fails
             }
 
             const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -519,42 +534,42 @@ export function useAuth(
             });
 
             if (signInError) {
-                setError("Current password is inccorect")
-                
-                return
+                setError("Current password is incorrect");
+                return { success: false };
             }
 
             const { error: updateError } = await supabase.auth.updateUser({
                 password: newPass
-                
-            })
+            });
 
             if (updateError) { 
-                setError("Something: " + updateError) 
+                setError(`Password update failed: ${updateError.message}`);
+                return { success: false };
             }
             
+            setSuccess("Password updated successfully");
+            setShowSuccess(true);
             return { success: true };
         } catch (error) {
-            console.error("Password change error: ", error)
-            return { success: false, error }
+            console.error("Password change error: ", error);
+            setError('An unexpected error occurred. Please try again later.');
+            return { success: false, error };
         } finally {
-            setOldPass("")
-            setNewPass("")
-            setConfirmPass("")
-            setShowSuccess(true)
-            setSuccess("Password updated successfully")
-            
+            setIsLoading(false);
+            setOldPass("");
+            setNewPass("");
+            setConfirmPass("");
         }
     }
 
     const changeEmail = async (newEmail: string) => {
         try {
-            setError(null);
             setIsLoading(true);
+            setError(null);
 
             if (!newEmail || !newEmail.includes('@')) {
                 setError('Please enter a valid email address');
-                return;
+                return { success: false };
             }
 
             console.log('Changing email to:', newEmail);
@@ -566,16 +581,18 @@ export function useAuth(
             if (error) {
                 console.error('Error changing email:', error.message);
                 setError(error.message);
-                return false;
+                return { success: false };
             }
 
             console.log('Email change initiated successfully. Check both old and new email for confirmation.');
-            return true;
+            setSuccess("Email updated successfully");
+            setShowSuccess(true);
+            return { success: true };
 
         } catch (error) {
             console.error('Unexpected error during email change:', error);
             setError('An unexpected error occurred. Please try again later.');
-            return false;
+            return { success: false };
         } finally {
             setIsLoading(false);
         }
@@ -611,6 +628,9 @@ export function useAuth(
 
         // Edit values
         changePassword,
+        changeEmail,
+        email,
+        setEmail,
 
         setConfirmPass,
         confirmPass,
@@ -631,7 +651,6 @@ export function useAuth(
         signUp,
         signOut,
         deleteAccount,
-        changeEmail,
         getProfile,
         updateProfile,
 

@@ -78,46 +78,20 @@ export function RootNavigation({
                );
                case 'input': return (
 
-                    <View style={[styles.boxPicker, { position: "relative" }]}>
+                    <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
+                         <Image source={logo} resizeMethod="scale" style={{ width: 50, height: 50 }} />
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>New Entry</Text>
 
-                         <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 4, paddingHorizontal: 16 }}>
-                              <Text variant="titleLarge" style={{ color: theme.colors.onSurface, fontWeight: 'bold' }}>
-                                   {calendarHook.formatTime(new Date())}
-                              </Text>
-                              <Text variant="titleLarge" style={{
-                                   color: theme.colors.outline
-                              }}>||</Text>
-                              <Text variant="titleLarge" style={{ color: theme.colors.onSurface, fontWeight: 'bold' }}>
-                                   {calendarHook.formatDate(new Date())}
-                              </Text>
-                         </View>
-                         <Text
-                              variant="bodySmall"
-                              style={{
-                                   position: 'absolute',
-                                   top: -8,
-                                   left: 8,
-                                   backgroundColor: theme.colors.primaryContainer,
-                                   paddingHorizontal: 4,
-                                   borderRadius: 4,
-                                   borderColor: theme.colors.outline,
-                                   borderWidth: 0.5,
-                                   color: theme.colors.onPrimaryContainer,
-                                   fontSize: 12,
-                                   fontWeight: 'bold',
-                                   zIndex: 1
-                              }}
-                         >
-                              new entry
-                         </Text>
                     </View>
+
+
                )
           }
      }, [calendarHook, styles.boxPicker, theme.colors])
 
      const MainTopBar = useCallback(() => (
 
-          <Appbar.Header mode={"small"} style={{paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
+          <Appbar.Header mode={"small"} style={{ paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
                {(currentScreen === 'main') && (
 
                     <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
@@ -125,7 +99,7 @@ export function RootNavigation({
                )}
                {(currentScreen != 'main') && (
 
-                    <Appbar.BackAction style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.goBack() }} />
+                    <Appbar.Action icon={"chevron-left"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.goBack() }} />
                )}
                <Appbar.Content title={titleContainer(currentScreen!)} />
                {(currentScreen === 'main' || currentScreen === 'stats') && (
@@ -154,13 +128,13 @@ export function RootNavigation({
      return (
           <root.Navigator
                initialRouteName={isSignedIn ? "diary" : "auth"}
-               
+
                screenOptions={{
                     headerShown: currentScreen != 'camera' ? true : false,
                     header: () => MainTopBar(),
                }}
                tabBar={({ navigation, insets }) => (
-                    isSignedIn && (currentScreen === 'main' || currentScreen === 'stats') && (
+                    isSignedIn && (currentScreen === 'main' || currentScreen === 'stats' || currentScreen === 'settings') && (
                          <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} navBarHook={navBarHook} />
                     )
                )}>
@@ -182,7 +156,7 @@ export function RootNavigation({
                               }}
                          >
                               {(props) =>
-                                  <StackNavigation
+                                   <StackNavigation
                                         {...props}
                                         appData={appData}
                                         setAppData={setAppData}
@@ -193,8 +167,8 @@ export function RootNavigation({
                                    />
 
                               }
-                                   
-                              
+
+
                          </root.Screen>
 
                          <root.Screen

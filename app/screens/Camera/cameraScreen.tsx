@@ -1,8 +1,10 @@
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { HookData, NavData } from "@/app/navigation/rootNav";
+import { CameraView } from "expo-camera";
 import { useState } from "react";
 import { Dimensions, Image, TouchableOpacity, View } from "react-native";
 import { IconButton } from "react-native-paper";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 
 export function ImageRow(
@@ -150,8 +152,12 @@ export function CameraScreen(
     { cameraHook, navigation }: NavData & HookData
 ) {
     const { styles, theme } = useAppTheme();
-    const [preview, setPreview] = useState(false)
-    const [selectedItem, setSelectedItem] = useState()
+    const [preview, setPreview] = useState(false);
+    const [selectedItem, setSelectedItem] = useState();
+
+    const {toggleCamera} = cameraHook;
+
+    const insets = useSafeAreaInsets()
 
     if (preview && selectedItem) return (
         <View style={{ flex: 1 }}>
@@ -162,29 +168,30 @@ export function CameraScreen(
     return (
         <View style={{ flex: 1 }}>
 
-            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 1000 }}>
+            <View style={{ position: 'absolute', top: insets.top, left: 0, right: 0, zIndex: 1000 }}>
                 <ImageRow cameraHook={cameraHook} setSelectedItem={setSelectedItem} setPreview={setPreview} />
             </View>
 
-            <View style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }}>
-                {cameraHook.renderCamera()}
-            </View>
+
+
+            {cameraHook.renderCamera()}
+
 
             <View style={
                 {
                     position: 'absolute',
-                    bottom: 16,
+                    bottom: insets.bottom + 16,
                     left: 0,
                     right: 0,
                 }
             }>
-                <View style={{ flexDirection: 'row', flex: 1, zIndex: 1000, justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(10, 74, 0, 0.5)', paddingHorizontal: 16 }}>
+                <View style={{ flexDirection: 'row', zIndex: 1000, justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(10, 74, 0, 0.5)', paddingHorizontal: 16 }}>
                     <IconButton
                         iconColor={theme.colors.customWarning}
                         size={40}
                         icon="close"
                         mode="outlined"
-                        onPress={() => navigation.goBack()}
+                        onPress={() => toggleCamera()}
                         style={
                             {
                                 borderWidth: 3,

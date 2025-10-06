@@ -1,7 +1,7 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ScrollView, View, Alert } from "react-native";
+import { ScrollView, View, Alert, KeyboardAvoidingView, Platform } from "react-native";
 import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -78,23 +78,121 @@ export function AuthUpdate(
     const confirmPassRef = useRef<any>(null)
 
     const {
+        error,
+        setError,
         changePassword,
+        changeEmail,
         setOldPass,
         setNewPass,
         oldPass,
         newPass,
         confirmPass,
         setConfirmPass,
+        email,
+        setEmail
     } = authHook;
 
     if (type === "email") return (
         <View>
-
+            {error && (
+                <View style={{
+                    minHeight: 50,
+                    backgroundColor: theme.colors.errorContainer,
+                    padding: 12,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    justifyContent: 'center'
+                }}>
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                        {error}
+                    </Text>
+                </View>
+            )}
+            <TextInput
+                returnKeyType="done"
+                mode="outlined"
+                value={email}
+                onChangeText={(text) => { setEmail(text) }}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                label="New email address"
+                left={<TextInput.Icon icon="email-outline" color={theme.colors.onSurface} />}
+            />
+            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditSection('none') }}>Cancel</Button>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={async () => {
+                    const result = await changeEmail(email);
+                    if (result?.success) {
+                        setEditSection('none');
+                    }
+                }}>Save</Button>
+            </View>
         </View>
 
     );
 
     if (type === "pass") return (
+        <View>
+            {error && (
+                <View style={{
+                    minHeight: 50,
+                    backgroundColor: theme.colors.errorContainer,
+                    padding: 12,
+                    borderRadius: 8,
+                    marginBottom: 8,
+                    justifyContent: 'center'
+                }}>
+                    <Text variant="bodyMedium" style={{ color: theme.colors.onErrorContainer }}>
+                        {error}
+                    </Text>
+                </View>
+            )}
+            <TextInput
+                ref={oldPassRef}
+                onSubmitEditing={() => newPassRef.current?.focus()}
+                returnKeyType="next"
+                mode="outlined"
+                value={oldPass}
+                onChangeText={(text) => { setOldPass(text) }}
+                secureTextEntry
+                label="Current password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <TextInput
+                ref={newPassRef}
+                onSubmitEditing={() => confirmPassRef.current?.focus()}
+                returnKeyType="next"
+                mode="outlined"
+                value={newPass}
+                onChangeText={(text) => { setNewPass(text) }}
+                secureTextEntry
+                label="New password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <TextInput
+                ref={confirmPassRef}
+                onSubmitEditing={() => confirmPassRef.current?.blur()}
+                returnKeyType="done"
+                mode="outlined"
+                value={confirmPass}
+                onChangeText={(text) => { setConfirmPass(text) }}
+                secureTextEntry
+                label="Confirm password"
+                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
+            />
+            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditSection('none') }}>Cancel</Button>
+                <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={async () => {
+                    const result = await changePassword();
+                    if (result?.success) {
+                        setEditSection('none');
+                    }
+                }}>Save</Button>
+            </View>
+        </View>
+    );
+
+    return (
         <View>
             <TextInput
                 ref={oldPassRef}
@@ -105,36 +203,7 @@ export function AuthUpdate(
                 label="Current password"
                 left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
             />
-            <TextInput
-                ref={newPassRef}
-                mode="outlined"
-                value={newPass}
-                onChangeText={(text) => { setNewPass(text) }}
-                secureTextEntry
-                label="New password"
-                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
-            />
-            <TextInput
-                ref={confirmPassRef}
-                mode="outlined"
-                value={confirmPass}
-                onChangeText={(text) => { setConfirmPass(text) }}
-                secureTextEntry
-                label="Confirm password"
-                left={<TextInput.Icon icon="lock" color={theme.colors.onSurface} />}
-            />
-            <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
-                <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditSection('none') }}>Cancel</Button>
-                <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={() => { changePassword() }}>Save</Button>
-            </View>
         </View>
-    )
-    return (
-
-        <View>
-
-        </View>
-
     );
 }
 
@@ -146,7 +215,6 @@ export function SettingsScreen({
 }: NavData & HookData & { navBarHook: any }) {
     const { theme, styles } = useAppTheme();
     const [editMode, setEditMode] = useState(false);
-    const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
     const [username, setUsername] = useState(appData?.profile?.username || '');
     const [fullName, setFullName] = useState(appData?.profile?.fullName || '');
@@ -160,6 +228,21 @@ export function SettingsScreen({
     const { changeSettings } = useAsync(appData!, setAppData!)
 
     const [editSection, setEditSection] = useState<'password' | 'email' | 'none'>('none')
+    const { settingsSection, setSettingsSection } = navBarHook;
+
+    // Unified notification state
+    const [notification, setNotification] = useState<{
+        visible: boolean;
+        type: 'success' | 'error' | 'delete';
+        title: string;
+        message: string;
+        onConfirm?: () => void;
+    }>({
+        visible: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
 
     const {
         signOut,
@@ -167,27 +250,57 @@ export function SettingsScreen({
         isLoading,
         success,
         showSuccess,
-        setShowSuccess
+        setShowSuccess,
+        error
     } = authHook;
 
-    // Close nav menu when settings screen is focused
+    const { setIsMenuVisible } = navBarHook;
+
+    // Helper functions for notifications
+    const showNotification = (type: 'success' | 'error' | 'delete', title: string, message: string, onConfirm?: () => void) => {
+        setNotification({
+            visible: true,
+            type,
+            title,
+            message,
+            onConfirm
+        });
+    };
+
+    const hideNotification = () => {
+        setNotification(prev => ({ ...prev, visible: false }));
+    };
+
+    // Watch for auth success/error changes
+    useEffect(() => {
+        if (showSuccess && success) {
+            showNotification('success', 'Success!', success);
+            setShowSuccess(false);
+        }
+        // Never show password/email errors in portal - only in inline display
+    }, [showSuccess, success, setShowSuccess]);
+
     useFocusEffect(
         useCallback(() => {
-            navBarHook.setIsMenuVisible(false);
-        }, [navBarHook])
+            // Open menu when screen is focused
+            setIsMenuVisible(true);
+
+            // Close menu when screen is unfocused (cleanup)
+            return () => {
+                setIsMenuVisible(false);
+            };
+        }, [setIsMenuVisible])
     );
 
     const handleDeleteAccount = async () => {
-        setShowDeleteDialog(false);
+        hideNotification();
         const success = await deleteAccount();
         if (!success) {
-            Alert.alert(
-                'Error',
-                'Failed to delete account. Please try again later.',
-                [{ text: 'OK' }]
-            );
+            showNotification('error', 'Error', 'Failed to delete account. Please try again later.');
         }
     };
+
+
 
 
     const renderRadioButtons = (title: string, firstValue: string, secondValue: string, currentValue: string, settingKey: keyof AppData["settings"], setValue: (value: string) => void) => {
@@ -223,137 +336,157 @@ export function SettingsScreen({
     }
 
     return (
-        <View style={{ flex: 1, marginTop: 16 }}>
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'padding'}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 150}
+            enabled={true}>
 
             <ScrollView
                 style={styles.background}
                 contentContainerStyle={{ paddingBottom: 100 }}
                 showsVerticalScrollIndicator={false}
             >
-
-
                 {/* ACCOUNT SETTINGS */}
-                <ViewSet
-                    title="Account"
-                    icon="account"
-                    headerButton={true}
-                    headerButtonIcon={editMode ? "pencil-off" : "pencil"}
-                    onPress={() => { setEditMode(!editMode) }}
-                    content={
-                        <>
-                            <View style={{ backgroundColor: theme.colors.surface, paddingVertical: 8 }}>
+                {settingsSection === 'profile' && (
+                    <ViewSet
+                        title="Account"
+                        icon="account"
+                        headerBgColor={theme.colors.primaryContainer}
+                        headerTextColor={theme.colors.onPrimaryContainer}
+                        iconColor={theme.colors.onPrimaryContainer}
+                        headerButton={true}
+                        headerButtonIcon={editMode ? "pencil-off" : "pencil"}
+                        onPress={() => { setEditMode(!editMode) }}
+                        content={
+                            <>
+                                <View style={{ backgroundColor: theme.colors.surface, paddingVertical: 8 }}>
 
-                                <CustomTextInput
-                                    mode="outlined"
-                                    value={appData?.session?.user.email || ''}
-                                    onChangeText={() => { }}
-                                    label="Email"
-                                    disabled={true}
-                                    leftIcon={"email"}
-                                    dense
-                                />
-                                <CustomTextInput
-                                    mode="outlined"
-                                    value={username}
-                                    onChangeText={setUsername}
-                                    label="Username"
-                                    disabled={!editMode}
-                                    leftIcon={"account"}
-                                    dense
-                                />
-                                <CustomTextInput
-                                    mode="outlined"
-                                    value={fullName}
-                                    onChangeText={setFullName}
-                                    label="Full Name"
-                                    disabled={!editMode}
-                                    leftIcon={"account-details"}
-                                    dense
-                                />
+                                    <CustomTextInput
+                                        mode="outlined"
+                                        value={appData?.session?.user.email || ''}
+                                        onChangeText={() => { }}
+                                        label="Email"
+                                        disabled={true}
+                                        leftIcon={"email"}
+                                        dense
+                                    />
+                                    <CustomTextInput
+                                        mode="outlined"
+                                        value={username}
+                                        onChangeText={setUsername}
+                                        label="Username"
+                                        disabled={!editMode}
+                                        leftIcon={"account"}
+                                        dense
+                                    />
+                                    <CustomTextInput
+                                        mode="outlined"
+                                        value={fullName}
+                                        onChangeText={setFullName}
+                                        label="Full Name"
+                                        disabled={!editMode}
+                                        leftIcon={"account-details"}
+                                        dense
+                                    />
 
-
-                            </View>
-                            {editMode && (
-                                <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
-                                    <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditMode(false) }}>Cancel</Button>
-                                    <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={() => { }}>Save</Button>
-                                </View>
-                            )}
-                            <View style={{ backgroundColor: theme.colors.surface }}>
-                                <View style={{ backgroundColor: theme.colors.surface, gap: 8, marginTop: 8 }}>
-                                    <Text variant="labelMedium">Update Account</Text>
-
-                                    <Button
-                                        icon="email-alert-outline"
-                                        mode="contained"
-                                        style={{ borderRadius: 8 }}
-                                        buttonColor={theme.colors.primaryContainer}
-                                        textColor={theme.colors.onPrimaryContainer}
-                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={() => { }}>
-                                        Change Email
-                                    </Button>
-                                    <Button
-                                        icon="lock-reset"
-                                        mode="contained"
-                                        style={{ borderRadius: 8 }}
-                                        buttonColor={theme.colors.primaryContainer}
-                                        textColor={theme.colors.onPrimaryContainer}
-                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={() => {
-                                            setEditSection('password')
-                                        }}>
-                                        Change Password
-                                    </Button>
-                                    {editSection === 'password' && (
-                                        <AuthUpdate authHook={authHook} type={"pass"} setEditSection={setEditSection} />
-
-                                    )}
-
-                                    <Text variant="labelMedium">Danger Zone</Text>
-
-                                    <Button
-                                        icon="account-remove-outline"
-                                        mode="contained"
-                                        style={{ borderRadius: 8 }}
-                                        buttonColor={theme.colors.error}
-                                        textColor={theme.colors.onError}
-                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={() => setShowDeleteDialog(true)}>
-                                        Delete Account
-                                    </Button>
-                                    <Button
-                                        icon="logout"
-                                        mode="contained"
-                                        style={{ borderRadius: 8 }}
-                                        buttonColor={theme.colors.warning}
-                                        textColor={theme.colors.onWarning}
-                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                        onPress={signOut}>
-                                        Sign Out
-                                    </Button>
 
                                 </View>
+                                {editMode && (
+                                    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
+                                        <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditMode(false) }}>Cancel</Button>
+                                        <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={() => { }}>Save</Button>
+                                    </View>
+                                )}
+                                <View style={{ backgroundColor: theme.colors.surface }}>
+                                    <View style={{ backgroundColor: theme.colors.surface, gap: 8, marginTop: 8 }}>
+                                        <Text variant="labelMedium">Update Account</Text>
+
+                                        {/* <Button
+                                            icon="email-alert-outline"
+                                            mode="contained"
+                                            style={{ borderRadius: 8 }}
+                                            buttonColor={theme.colors.primaryContainer}
+                                            textColor={theme.colors.onPrimaryContainer}
+                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                            onPress={() => { setEditSection('email') }}>
+                                            Change Email
+                                        </Button>
+                                        {editSection === 'email' && (
+                                            <AuthUpdate authHook={authHook} type="email" setEditSection={setEditSection} />
+                                        )} */}
+                                        <Button
+                                            icon="lock-reset"
+                                            mode="contained"
+                                            style={{ borderRadius: 8 }}
+                                            buttonColor={theme.colors.primaryContainer}
+                                            textColor={theme.colors.onPrimaryContainer}
+                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                            onPress={() => {
+                                                setEditSection('password')
+                                            }}>
+                                            Change Password
+                                        </Button>
+                                        {editSection === 'password' && (
+                                            <AuthUpdate authHook={authHook} type={"pass"} setEditSection={setEditSection} />
+                                        )}
+
+                                        <Text variant="labelMedium">Danger Zone</Text>
+
+                                        <Button
+                                            icon="account-remove-outline"
+                                            mode="contained"
+                                            style={{ borderRadius: 8 }}
+                                            buttonColor={theme.colors.error}
+                                            textColor={theme.colors.onError}
+                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                            onPress={() => showNotification(
+                                                'delete',
+                                                'Delete Account?',
+                                                'This action cannot be undone. All your data including diary entries and profile information will be permanently deleted.',
+                                                handleDeleteAccount
+                                            )}>
+                                            Delete Account
+                                        </Button>
+                                        <Button
+                                            icon="logout"
+                                            mode="contained"
+                                            style={{ borderRadius: 8 }}
+                                            buttonColor={theme.colors.warning}
+                                            textColor={theme.colors.onWarning}
+                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                            onPress={signOut}>
+                                            Sign Out
+                                        </Button>
+
+                                    </View>
+                                </View>
+                            </>
+
+
+                        } />
+                )}
+
+                {settingsSection === 'app' && (
+                    <ViewSet
+                        title="App Settings"
+                        icon="cog-outline"
+                        headerBgColor={theme.colors.primaryContainer}
+                        headerTextColor={theme.colors.onPrimaryContainer}
+                        iconColor={theme.colors.onPrimaryContainer}
+                        content={
+                            <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
+                                {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
+                                <Divider style={{ marginVertical: 4 }} />
+                                {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}
+                                <Divider style={{ marginVertical: 4 }} />
+                                {renderRadioButtons('Clock format', '24h', '12h', clockFormat!, 'clockFormat', setClockFormat)}
+                                <Divider style={{ marginVertical: 4 }} />
+                                {renderRadioButtons('Date format', 'en', 'us', dateFormat!, 'dateFormat', setDateFormat)}
                             </View>
-                        </>
+                        } />
+                )}
 
-
-                    } />
-
-                <ViewSet
-                    title="App Settings"
-                    icon="cog-outline"
-                    content={
-                        <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
-                            {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
-                            <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}
-                            <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Clock format', '24h', '12h', clockFormat!, 'clockFormat', setClockFormat)}
-                            <Divider style={{ marginVertical: 4 }} />
-                            {renderRadioButtons('Date format', 'en', 'us', dateFormat!, 'dateFormat', setDateFormat)}
-                        </View>
-                    } />
 
 
 
@@ -372,62 +505,70 @@ export function SettingsScreen({
             </ScrollView>
 
             <Portal>
-                <Dialog visible={showDeleteDialog} onDismiss={() => setShowDeleteDialog(false)}>
-                    <Dialog.Icon icon="alert-circle" color={theme.colors.error} size={48} />
-                    <Dialog.Title style={{ textAlign: 'center' }}>Delete Account?</Dialog.Title>
+                <Dialog visible={notification.visible} onDismiss={hideNotification}>
+                    <Dialog.Icon
+                        icon={
+                            notification.type === 'success' ? 'check-circle' :
+                                notification.type === 'error' ? 'alert-circle' :
+                                    'alert-circle'
+                        }
+                        color={
+                            notification.type === 'success' ? theme.colors.success :
+                                notification.type === 'error' ? theme.colors.error :
+                                    theme.colors.error
+                        }
+                        size={48}
+                    />
+                    <Dialog.Title style={{ textAlign: 'center' }}>
+                        {notification.title}
+                    </Dialog.Title>
                     <Dialog.Content>
                         <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
-                            This action cannot be undone. All your data including diary entries and profile information will be permanently deleted.
+                            {notification.message}
                         </Text>
                     </Dialog.Content>
-                    <Dialog.Actions style={{ justifyContent: 'space-between', paddingHorizontal: 16 }}>
-                        <Button
-                            onPress={() => setShowDeleteDialog(false)}
-                            textColor={theme.colors.onSurface}
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            onPress={handleDeleteAccount}
-                            buttonColor={theme.colors.error}
-                            textColor={theme.colors.onError}
-                            mode="contained"
-                            loading={isLoading}
-                            disabled={isLoading}
-                        >
-                            Delete Forever
-                        </Button>
-                    </Dialog.Actions>
-                </Dialog>
-
-            </Portal>
-            <Portal>
-                <Dialog visible={showSuccess} onDismiss={() => setShowSuccess(false)}>
-                    <Dialog.Icon icon="check-circle" color={theme.colors.success} size={48} />
-                    <Dialog.Title style={{ textAlign: 'center' }}>Success!</Dialog.Title>
-                    <Dialog.Content>
-                        <Text variant="bodyLarge" style={{ textAlign: 'center' }}>
-                            {success}
-                        </Text>
-                    </Dialog.Content>
-                    <Dialog.Actions style={{ justifyContent: 'center', paddingHorizontal: 16 }}>
+                    <Dialog.Actions style={{
+                        justifyContent: notification.type === 'delete' ? 'space-between' : 'center',
+                        paddingHorizontal: 16
+                    }}>
+                        {notification.type === 'delete' && (
+                            <Button
+                                onPress={hideNotification}
+                                textColor={theme.colors.onSurface}
+                            >
+                                Cancel
+                            </Button>
+                        )}
                         <Button
                             onPress={() => {
-                                setShowSuccess(false)
+                                if (notification.onConfirm) {
+                                    notification.onConfirm();
+                                } else {
+                                    hideNotification();
+                                }
                             }}
-                            buttonColor={theme.colors.success}
-                            textColor={theme.colors.onSuccess}
+                            buttonColor={
+                                notification.type === 'success' ? theme.colors.success :
+                                    notification.type === 'error' ? theme.colors.primary :
+                                        theme.colors.error
+                            }
+                            textColor={
+                                notification.type === 'success' ? theme.colors.onSuccess :
+                                    notification.type === 'error' ? theme.colors.onPrimary :
+                                        theme.colors.onError
+                            }
                             mode="contained"
+                            loading={notification.type === 'delete' && isLoading}
+                            disabled={notification.type === 'delete' && isLoading}
                         >
-                            Ok!
+                            {notification.type === 'delete' ? 'Delete Forever' : 'OK'}
                         </Button>
                     </Dialog.Actions>
-
                 </Dialog>
             </Portal>
 
 
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 

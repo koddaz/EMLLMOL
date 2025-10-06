@@ -16,7 +16,8 @@ interface GlucosePickerProps {
     disabled?: boolean;
     height?: number;
     itemHeight?: number;
-    appData?: AppData
+    appData?: AppData;
+    dbHook?: any
 }
 
 // Updated component using the stylesheet
@@ -26,12 +27,20 @@ export function GlucosePicker({
     onValueChange,
     disabled = false,
     height = 160,
-    itemHeight = 32
+    itemHeight = 32,
+    dbHook
 }: GlucosePickerProps) {
     const { theme } = useAppTheme();
     const styles = createGlucosePickerStyles(theme, height, itemHeight);
+    
+    const wholeNumberRef = useRef<FlatList>(null);
+    const decimalRef = useRef<FlatList>(null);
+    const mgdlRef = useRef<FlatList>(null);
 
     const ismmol = appData?.settings.glucose === "mmol";
+
+    // Use dbHook glucose value if available, otherwise fall back to selectedValue
+    const currentGlucoseValue = dbHook?.glucose ?? selectedValue;
 
     // mg/dL ranges from 20-466 (integer values)
     const mgdlNumbers = Array.from({ length: 447 }, (_, i) => i + 20);
@@ -66,12 +75,45 @@ export function GlucosePicker({
         }
     };
 
-    const mmolValues = initializemmolValues(selectedValue);
-    const mgdlValue = initializeMgdlValue(selectedValue);
+    const mmolValues = initializemmolValues(currentGlucoseValue);
+    const mgdlValue = initializeMgdlValue(currentGlucoseValue);
 
     const [mmolNumber, setmmolNumber] = useState(mmolValues.whole);
     const [decimal, setDecimal] = useState(mmolValues.decimal);
     const [mgdlNumber, setMgdlNumber] = useState(mgdlValue);
+
+    // Update internal state when glucose value changes
+    useEffect(() => {
+        const newMmolValues = initializemmolValues(currentGlucoseValue);
+        const newMgdlValue = initializeMgdlValue(currentGlucoseValue);
+        
+        setmmolNumber(newMmolValues.whole);
+        setDecimal(newMmolValues.decimal);
+        setMgdlNumber(newMgdlValue);
+
+        // Scroll FlatLists to correct positions
+        setTimeout(() => {
+            if (ismmol) {
+                const wholeIndex = Math.max(0, mmolNumbers.indexOf(newMmolValues.whole));
+                const decimalIndex = Math.max(0, mmolDecimals.indexOf(newMmolValues.decimal));
+                
+                wholeNumberRef.current?.scrollToIndex({
+                    index: wholeIndex,
+                    animated: false
+                });
+                decimalRef.current?.scrollToIndex({
+                    index: decimalIndex,
+                    animated: false
+                });
+            } else {
+                const mgdlIndex = Math.max(0, mgdlNumbers.indexOf(newMgdlValue));
+                mgdlRef.current?.scrollToIndex({
+                    index: mgdlIndex,
+                    animated: false
+                });
+            }
+        }, 100);
+    }, [currentGlucoseValue, ismmol, dbHook?.glucose]);
 
     useEffect(() => {
         if (disabled) return;

@@ -55,7 +55,7 @@ export function ViewSet({
 
     return (
         <View>
-            <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.primary, padding: 8, gap: 8, borderTopStartRadius: topRadius ? topRadius : 0, borderTopEndRadius: topRadius ? topRadius : 0 }}>
+            <View style={{ backgroundColor: headerBgColor ? headerBgColor : theme.colors.primaryContainer, padding: 8, gap: 8, borderTopStartRadius: topRadius ? topRadius : 0, borderTopEndRadius: topRadius ? topRadius : 0 }}>
                 <View style={{ flexDirection: 'row', paddingHorizontal: 8, alignItems: 'center', alignContent: 'center' }}>
                     <View style={{ flexDirection: 'row', gap: 8, flex: 1, justifyContent: 'flex-start', alignItems: 'center' }}>
                         
@@ -63,7 +63,7 @@ export function ViewSet({
                         
                         
                             <Text variant={titleSize? titleSize : 'titleMedium'} style={{
-                                color: headerTextColor ? headerTextColor : theme.colors.onPrimary
+                                color: headerTextColor ? headerTextColor : theme.colors.onPrimaryContainer
                             }}>{title}</Text>
 
                             {titleText && (
@@ -86,7 +86,7 @@ export function ViewSet({
             </View>
 
             {footer && (
-                <View style={{backgroundColor: headerBgColor ? headerBgColor : theme.colors.primary, padding: 8, borderBottomStartRadius: bottomRadius && footer ? bottomRadius : 0, borderBottomEndRadius: bottomRadius && footer ? bottomRadius : 0}}>
+                <View style={{backgroundColor: headerBgColor ? headerBgColor : theme.colors.primaryContainer, padding: 8, borderBottomStartRadius: bottomRadius && footer ? bottomRadius : 0, borderBottomEndRadius: bottomRadius && footer ? bottomRadius : 0}}>
                     {footer}
                 </View>
 

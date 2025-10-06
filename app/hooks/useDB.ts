@@ -244,7 +244,7 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
       console.log('✅ Entries refreshed successfully');
 
       // Clear form
-      setGlucose("");
+      setGlucose(appData?.settings.glucose === "mmol" ? 5.6 : 100);
       setCarbs("");
       setInsulin("");
       setNote("");

@@ -14,13 +14,12 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
     const {
         selectedPeriod,
         setSelectedPeriod,
-        currentSection,
         medianGlucose,
         summaryStats,
         mealColors,
     } = statsHook;
 
-    const { setIsMenuVisible } = navBarHook;
+    const { setIsMenuVisible, statsSection, setStatsSection } = navBarHook;
 
     useFocusEffect(
         useCallback(() => {
@@ -91,7 +90,7 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
 
     const renderStats = () => {
 
-        if (currentSection === 'glucose') {
+        if (statsSection === 'glucose') {
             return (
 
                 <ViewSet
@@ -106,7 +105,7 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
 
 
             );
-        } else if (currentSection === 'carbs') {
+        } else if (statsSection === 'carbs') {
             return (
                 <ViewSet
                     title="Carbohydrates"
@@ -124,7 +123,7 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
                 />
 
             );
-        } else if (currentSection === 'summary') {
+        } else if (statsSection === 'summary') {
             return (
                 <>
                     <ViewSet
@@ -148,6 +147,9 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
                     <ViewSet
                         title="Meal Break Down"
                         icon="food"
+                        footer={
+                            <></>
+                        }
                         content={
 
                             <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -214,7 +216,7 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
             <SegmentedButtons
                 value={selectedPeriod.toString()}
                 onValueChange={handlePeriodChange}
-                style={{ marginBottom: 8 }}
+                
 
                 buttons={[
                     {
@@ -273,7 +275,7 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
                     },
                 ]}
             />
-            <View style={{ flex: 1, marginTop: 16 }}>
+            <View style={{ flex: 1}}>
                 {renderStats()}
 
             </View>

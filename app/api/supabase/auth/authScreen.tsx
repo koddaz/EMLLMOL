@@ -21,8 +21,6 @@ export default function AuthScreen() {
     const styles = customStyles(theme);
     const insets = useSafeAreaInsets();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
     const [isSignIn, setIsSignIn] = useState(true);
     const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
 

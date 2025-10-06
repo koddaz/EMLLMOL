@@ -6,19 +6,32 @@ import { Icon, Text } from "react-native-paper";
 export function useNavBar() {
      const [isMenuVisible, setIsMenuVisible] = useState(false)
 
+     const [settingsSection, setSettingsSection] = useState<"app" | "profile">("app")
+     const [statsSection, setStatsSection] = useState<'summary' | 'carbs' | 'glucose'>('summary');
+
 
      return {
+          statsSection, setStatsSection,
+
+          settingsSection, setSettingsSection,
 
           setIsMenuVisible,
           isMenuVisible
      }
 }
 
-export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook }: { insets: any, navigation: any, route: string, statsHook: any, navBarHook: any }) {
+export function BottomNavBar({ insets, navigation, route, navBarHook }: { insets: any, navigation: any, route: string, statsHook: any, navBarHook: any }) {
 
      const { theme, styles } = useAppTheme();
-     const { currentSection, setCurrentSection } = statsHook
-     const {isMenuVisible, setIsMenuVisible, toggleMenu} = navBarHook
+     const {
+          setSettingsSection,
+          statsSection,
+          setStatsSection,
+     } = navBarHook
+
+
+     const { isMenuVisible, setIsMenuVisible } = navBarHook
+
      const slideAnim = useRef(new Animated.Value(0)).current
 
 
@@ -31,14 +44,14 @@ export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook 
      }, [isMenuVisible, slideAnim])
 
      const button = (title: string, section: string, icon: string, nav?: boolean,) => {
-          const isActive = nav ? false : currentSection === section;
+          const isActive = nav ? false : statsSection === section;
           return (
                <Pressable disabled={isActive ? true : false} style={{
-                    
+
                     justifyContent: 'center',
                     backgroundColor: theme.colors.surface,
 
-  
+
                }} onPress={() => {
                     if (nav) {
                          if (section === 'input') {
@@ -48,8 +61,10 @@ export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook 
                               setIsMenuVisible(!isMenuVisible)
                               navigation.navigate(section);
                          }
+                    } else if (section === 'summary' || section === 'carbs' || section === 'glucose') {
+                         setStatsSection(section);
                     } else {
-                         setCurrentSection(section);
+                         setSettingsSection(section)
                     }
                }}>
                     <View style={{
@@ -72,7 +87,7 @@ export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook 
           switch (route) {
                case 'stats':
                     return (
-                         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1}}>
+                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
                               {button(/* title */ 'Summary', /* section */ 'summary', /* icon */ 'chart-box-outline')}
                               {button(/* title */ 'Carbs', /* section */ 'carbs', /* icon */ 'bread-slice-outline')}
                               {button(/* title */ 'Glucose', /* section */ 'glucose', /* icon */ 'water-outline')}
@@ -80,11 +95,19 @@ export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook 
                     );
                case 'main':
                     return (
-                         <View style={{flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1}}>
+                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
                               {button(/* title */ 'Stats', /* section */ 'stats', /* icon */ 'chart-bar', /* nav? */ true)}
                               {button(/* title */ 'New', /* section */ 'input', /* icon */ 'note-plus-outline', /* nav? */ true)}
-                        </View>
+                         </View>
                     );
+
+               case 'settings':
+                    return (
+                         <View style={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', flex: 1 }}>
+                              {button(/* title */ 'App', /* section */ 'app', /* icon */ 'cog')}
+                              {button(/* title */ 'New', /* section */ 'profile', /* icon */ 'account')}
+                         </View>
+                    )
                default:
                     return null;
           }
@@ -96,28 +119,28 @@ export function BottomNavBar({ insets, navigation, route, statsHook, navBarHook 
                bottom: insets.bottom + 32,
                right: insets.right + 16,
                flexDirection: 'row',
-               
+
           }}>
-               <View style={{flex: route === 'main' ? 2 : 1}}></View>
-               
-                    <Animated.View style={{
-                         justifyContent: 'center',
-                         height: 50,
-                         flex: 1,
-                         
-                         marginRight: 8,
-                         backgroundColor: theme.colors.surface,
-                         borderRadius: 8,
-                         elevation: 4,
-                         opacity: slideAnim,
-                         transform: [{
-                              scaleX: slideAnim
-                         }],
-                         transformOrigin: 'right center',
-                    }}>
-                         {renderButtons(route)}
-                    </Animated.View>
-               
+               <View style={{ flex: route === 'main' ? 2 : 1 }}></View>
+
+               <Animated.View style={{
+                    justifyContent: 'center',
+                    height: 50,
+                    flex: 1,
+
+                    marginRight: 8,
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 8,
+                    elevation: 4,
+                    opacity: slideAnim,
+                    transform: [{
+                         scaleX: slideAnim
+                    }],
+                    transformOrigin: 'right center',
+               }}>
+                    {renderButtons(route)}
+               </Animated.View>
+
                <Pressable style={{
                     width: 50,
                     height: 50,

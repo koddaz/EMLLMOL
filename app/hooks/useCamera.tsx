@@ -5,12 +5,14 @@ import { useRef, useState, useCallback, useMemo } from "react";
 import { Alert, View } from "react-native";
 import { Button, Text, useTheme } from "react-native-paper";
 import { useAppTheme } from "../constants/UI/theme";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export function useCamera(appData: AppData | null) {
 
   const {theme} = useAppTheme();
 
   const [showCamera, setShowCamera] = useState(false);
+      const insets = useSafeAreaInsets()
 
   const toggleCamera = () => {
     setShowCamera(!showCamera);
@@ -84,7 +86,7 @@ export function useCamera(appData: AppData | null) {
 
     console.log('📷 Permission granted - rendering CameraView');
     return (
-      <CameraView style={{flex: 1}} flash={flash} ref={cameraRef} />
+      <CameraView style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} flash={flash} ref={cameraRef} />
     );
   }
 
