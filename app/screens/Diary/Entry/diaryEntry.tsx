@@ -1,4 +1,3 @@
-import { ViewSet } from "@/app/components/UI/ViewSet";
 import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { HookData, NavData } from "@/app/navigation/rootNav";
@@ -45,15 +44,15 @@ export function DiaryEntryContent({
   }
 
   return (
-    <View style={{ gap: 4 }}>
+    <View style={{ gap: 8 }}>
       {/* Date/Time Header */}
       <View style={{
         flexDirection: 'row',
 
         gap: 8,
         backgroundColor: theme.colors.primaryContainer,
-        padding: 8,
-        borderRadius: 4
+        padding: 12,
+        borderRadius: 8
       }}>
         <Icon source="clock" size={20} color={theme.colors.onPrimaryContainer} />
         <Text variant="bodyLarge" style={{ color: theme.colors.onPrimaryContainer, fontWeight: 'bold' }}>
@@ -69,15 +68,15 @@ export function DiaryEntryContent({
       <PhotoScroll diaryData={diaryData} />
 
       {/* Metrics Section */}
-      <View style={{ flexDirection: 'row', gap: 4 }}>
-        <View style={{ flex: 2, gap: 4 }}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={{ flex: 2, gap: 8 }}>
           {/* Glucose */}
           <View style={{
             flexDirection: 'row',
             gap: 8,
             backgroundColor: theme.colors.secondaryContainer,
-            padding: 8,
-            borderRadius: 4,
+            padding: 12,
+            borderRadius: 8,
           }}>
             <Icon source="diabetes" color={theme.colors.onSecondaryContainer} size={20} />
             <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
@@ -90,8 +89,8 @@ export function DiaryEntryContent({
             flexDirection: 'row',
             gap: 8,
             backgroundColor: theme.colors.secondaryContainer,
-            padding: 8,
-            borderRadius: 4
+            padding: 12,
+            borderRadius: 8
           }}>
             <Icon source="needle" color={theme.colors.onSecondaryContainer} size={20} />
             <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
@@ -104,8 +103,8 @@ export function DiaryEntryContent({
             flexDirection: 'row',
             gap: 8,
             backgroundColor: theme.colors.secondaryContainer,
-            padding: 8,
-            borderRadius: 4
+            padding: 12,
+            borderRadius: 8
           }}>
             <Icon source="bread-slice-outline" color={theme.colors.onSecondaryContainer} size={20} />
             <Text variant="bodyMedium" style={{ color: theme.colors.onSecondaryContainer, fontWeight: 'bold' }}>
@@ -121,7 +120,7 @@ export function DiaryEntryContent({
           paddingHorizontal: 16,
           justifyContent: 'center',
           alignItems: 'center',
-          borderRadius: 4,
+          borderRadius: 8,
           borderWidth: 1,
           borderColor: theme.colors.outline
         }}>
@@ -141,8 +140,8 @@ export function DiaryEntryContent({
           flexDirection: 'row',
           gap: 8,
           backgroundColor: theme.colors.tertiaryContainer,
-          padding: 8,
-          borderRadius: 4
+          padding: 12,
+          borderRadius: 8
         }}>
           <Icon source="note-outline" color={theme.colors.onTertiaryContainer} size={20} />
           <Text variant="bodyMedium" style={{
@@ -171,7 +170,7 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined })
   const renderImageItem = ({ item, index }: { item: { uri: string | null, isPlaceholder: boolean }, index: number }) => {
     if (item.isPlaceholder) {
       return (
-        <View style={{ height: 200, borderWidth: 1, borderRadius: 4, width: containerWidth, justifyContent: 'center', alignItems: 'center' }}>
+        <View style={{ height: 200, borderWidth: 1, borderRadius: 8, width: containerWidth, justifyContent: 'center', alignItems: 'center', borderColor: theme.colors.outline }}>
           <MaterialCommunityIcons name="image-off" size={48} color={theme.colors.onSurfaceVariant} />
           <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
             No image available
@@ -181,10 +180,11 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined })
     }
 
     return (
-      <View style={{ width: containerWidth, borderWidth: 1, borderRadius: 4, }}>
+      <View style={{ width: containerWidth, borderWidth: 1, borderRadius: 8, overflow: 'hidden', borderColor: theme.colors.outline }}>
         <Image
           source={{ uri: item.uri || 'https://via.placeholder.com/150' }}
           style={{ height: 200, width: containerWidth }}
+          resizeMode="cover"
         />
       </View>
     );
@@ -229,7 +229,7 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined })
                   width: 6,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                  backgroundColor: index === currentImageIndex ? theme.colors.onPrimary : theme.colors.backdrop.replace('0.4', '0.6'),
                   marginHorizontal: 2,
                 }}
               />
@@ -299,48 +299,48 @@ export function DiaryEntry({
 
   return (
     <View style={styles.container}>
-
-      <ViewSet
-        topRadius={12}
-        bottomRadius={12}
-        title={diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1)}
-        icon={getMealIcon(diaryData?.meal_type || '')}
-        headerButton={true}
-        headerButtonIcon={"close"}
-        onPress={() => {
-          dbHook.toggleEntry()
-        }}
-        content={
- 
-            <DiaryEntryContent
-              diaryData={diaryData}
-              appData={appData}
-              calendarHook={calendarHook}
-            />
-
-        }
-        footer={
-          <View style={{ flexDirection: 'row', gap: 8, justifyContent: 'flex-end' }}>
+      <Card mode="elevated" elevation={3} style={{ marginVertical: 0, borderRadius: 12 }}>
+        <Card.Title
+          title={diaryData?.meal_type?.charAt(0).toUpperCase() + diaryData!.meal_type?.slice(1)}
+          titleVariant="titleLarge"
+          left={(props) => <Icon {...props} source={getMealIcon(diaryData?.meal_type || '')} size={28} color={theme.colors.secondary} />}
+          right={(props) => (
             <IconButton
-              icon="delete"
-              size={20}
-              iconColor={theme.colors.onError}
-              style={[styles.iconButton, { backgroundColor: theme.colors.error }]}
-              onPress={handleDelete}
-              disabled={dbHook.isLoading}
+              {...props}
+              icon="close"
+              size={24}
+              iconColor={theme.colors.onSurfaceVariant}
+              onPress={() => {
+                dbHook.toggleEntry()
+              }}
             />
-            <IconButton
-              icon="pencil"
-              size={20}
-              iconColor={theme.colors.onPrimary}
-              style={[styles.iconButton]}
-              onPress={handleEdit}
-            />
-          </View>
-        }
-      />
-
-
+          )}
+        />
+        <Card.Content style={{ paddingHorizontal: 16 }}>
+          <DiaryEntryContent
+            diaryData={diaryData}
+            appData={appData}
+            calendarHook={calendarHook}
+          />
+        </Card.Content>
+        <Card.Actions style={{ justifyContent: 'flex-end', gap: 8, paddingHorizontal: 16, paddingBottom: 16 }}>
+          <IconButton
+            icon="delete"
+            size={22}
+            iconColor={theme.colors.onError}
+            style={[styles.iconButton, { backgroundColor: theme.colors.error }]}
+            onPress={handleDelete}
+            disabled={dbHook.isLoading}
+          />
+          <IconButton
+            icon="pencil"
+            size={22}
+            iconColor={theme.colors.onSecondaryContainer}
+            style={[styles.iconButton, { backgroundColor: theme.colors.secondaryContainer }]}
+            onPress={handleEdit}
+          />
+        </Card.Actions>
+      </Card>
     </View>
   );
 }

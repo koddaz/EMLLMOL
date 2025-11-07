@@ -49,18 +49,20 @@ export function useAuth(
 
     // Load settings from AsyncStorage
     const loadSettings = async () => {
-        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
+        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat, savedThemeMode] = await Promise.all([
             AsyncStorage.getItem('weight'),
             AsyncStorage.getItem('glucose'),
             AsyncStorage.getItem('clockformat'),
-            AsyncStorage.getItem('dateformat')
+            AsyncStorage.getItem('dateformat'),
+            AsyncStorage.getItem('themeMode')
         ]);
 
         return {
             weight: savedWeight || 'kg',
             glucose: savedGlucose || 'mmol',
             clockFormat: savedClockFormat || '24h',
-            dateFormat: savedDateFormat || 'en'
+            dateFormat: savedDateFormat || 'en',
+            themeMode: (savedThemeMode as 'light' | 'dark') || 'light'
         };
     };
 
@@ -410,6 +412,21 @@ export function useAuth(
                 setUsername(data.username);
                 setFullName(data.full_name);
                 setAvatarUrl(data.avatar_url);
+
+                // Update appData with profile information
+                if (setAppData) {
+                    setAppData((prev: AppData | null) => {
+                        if (!prev) return null;
+                        return {
+                            ...prev,
+                            profile: {
+                                username: data.username || '',
+                                fullName: data.full_name || '',
+                                avatarUrl: data.avatar_url || ''
+                            }
+                        };
+                    });
+                }
             } else {
                 console.warn('No profile data found for user:', session?.user.id);
             }

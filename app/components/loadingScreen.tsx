@@ -20,7 +20,7 @@ export function LoadingScreen() {
               height: width * 0.6,
               marginBottom: 32,
             }}
-            source={require('../../assets/images/logo.png')}
+            source={require('../../assets/images/logo1.png')}
             resizeMode="contain"
           />
         </View>

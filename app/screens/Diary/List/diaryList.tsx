@@ -3,11 +3,10 @@ import { DiaryData } from "@/app/constants/interface/diaryData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { FlatList, View } from "react-native";
-import { Text } from "react-native-paper";
+import { Text, Card, Icon } from "react-native-paper";
 import { DiaryListItem } from "./diaryListItem";
 import { useMemo } from "react";
 import { AppData } from "@/app/constants/interface/appData";
-import { ViewSet } from "@/app/components/UI/ViewSet";
 
 export function DiaryList(
   { toggleEntry,
@@ -35,28 +34,23 @@ export function DiaryList(
 
 
   const renderEmptyComponent = () => (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ViewSet
-        topRadius={12}
-        bottomRadius={12}
-        headerTextColor={theme.colors.onPrimaryContainer}
-        iconColor={theme.colors.onPrimaryContainer}
-        title={"No entries yet..."}
-        icon={"clipboard-plus"}
-        content={
-          <View>
-            <Text variant="bodyMedium" style={{
-              color: theme.colors.onSurface, // text on white surfaces
-              textAlign: 'justify',
-              lineHeight: 20
-            }}>
-              Start tracking your glucose and meals by tapping the "New" button in the menu
-            </Text>
-          </View>
-        } />
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 }}>
+      <Card mode="elevated" elevation={2} style={{ width: '100%' }}>
+        <Card.Title 
+          title="No entries yet..."
+          left={(props) => <Icon {...props} source="clipboard-plus" size={24} color={theme.colors.primary} />}
+        />
+        <Card.Content>
+          <Text variant="bodyMedium" style={{
+            color: theme.colors.onSurface,
+            textAlign: 'justify',
+            lineHeight: 20
+          }}>
+            Start tracking your glucose and meals by tapping the "New" button in the menu
+          </Text>
+        </Card.Content>
+      </Card>
     </View>
-
-
   );
 
   return (

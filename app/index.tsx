@@ -3,25 +3,29 @@ import {
   useNavigationContainerRef,
 } from '@react-navigation/native';
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Text, View } from "react-native";
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider } from 'react-native-paper';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { LoadingScreen } from './components/loadingScreen';
 import { AppData } from './constants/interface/appData';
-import { customTheme, useAppTheme } from './constants/UI/theme';
+import { customLightTheme, customDarkTheme, customTheme } from './constants/UI/theme';
 import { RootNavigation } from './navigation/rootNav';
 import { useDB } from './hooks/useDB';
 import { useAuth } from './hooks/useAuth';
 
 export default function Index() {
-  const { theme, styles } = useAppTheme();
-
   const [appData, setAppData] = useState<AppData | null>(null);
   const navigationRef = useNavigationContainerRef();
   const routeNameRef = useRef<string>('Main');
   const [currentScreen, setCurrentScreen] = useState<string>('Main');
+
+  // Select theme based on appData settings
+  const activeTheme = useMemo(() => {
+    if (!appData?.settings?.themeMode) return customLightTheme;
+    return appData.settings.themeMode === 'dark' ? customDarkTheme : customLightTheme;
+  }, [appData?.settings?.themeMode]);
 
   const authHook = useAuth(appData?.session, true, setAppData)
 
@@ -76,37 +80,36 @@ export default function Index() {
 
 
     <GestureHandlerRootView>
-      <PaperProvider theme={customTheme}>
+      <PaperProvider theme={activeTheme}>
         <SafeAreaProvider >
+          <SafeAreaView style={{ flex: 1, backgroundColor: activeTheme.colors.primaryContainer }}>
+            <NavigationContainer
+              ref={navigationRef}
+              onReady={() => {
+                const routeName = navigationRef.current?.getCurrentRoute()?.name;
+                if (routeName) {
+                  routeNameRef.current = routeName;
+                  setCurrentScreen(routeName);
+                }
+              }}
+              onStateChange={async () => {
+                const previousRouteName = routeNameRef.current;
+                const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
 
+                if (previousRouteName !== currentRouteName && currentRouteName) {
+                  // Screen changed
+                  routeNameRef.current = currentRouteName;
+                  setCurrentScreen(currentRouteName);
+                  console.log('Screen changed from', previousRouteName, 'to', currentRouteName);
+                }
+              }}
+            >
 
-          <NavigationContainer
-            ref={navigationRef}
-            onReady={() => {
-              const routeName = navigationRef.current?.getCurrentRoute()?.name;
-              if (routeName) {
-                routeNameRef.current = routeName;
-                setCurrentScreen(routeName);
-              }
-            }}
-            onStateChange={async () => {
-              const previousRouteName = routeNameRef.current;
-              const currentRouteName = navigationRef.current?.getCurrentRoute()?.name;
+    
+                <RootNavigation appData={appData} setAppData={setAppData} currentScreen={currentScreen} authHook={authHook} />
 
-              if (previousRouteName !== currentRouteName && currentRouteName) {
-                // Screen changed
-                routeNameRef.current = currentRouteName;
-                setCurrentScreen(currentRouteName);
-                console.log('Screen changed from', previousRouteName, 'to', currentRouteName);
-              }
-            }}
-          >
-            
-
-              <RootNavigation appData={appData} setAppData={setAppData} currentScreen={currentScreen} authHook={authHook} />
-
-          
-          </NavigationContainer>
+            </NavigationContainer>
+          </SafeAreaView>
 
         </SafeAreaProvider>
 

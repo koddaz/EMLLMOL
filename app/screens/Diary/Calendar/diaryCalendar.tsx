@@ -3,7 +3,6 @@ import { View } from "react-native";
 import { CalendarNavigation } from "./calendarNavigation";
 import { CalendarGrid } from "./calendarGrid";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { ViewSet } from "@/app/components/UI/ViewSet";
 
 
 

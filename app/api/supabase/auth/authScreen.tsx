@@ -2,13 +2,12 @@ import { customStyles } from "@/app/constants/UI/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useEffect, useState, useRef } from "react";
 import { Dimensions, Image, KeyboardAvoidingView, ScrollView, StyleSheet, View, Platform } from "react-native";
-import { Button, Icon, IconButton, Surface, Text, TextInput, useTheme } from "react-native-paper";
+import { Button, Icon, IconButton, Surface, Text, TextInput, useTheme, Card } from "react-native-paper";
 import { supabase } from "../supabase";
 import { useAuth } from "@/app/hooks/useAuth";
 import { TermsScreen } from "@/app/screens/TermsScreen";
 import { InformationScreen } from "@/app/screens/InformationScreen";
 import { useAppTheme } from "@/app/constants/UI/theme";
-import { ViewSet } from "@/app/components/UI/ViewSet";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomTextInput } from "@/app/components/textInput";
 
@@ -156,73 +155,67 @@ export function SignUpScreen(
                         <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
                     </View>
                 )}
-                <ViewSet
-                    title="Sign Up"
-                    icon="clipboard-account-outline"
-                    content={
-                        <View style={{ gap: 8 }}>
-
-                            <TextInput
-                                value={email}
-                                onChangeText={setEmail}
-                                mode="outlined"
-                                label="Email"
-                                placeholder="Enter your email"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                left={<TextInput.Icon icon="email" />}
-                                returnKeyType="next"
-                                ref={emailRef}
-                                onSubmitEditing={() => passwordRef.current?.focus()}
-                            />
-                            <TextInput
-                                value={password}
-                                mode="outlined"
-                                onChangeText={setPassword}
-                                label="Password"
-                                placeholder="Enter your passowrd"
-                                secureTextEntry={true}
-                                left={<TextInput.Icon icon="lock" />}
-                                returnKeyType="next"
-                                ref={passwordRef}
-                                onSubmitEditing={() => confirmPasswordRef.current.focus()}
-                            />
-
-                            <TextInput
-                                value={confirmPassword}
-                                mode="outlined"
-                                onChangeText={setConfirmPassword}
-                                label="Confirm Password"
-                                error={password != confirmPassword}
-                                placeholder="Confirm your password"
-                                secureTextEntry={true}
-                                left={<TextInput.Icon icon="lock" />}
-                                returnKeyType="done"
-                                ref={confirmPasswordRef}
-                                onSubmitEditing={() => confirmPasswordRef.current?.blur()}
-                            />
-                            <View style={{ flexDirection: 'row' }}>
-                                <View style={{ flex: 1 }} />
-                                <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignUp}>Sign Up</Button>
-                            </View>
+                <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
+                    <Card.Title 
+                        title="Sign Up"
+                        left={(props) => <Icon {...props} source="clipboard-account-outline" size={24} color={theme.colors.primary} />}
+                    />
+                    <Card.Content style={{ gap: 8 }}>
+                        <TextInput
+                            value={email}
+                            onChangeText={setEmail}
+                            mode="outlined"
+                            label="Email"
+                            placeholder="Enter your email"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            left={<TextInput.Icon icon="email" />}
+                            returnKeyType="next"
+                            ref={emailRef}
+                            onSubmitEditing={() => passwordRef.current?.focus()}
+                        />
+                        <TextInput
+                            value={password}
+                            mode="outlined"
+                            onChangeText={setPassword}
+                            label="Password"
+                            placeholder="Enter your passowrd"
+                            secureTextEntry={true}
+                            left={<TextInput.Icon icon="lock" />}
+                            returnKeyType="next"
+                            ref={passwordRef}
+                            onSubmitEditing={() => confirmPasswordRef.current.focus()}
+                        />
+                        <TextInput
+                            value={confirmPassword}
+                            mode="outlined"
+                            onChangeText={setConfirmPassword}
+                            label="Confirm Password"
+                            error={password != confirmPassword}
+                            placeholder="Confirm your password"
+                            secureTextEntry={true}
+                            left={<TextInput.Icon icon="lock" />}
+                            returnKeyType="done"
+                            ref={confirmPasswordRef}
+                            onSubmitEditing={() => confirmPasswordRef.current?.blur()}
+                        />
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flex: 1 }} />
+                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignUp}>Sign Up</Button>
                         </View>
-                    }
-                    footer={
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 8 }}>
-                            <Button
-                                mode="text"
-                                onPress={() => {
-                                    setIsSignIn(true);
-                                    setError(null);
-                                }}
-                                labelStyle={{ color: theme.colors.onPrimary }}
-                            >
-                                Already have an account? Sign In
-                            </Button>
-
-                        </View>
-                    }
-                />
+                    </Card.Content>
+                    <Card.Actions style={{ justifyContent: 'flex-end' }}>
+                        <Button
+                            mode="text"
+                            onPress={() => {
+                                setIsSignIn(true);
+                                setError(null);
+                            }}
+                        >
+                            Already have an account? Sign In
+                        </Button>
+                    </Card.Actions>
+                </Card>
             </ScrollView>
         </KeyboardAvoidingView>
     )
@@ -282,63 +275,54 @@ export function SignInScreen(
                         <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
                     </View>
                 )}
-                <ViewSet
-                    title="Sign In"
-                    icon="clipboard-account-outline"
-                    content={
-                        <View style={{ gap: 8 }}>
-
-                            <TextInput
-                                value={email}
-                                onChangeText={setEmail}
-                                mode="outlined"
-                                label="Email"
-                                placeholder="Enter your email"
-                                keyboardType="email-address"
-                                autoCapitalize="none"
-                                left={<TextInput.Icon icon="email" />}
-                                returnKeyType="next"
-                                ref={emailRef}
-                                onSubmitEditing={() => passwordRef.current?.focus()}
-                            />
-                            <TextInput
-                                value={password}
-                                mode="outlined"
-                                onChangeText={setPassword}
-                                label="Password"
-                                placeholder="Enter your passowrd"
-                                secureTextEntry={true}
-                                left={<TextInput.Icon icon="lock" />}
-                                returnKeyType="next"
-                                ref={passwordRef}
-                                onSubmitEditing={() => passwordRef.current.blur()}
-                            />
-                            <View style={{ flexDirection: 'row' }}>
-                                <View style={{ flex: 1 }} />
-                                <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignIn}>Sign In</Button>
-                            </View>
-
-
+                <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
+                    <Card.Title 
+                        title="Sign In"
+                        left={(props) => <Icon {...props} source="clipboard-account-outline" size={24} color={theme.colors.primary} />}
+                    />
+                    <Card.Content style={{ gap: 8 }}>
+                        <TextInput
+                            value={email}
+                            onChangeText={setEmail}
+                            mode="outlined"
+                            label="Email"
+                            placeholder="Enter your email"
+                            keyboardType="email-address"
+                            autoCapitalize="none"
+                            left={<TextInput.Icon icon="email" />}
+                            returnKeyType="next"
+                            ref={emailRef}
+                            onSubmitEditing={() => passwordRef.current?.focus()}
+                        />
+                        <TextInput
+                            value={password}
+                            mode="outlined"
+                            onChangeText={setPassword}
+                            label="Password"
+                            placeholder="Enter your passowrd"
+                            secureTextEntry={true}
+                            left={<TextInput.Icon icon="lock" />}
+                            returnKeyType="next"
+                            ref={passwordRef}
+                            onSubmitEditing={() => passwordRef.current.blur()}
+                        />
+                        <View style={{ flexDirection: 'row' }}>
+                            <View style={{ flex: 1 }} />
+                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignIn}>Sign In</Button>
                         </View>
-                    }
-                    footer={
-                        <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', paddingRight: 8 }}>
-
-                            <Button
-                                mode="text"
-                                onPress={() => {
-                                    setIsSignIn(false);
-                                    setError(null);
-                                }}
-                                textColor={theme.colors.onPrimary}
-                                labelStyle={{ color: theme.colors.onPrimary }}
-                            >
-                                Don't have an account? Sign Up
-                            </Button>
-
-                        </View>
-                    }
-                />
+                    </Card.Content>
+                    <Card.Actions style={{ justifyContent: 'flex-end' }}>
+                        <Button
+                            mode="text"
+                            onPress={() => {
+                                setIsSignIn(false);
+                                setError(null);
+                            }}
+                        >
+                            Don't have an account? Sign Up
+                        </Button>
+                    </Card.Actions>
+                </Card>
             </ScrollView>
         </KeyboardAvoidingView>
     );
@@ -353,24 +337,21 @@ export function ConfirmScreen(
     return (
         <View style={[styles.background, { flex: 1, padding: 16, justifyContent: 'center' }]}>
 
-            <View style={{ gap: 8 }}>
-                <ViewSet
-                    title="Check Your Email"
-                    icon={"email-search-outline"}
-                    headerBgColor={theme.colors.primaryContainer}
-                    headerTextColor={theme.colors.onPrimaryContainer}
-                    content={
-                        <View style={{ gap: 8 }}>
-                            <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
-                                We have sent you an e-mail with a confirmation link.
-                            </Text>
-
-                            <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
-                                Please check your email and click the link to start using the app.
-                            </Text>
-
-                        </View>
-                    } />
+            <View style={{ gap: 16 }}>
+                <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
+                    <Card.Title 
+                        title="Check Your Email"
+                        left={(props) => <Icon {...props} source="email-search-outline" size={24} color={theme.colors.primary} />}
+                    />
+                    <Card.Content style={{ gap: 8 }}>
+                        <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
+                            We have sent you an e-mail with a confirmation link.
+                        </Text>
+                        <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
+                            Please check your email and click the link to start using the app.
+                        </Text>
+                    </Card.Content>
+                </Card>
                 <View style={styles.row}>
                     <View style={{ flex: 1 }} />
                     <View style={{ flex: 1, gap: 8 }} >
@@ -490,7 +471,7 @@ export function ConfirmScreen(
                                 }}
                             />
                         </View>
-                        <View style={[authStyles.actionContainer, { backgroundColor: 'rgba(255, 255, 255, 0.1)', }]}>
+                        <View style={[authStyles.actionContainer, { backgroundColor: theme.colors.surfaceVariant, opacity: 0.9 }]}>
                             <View style={{ flexDirection: 'row' }}>
                                 <Button
                                     mode="text"

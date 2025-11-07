@@ -1,13 +1,12 @@
 import { AppData } from "@/app/constants/interface/appData";
 import { useAppTheme } from "@/app/constants/UI/theme";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { ScrollView, View, Alert, KeyboardAvoidingView, Platform } from "react-native";
-import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal, TextInput } from "react-native-paper";
+import { ScrollView, View, Alert, KeyboardAvoidingView, Platform, StyleSheet } from "react-native";
+import { Button, Divider, Icon, IconButton, RadioButton, SegmentedButtons, Snackbar, Text, Dialog, Portal, TextInput, Card, Surface } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { HookData, NavData } from "@/app/navigation/rootNav";
 import { CustomTextInput } from "@/app/components/textInput";
-import { ViewSet } from "@/app/components/UI/ViewSet";
 import { useFocusEffect } from "@react-navigation/native";
 
 
@@ -21,7 +20,8 @@ export function useAsync(appData: AppData, setAppData: (data: AppData) => void) 
         try {
             // Convert camelCase to lowercase for AsyncStorage keys
             const storageKey = key === 'clockFormat' ? 'clockformat' :
-                key === 'dateFormat' ? 'dateformat' : key;
+                key === 'dateFormat' ? 'dateformat' :
+                key === 'themeMode' ? 'themeMode' : key;
             await AsyncStorage.setItem(storageKey, newValue);
             console.log(`Saved ${storageKey}: ${newValue}`);
         } catch (error) {
@@ -33,7 +33,8 @@ export function useAsync(appData: AppData, setAppData: (data: AppData) => void) 
         try {
             // Convert camelCase to lowercase for AsyncStorage keys
             const storageKey = key === 'clockFormat' ? 'clockformat' :
-                key === 'dateFormat' ? 'dateformat' : key;
+                key === 'dateFormat' ? 'dateformat' :
+                key === 'themeMode' ? 'themeMode' : key;
             const loaded = await AsyncStorage.getItem(storageKey);
             const value = loaded !== null ? loaded : "";
             setValue(value);
@@ -211,8 +212,7 @@ export function SettingsScreen({
     appData,
     setAppData,
     authHook,
-    navBarHook
-}: NavData & HookData & { navBarHook: any }) {
+}: NavData & HookData) {
     const { theme, styles } = useAppTheme();
     const [editMode, setEditMode] = useState(false);
 
@@ -224,11 +224,13 @@ export function SettingsScreen({
     const [glucose, setGlucose] = useState(appData?.settings.glucose);
     const [clockFormat, setClockFormat] = useState(appData?.settings.clockFormat);
     const [dateFormat, setDateFormat] = useState(appData?.settings.dateFormat);
+    const [themeMode, setThemeMode] = useState(appData?.settings.themeMode || 'light');
 
     const { changeSettings } = useAsync(appData!, setAppData!)
 
     const [editSection, setEditSection] = useState<'password' | 'email' | 'none'>('none')
-    const { settingsSection, setSettingsSection } = navBarHook;
+    // Local state for settings section - show all sections by default
+    const [settingsSection, setSettingsSection] = useState<'all' | 'app' | 'profile'>('all');
 
     // Unified notification state
     const [notification, setNotification] = useState<{
@@ -254,8 +256,6 @@ export function SettingsScreen({
         error
     } = authHook;
 
-    const { setIsMenuVisible } = navBarHook;
-
     // Helper functions for notifications
     const showNotification = (type: 'success' | 'error' | 'delete', title: string, message: string, onConfirm?: () => void) => {
         setNotification({
@@ -279,18 +279,6 @@ export function SettingsScreen({
         }
         // Never show password/email errors in portal - only in inline display
     }, [showSuccess, success, setShowSuccess]);
-
-    useFocusEffect(
-        useCallback(() => {
-            // Open menu when screen is focused
-            setIsMenuVisible(true);
-
-            // Close menu when screen is unfocused (cleanup)
-            return () => {
-                setIsMenuVisible(false);
-            };
-        }, [setIsMenuVisible])
-    );
 
     const handleDeleteAccount = async () => {
         hideNotification();
@@ -347,135 +335,137 @@ export function SettingsScreen({
                 contentContainerStyle={{ paddingBottom: 100 }}
                 showsVerticalScrollIndicator={false}
             >
-                {/* ACCOUNT SETTINGS */}
-                {settingsSection === 'profile' && (
-                    <ViewSet
-                        title="Account"
-                        icon="account"
-                        headerBgColor={theme.colors.primaryContainer}
-                        headerTextColor={theme.colors.onPrimaryContainer}
-                        iconColor={theme.colors.onPrimaryContainer}
-                        headerButton={true}
-                        headerButtonIcon={editMode ? "pencil-off" : "pencil"}
-                        onPress={() => { setEditMode(!editMode) }}
-                        content={
-                            <>
-                                <View style={{ backgroundColor: theme.colors.surface, paddingVertical: 8 }}>
+                {/* Title Section */}
+                <Surface style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                        <View style={{ flex: 1 }}>
+                            <Text variant="headlineMedium" style={{
+                                color: theme.colors.onBackground,
+                                fontWeight: '700',
+                                marginBottom: 2,
+                            }}>
+                                Settings
+                            </Text>
+                            <Text variant="bodyLarge" style={{
+                                color: theme.colors.onSurfaceVariant,
+                            }}>
+                                Customize your app preferences
+                            </Text>
+                        </View>
+                        <Surface style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: theme.colors.primaryContainer, justifyContent: 'center', alignItems: 'center', elevation: 2 }} elevation={2}>
+                            <Icon source="cog" size={28} color={theme.colors.primary} />
+                        </Surface>
+                    </View>
+                </Surface>
 
-                                    <CustomTextInput
-                                        mode="outlined"
-                                        value={appData?.session?.user.email || ''}
-                                        onChangeText={() => { }}
-                                        label="Email"
-                                        disabled={true}
-                                        leftIcon={"email"}
-                                        dense
+                <View style={{ paddingHorizontal: 16, gap: 16, paddingTop: 16 }}>
+                    {/* ACCOUNT SETTINGS */}
+                    {(settingsSection === 'profile' || settingsSection === 'all') && (
+                        <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
+                            <Card.Title 
+                                title="Account"
+                                left={(props) => <Icon {...props} source="account" size={24} color={theme.colors.primary} />}
+                                right={(props) => (
+                                    <IconButton
+                                        {...props}
+                                        icon={editMode ? "pencil-off" : "pencil"}
+                                        size={24}
+                                        iconColor={theme.colors.primary}
+                                        onPress={() => { setEditMode(!editMode) }}
                                     />
-                                    <CustomTextInput
-                                        mode="outlined"
-                                        value={username}
-                                        onChangeText={setUsername}
-                                        label="Username"
-                                        disabled={!editMode}
-                                        leftIcon={"account"}
-                                        dense
-                                    />
-                                    <CustomTextInput
-                                        mode="outlined"
-                                        value={fullName}
-                                        onChangeText={setFullName}
-                                        label="Full Name"
-                                        disabled={!editMode}
-                                        leftIcon={"account-details"}
-                                        dense
-                                    />
-
-
-                                </View>
+                                )}
+                            />
+                            <Card.Content style={{ paddingVertical: 8, gap: 8 }}>
+                                <CustomTextInput
+                                    mode="outlined"
+                                    value={appData?.session?.user.email || ''}
+                                    onChangeText={() => { }}
+                                    label="Email"
+                                    disabled={true}
+                                    leftIcon={"email"}
+                                    dense
+                                />
+                                <CustomTextInput
+                                    mode="outlined"
+                                    value={username}
+                                    onChangeText={setUsername}
+                                    label="Username"
+                                    disabled={!editMode}
+                                    leftIcon={"account"}
+                                    dense
+                                />
+                                <CustomTextInput
+                                    mode="outlined"
+                                    value={fullName}
+                                    onChangeText={setFullName}
+                                    label="Full Name"
+                                    disabled={!editMode}
+                                    leftIcon={"account-details"}
+                                    dense
+                                />
                                 {editMode && (
-                                    <View style={{ flex: 1, flexDirection: 'row', backgroundColor: theme.colors.surfaceVariant, justifyContent: 'flex-end', gap: 8, padding: 16, marginBottom: -8, marginHorizontal: -16 }}>
+                                    <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
                                         <Button style={{ borderRadius: 8 }} mode="contained" icon="close" textColor={theme.colors.onError} buttonColor={theme.colors.error} onPress={() => { setEditMode(false) }}>Cancel</Button>
                                         <Button style={{ borderRadius: 8 }} mode="contained" icon="floppy" textColor={theme.colors.onPrimary} buttonColor={theme.colors.primary} onPress={() => { }}>Save</Button>
                                     </View>
                                 )}
-                                <View style={{ backgroundColor: theme.colors.surface }}>
-                                    <View style={{ backgroundColor: theme.colors.surface, gap: 8, marginTop: 8 }}>
-                                        <Text variant="labelMedium">Update Account</Text>
-
-                                        {/* <Button
-                                            icon="email-alert-outline"
-                                            mode="contained"
-                                            style={{ borderRadius: 8 }}
-                                            buttonColor={theme.colors.primaryContainer}
-                                            textColor={theme.colors.onPrimaryContainer}
-                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                            onPress={() => { setEditSection('email') }}>
-                                            Change Email
-                                        </Button>
-                                        {editSection === 'email' && (
-                                            <AuthUpdate authHook={authHook} type="email" setEditSection={setEditSection} />
-                                        )} */}
-                                        <Button
-                                            icon="lock-reset"
-                                            mode="contained"
-                                            style={{ borderRadius: 8 }}
-                                            buttonColor={theme.colors.primaryContainer}
-                                            textColor={theme.colors.onPrimaryContainer}
-                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                            onPress={() => {
-                                                setEditSection('password')
-                                            }}>
-                                            Change Password
-                                        </Button>
-                                        {editSection === 'password' && (
-                                            <AuthUpdate authHook={authHook} type={"pass"} setEditSection={setEditSection} />
-                                        )}
-
-                                        <Text variant="labelMedium">Danger Zone</Text>
-
-                                        <Button
-                                            icon="account-remove-outline"
-                                            mode="contained"
-                                            style={{ borderRadius: 8 }}
-                                            buttonColor={theme.colors.error}
-                                            textColor={theme.colors.onError}
-                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                            onPress={() => showNotification(
-                                                'delete',
-                                                'Delete Account?',
-                                                'This action cannot be undone. All your data including diary entries and profile information will be permanently deleted.',
-                                                handleDeleteAccount
-                                            )}>
-                                            Delete Account
-                                        </Button>
-                                        <Button
-                                            icon="logout"
-                                            mode="contained"
-                                            style={{ borderRadius: 8 }}
-                                            buttonColor={theme.colors.warning}
-                                            textColor={theme.colors.onWarning}
-                                            contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
-                                            onPress={signOut}>
-                                            Sign Out
-                                        </Button>
-
-                                    </View>
+                                <View style={{ gap: 8, marginTop: 8 }}>
+                                    <Text variant="labelMedium">Update Account</Text>
+                                    <Button
+                                        icon="lock-reset"
+                                        mode="contained"
+                                        style={{ borderRadius: 8 }}
+                                        buttonColor={theme.colors.primaryContainer}
+                                        textColor={theme.colors.onPrimaryContainer}
+                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                        onPress={() => {
+                                            setEditSection('password')
+                                        }}>
+                                        Change Password
+                                    </Button>
+                                    {editSection === 'password' && (
+                                        <AuthUpdate authHook={authHook} type={"pass"} setEditSection={setEditSection} />
+                                    )}
+                                    <Text variant="labelMedium" style={{ marginTop: 8 }}>Danger Zone</Text>
+                                    <Button
+                                        icon="account-remove-outline"
+                                        mode="contained"
+                                        style={{ borderRadius: 8 }}
+                                        buttonColor={theme.colors.error}
+                                        textColor={theme.colors.onError}
+                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                        onPress={() => showNotification(
+                                            'delete',
+                                            'Delete Account?',
+                                            'This action cannot be undone. All your data including diary entries and profile information will be permanently deleted.',
+                                            handleDeleteAccount
+                                        )}>
+                                        Delete Account
+                                    </Button>
+                                    <Button
+                                        icon="logout"
+                                        mode="contained"
+                                        style={{ borderRadius: 8 }}
+                                        buttonColor={theme.colors.warning}
+                                        textColor={theme.colors.onWarning}
+                                        contentStyle={{ justifyContent: 'flex-start', gap: 40, marginHorizontal: 8 }}
+                                        onPress={signOut}>
+                                        Sign Out
+                                    </Button>
                                 </View>
-                            </>
+                            </Card.Content>
+                        </Card>
+                    )}
 
-
-                        } />
-                )}
-
-                {settingsSection === 'app' && (
-                    <ViewSet
-                        title="App Settings"
-                        icon="cog-outline"
-                        headerBgColor={theme.colors.primaryContainer}
-                        headerTextColor={theme.colors.onPrimaryContainer}
-                        iconColor={theme.colors.onPrimaryContainer}
-                        content={
-                            <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
+                    {(settingsSection === 'app' || settingsSection === 'all') && (
+                        <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
+                            <Card.Title 
+                                title="App Settings"
+                                left={(props) => <Icon {...props} source="cog-outline" size={24} color={theme.colors.primary} />}
+                            />
+                            <Card.Content style={{ padding: 8 }}>
+                                {renderRadioButtons('Theme Mode', 'light', 'dark', themeMode!, 'themeMode', setThemeMode)}
+                                <Divider style={{ marginVertical: 4 }} />
                                 {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
                                 <Divider style={{ marginVertical: 4 }} />
                                 {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}
@@ -483,9 +473,10 @@ export function SettingsScreen({
                                 {renderRadioButtons('Clock format', '24h', '12h', clockFormat!, 'clockFormat', setClockFormat)}
                                 <Divider style={{ marginVertical: 4 }} />
                                 {renderRadioButtons('Date format', 'en', 'us', dateFormat!, 'dateFormat', setDateFormat)}
-                            </View>
-                        } />
-                )}
+                            </Card.Content>
+                        </Card>
+                    )}
+                </View>
 
 
 
