@@ -185,7 +185,7 @@ export function CameraScreen(
                     right: 0,
                 }
             }>
-                <View style={{ flexDirection: 'row', zIndex: 1000, justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'rgba(10, 74, 0, 0.5)', paddingHorizontal: 16 }}>
+                <View style={{ flexDirection: 'row', zIndex: 1000, justifyContent: 'space-between', alignItems: 'center', backgroundColor: theme.colors.backdrop, paddingHorizontal: 16 }}>
                     <IconButton
                         iconColor={theme.colors.customWarning}
                         size={40}

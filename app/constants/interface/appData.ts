@@ -1,5 +1,6 @@
 import { Session } from "@supabase/supabase-js";
 import { PermissionResponse } from "expo-camera";
+import { ThemeMode } from "../UI/theme";
 
 export interface AppData {
   session: Session | null;
@@ -13,6 +14,7 @@ export interface AppData {
     glucose: string;
     dateFormat: string;
     clockFormat: string;
+    themeMode: ThemeMode;
   };
   diaryEntries: any[];
   isEntriesLoaded: boolean;

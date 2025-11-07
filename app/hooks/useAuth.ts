@@ -49,18 +49,20 @@ export function useAuth(
 
     // Load settings from AsyncStorage
     const loadSettings = async () => {
-        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat] = await Promise.all([
+        const [savedWeight, savedGlucose, savedClockFormat, savedDateFormat, savedThemeMode] = await Promise.all([
             AsyncStorage.getItem('weight'),
             AsyncStorage.getItem('glucose'),
             AsyncStorage.getItem('clockformat'),
-            AsyncStorage.getItem('dateformat')
+            AsyncStorage.getItem('dateformat'),
+            AsyncStorage.getItem('themeMode')
         ]);
 
         return {
             weight: savedWeight || 'kg',
             glucose: savedGlucose || 'mmol',
             clockFormat: savedClockFormat || '24h',
-            dateFormat: savedDateFormat || 'en'
+            dateFormat: savedDateFormat || 'en',
+            themeMode: (savedThemeMode as 'light' | 'dark') || 'light'
         };
     };
 

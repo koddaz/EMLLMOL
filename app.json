@@ -20,6 +20,7 @@
       "bundleIdentifier": "com.knoddaz.emllmol"
     },
     "android": {
+      "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"

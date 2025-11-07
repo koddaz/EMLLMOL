@@ -180,7 +180,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     },
     imageOverlay: {
         position: 'absolute',
-        backgroundColor: 'rgba(0,0,0,0.7)',
+        backgroundColor: theme.colors.backdrop,
         borderRadius: 12,
         paddingHorizontal: 8,
         paddingVertical: 4,
@@ -228,7 +228,8 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
         right: 0,
         bottom: 0,
         alignItems: 'center',
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: theme.colors.scrim,
+        opacity: 0.5,
         zIndex: 100
     },
     centeredContent: {

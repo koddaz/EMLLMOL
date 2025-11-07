@@ -7,6 +7,7 @@ import { AppData } from "../constants/interface/appData";
 import { DiaryScreen } from "../screens/Diary/diaryScreen";
 import { SettingsScreen } from "../screens/Settings/settingsScreen";
 import { StatisticsScreen } from "../screens/Statistics/statisticsScreen";
+import { HomeScreen } from "../screens/Home/homeScreen";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Appbar, Icon, Text } from "react-native-paper";
 import { Image, Pressable, View, Animated } from "react-native";
@@ -19,11 +20,10 @@ import { CameraScreen } from "../screens/Camera/cameraScreen";
 import { useStatistics } from "../hooks/useStatistics";
 import AuthScreen from "../api/supabase/auth/authScreen";
 import { LoadingScreen } from "../components/loadingScreen";
-import { BottomNavBar, useNavBar } from "./components/bottomNavBar";
 
 const root = createBottomTabNavigator()
 const stack = createNativeStackNavigator()
-const logo = require('../../assets/images/logo-head.gif')
+const logo = require('../../assets/images/logo1.png')
 
 export interface NavData {
      appData: AppData | null,
@@ -50,16 +50,21 @@ export function RootNavigation({
      const dbHook = useDB(appData || undefined, setAppData);
      const calendarHook = useCalendar(appData);
      const cameraHook = useCamera(appData);
-     const navBarHook = useNavBar();
      const statsHook = useStatistics(dbHook.diaryEntries || []);
      const navigation = useNavigation() as any
 
      const titleContainer = useMemo(() => (title: string) => {
           switch (title) {
+               case 'home': return (
+                    <View style={{ alignItems: 'center', justifyContent: 'center', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
+                         <Image source={logo} resizeMethod="resize" style={{width: 200, height: 50}} />
+                         
+                    </View>
+               );
                case 'main': return (
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
-                         <Image source={logo} resizeMethod="scale" style={{ width: 50, height: 50 }} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>emmiSense</Text>
+                         <Icon source={"history"} size={50} color={theme.colors.onPrimary} />
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>History</Text>
                     </View>
                );
                case 'settings': return (
@@ -69,10 +74,10 @@ export function RootNavigation({
                     </View>
 
                );
-               case 'stats': return (
+               case 'glucose': return (
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
-                         <Icon source={"chart-bar"} size={50} color={theme.colors.onPrimary} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>Statistics</Text>
+                         <Icon source={"heart-pulse"} size={50} color={theme.colors.onPrimary} />
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>Glucose</Text>
                     </View>
 
                );
@@ -80,7 +85,7 @@ export function RootNavigation({
 
                     <View style={{ alignItems: 'flex-end', marginLeft: 16, flexDirection: 'row', gap: 8 }}>
                          <Image source={logo} resizeMethod="scale" style={{ width: 50, height: 50 }} />
-                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>New Entry</Text>
+                         <Text variant="headlineSmall" style={{ textAlign: 'auto', color: theme.colors.onPrimary, fontWeight: 'bold' }}>Add Meal</Text>
 
                     </View>
 
@@ -92,17 +97,27 @@ export function RootNavigation({
      const MainTopBar = useCallback(() => (
 
           <Appbar.Header mode={"small"} style={{ paddingHorizontal: 16, backgroundColor: theme.colors.primary }}>
-               {(currentScreen === 'main') && (
-
-                    <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
-
+               {/* Left icon - Calendar for home, calendar toggle for history, back button for others */}
+               {currentScreen === 'home' && (
+                    <Appbar.Action icon="calendar" style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('history') }} />
                )}
-               {(currentScreen != 'main') && (
-
+               {currentScreen === 'main' && (
+                    <Appbar.Action icon={calendarHook.showCalendar ? "calendar-remove-outline" : "calendar"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { calendarHook.toggleCalendar() }} />
+               )}
+               {(currentScreen !== 'main' && currentScreen !== 'home' && currentScreen !== 'glucose') && (
                     <Appbar.Action icon={"chevron-left"} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.goBack() }} />
                )}
+
                <Appbar.Content title={titleContainer(currentScreen!)} />
-               {(currentScreen === 'main' || currentScreen === 'stats') && (
+
+               {/* Right icons - Apple/Health icon and Settings */}
+               {currentScreen === 'home' && (
+                    <>
+                         <Appbar.Action icon="heart-pulse" style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('glucose') }} />
+                         <Appbar.Action icon={'cog-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('settings') }} />
+                    </>
+               )}
+               {(currentScreen === 'main' || currentScreen === 'glucose') && (
                     <Appbar.Action icon={'cog-outline'} style={styles.iconButton} iconColor={theme.colors.onPrimary} onPress={() => { navigation.navigate('settings') }} />
                )}
 
@@ -127,32 +142,85 @@ export function RootNavigation({
 
      return (
           <root.Navigator
-               initialRouteName={isSignedIn ? "diary" : "auth"}
-
+               initialRouteName={isSignedIn ? "home" : "auth"}
                screenOptions={{
                     headerShown: currentScreen != 'camera' ? true : false,
                     header: () => MainTopBar(),
-               }}
-               tabBar={({ navigation, insets }) => (
-                    isSignedIn && (currentScreen === 'main' || currentScreen === 'stats' || currentScreen === 'settings') && (
-                         <BottomNavBar navigation={navigation} insets={insets} route={currentScreen} statsHook={statsHook} navBarHook={navBarHook} />
-                    )
-               )}>
+                    tabBarActiveTintColor: theme.colors.primary,
+                    tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
+                    tabBarStyle: {
+                         backgroundColor: theme.colors.surface,
+                         borderTopColor: theme.colors.outline,
+                         paddingBottom: 8,
+                         paddingTop: 8,
+                         height: 70,
+                    },
+                    tabBarLabelStyle: {
+                         fontSize: 12,
+                         fontWeight: '500',
+                    }
+               }}>
 
                {!isSignedIn ? (
                     <root.Screen
                          name='auth'
                          options={{
                               headerShown: false,
+                              tabBarButton: () => null,
                          }}
                          component={AuthScreen}
                     />
                ) : (
                     <>
+                         {/* Home Tab - Dashboard */}
                          <root.Screen
-                              name="diary"
+                              name="home"
                               options={{
-                                   tabBarIcon: () => <Icon source={"book-open-variant"} size={20} />,
+                                   tabBarLabel: 'Home',
+                                   tabBarIcon: ({ color, size }) => <Icon source="home" size={size} color={color} />,
+                              }}
+                         >
+                              {(props) => (
+                                   <HomeScreen
+                                        {...props}
+                                        appData={appData}
+                                        setAppData={setAppData}
+                                        dbHook={dbHook}
+                                   />
+                              )}
+                         </root.Screen>
+
+                         {/* Add Meal Tab - Directly to Input */}
+                         <root.Screen
+                              name="addmeal"
+                              options={{
+                                   tabBarLabel: 'Add Meal',
+                                   tabBarIcon: ({ color, size }) => <Icon source="plus-circle" size={size} color={color} />,
+                              }}
+                              listeners={{
+                                   tabPress: (e) => {
+                                        e.preventDefault();
+                                        navigation.navigate('input');
+                                   }
+                              }}
+                         >
+                              {(props) => (
+                                   <InputScreen
+                                        {...props}
+                                        appData={appData}
+                                        dbHook={dbHook}
+                                        calendarHook={calendarHook}
+                                        cameraHook={cameraHook}
+                                   />
+                              )}
+                         </root.Screen>
+
+                         {/* History Tab - Diary List */}
+                         <root.Screen
+                              name="history"
+                              options={{
+                                   tabBarLabel: 'History',
+                                   tabBarIcon: ({ color, size }) => <Icon source="history" size={size} color={color} />,
                               }}
                          >
                               {(props) =>
@@ -163,37 +231,18 @@ export function RootNavigation({
                                         dbHook={dbHook}
                                         calendarHook={calendarHook}
                                         cameraHook={cameraHook}
-                                        navBarHook={navBarHook}
                                    />
-
                               }
-
-
                          </root.Screen>
 
+                         {/* Glucose Tab - Statistics/Glucose View */}
                          <root.Screen
-                              name="settings"
+                              name="glucose"
                               options={{
-                                   tabBarIcon: () => <Icon source={"cog-outline"} size={20} />,
-                                   headerBackButtonDisplayMode: 'minimal',
-                              }} >
-                              {(props) => (
-                                   <SettingsScreen
-                                        {...props}
-                                        appData={appData}
-                                        setAppData={setAppData}
-                                        dbHook={dbHook}
-                                        authHook={authHook}
-                                        navBarHook={navBarHook}
-                                   />
-                              )}
-                         </root.Screen>
-
-                         <root.Screen
-                              name="stats"
-                              options={{
-                                   tabBarIcon: () => <Icon source={"chart-bar"} size={20} />,
-                              }} >
+                                   tabBarLabel: 'Glucose',
+                                   tabBarIcon: ({ color, size }) => <Icon source="heart-pulse" size={size} color={color} />,
+                              }}
+                         >
                               {(props) => (
                                    <StatisticsScreen
                                         {...props}
@@ -201,23 +250,54 @@ export function RootNavigation({
                                         dbHook={dbHook}
                                         calendarHook={calendarHook}
                                         statsHook={statsHook}
-                                        navBarHook={navBarHook}
+                                   />
+                              )}
+                         </root.Screen>
+
+                         {/* Settings - Hidden from tab bar, accessible via header */}
+                         <root.Screen
+                              name="settings"
+                              options={{
+                                   tabBarButton: () => null,
+                              }}
+                         >
+                              {(props) => (
+                                   <SettingsScreen
+                                        {...props}
+                                        appData={appData}
+                                        setAppData={setAppData}
+                                        dbHook={dbHook}
+                                        authHook={authHook}
+                                   />
+                              )}
+                         </root.Screen>
+
+                         {/* Input Screen - Standalone for stack navigation */}
+                         <root.Screen
+                              name="input"
+                              options={{
+                                   tabBarButton: () => null,
+                              }}
+                         >
+                              {(props) => (
+                                   <InputScreen
+                                        {...props}
+                                        appData={appData}
+                                        dbHook={dbHook}
+                                        calendarHook={calendarHook}
+                                        cameraHook={cameraHook}
                                    />
                               )}
                          </root.Screen>
                     </>
                )}
 
-
-
-
-
           </root.Navigator >
      )
 }
 
 export function StackNavigation(
-     { appData, dbHook, calendarHook, cameraHook, navBarHook }: HookData & NavData & { navBarHook: any }
+     { appData, dbHook, calendarHook, cameraHook }: HookData & NavData
 
 ) {
 
@@ -238,7 +318,6 @@ export function StackNavigation(
                               dbHook={dbHook}
                               calendarHook={calendarHook}
                               cameraHook={cameraHook}
-                              navBarHook={navBarHook}
                          />
                     )}
                </stack.Screen>

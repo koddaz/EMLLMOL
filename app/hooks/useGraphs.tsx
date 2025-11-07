@@ -104,7 +104,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                 y1={line.y}
                                 x2={width - padding}
                                 y2={line.y}
-                                stroke="#f0f0f0"
+                                stroke={theme.colors.chartGrid}
                                 strokeWidth={1}
                             />
                         ))}
@@ -117,7 +117,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                 y={line.y + 4}
                                 textAnchor="end"
                                 fontSize="10"
-                                fill="#666"
+                                fill={theme.colors.chartLabel}
                             >
                                 {line.value.toFixed(line.value < 10 ? 1 : 0)}
                             </SvgText>
@@ -165,7 +165,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                 y={height - bottomPadding + 20}
                                 textAnchor="middle"
                                 fontSize="10"
-                                fill="#666"
+                                fill={theme.colors.chartLabel}
                             >
                                 {label.label}
                             </SvgText>
@@ -247,7 +247,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                 y1={line.y}
                                 x2={width - padding}
                                 y2={line.y}
-                                stroke="#f0f0f0"
+                                stroke={theme.colors.chartGrid}
                                 strokeWidth={1}
                             />
                         ))}
@@ -260,7 +260,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                 y={line.y + 4}
                                 textAnchor="end"
                                 fontSize="10"
-                                fill="#666"
+                                fill={theme.colors.chartLabel}
                             >
                                 {line.value.toFixed(0)}g
                             </SvgText>
@@ -290,7 +290,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                         textAnchor="middle"
                                         fontSize="12"
                                         fontWeight="bold"
-                                        fill="#333"
+                                        fill={theme.colors.onSurface}
                                     >
                                         {item.total.toFixed(0)}g
                                     </SvgText>
@@ -301,7 +301,7 @@ export function useGraphs(appData: any, statsHook: any) {
                                         y={height - bottomPadding + 20}
                                         textAnchor="middle"
                                         fontSize="10"
-                                        fill="#666"
+                                        fill={theme.colors.chartLabel}
                                     >
                                         {item.mealType}
                                     </SvgText>

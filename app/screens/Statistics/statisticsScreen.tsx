@@ -9,7 +9,10 @@ import { useCallback } from "react";
 
 
 
-export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & HookData & { navBarHook: any }) {
+import { useState } from "react";
+import { ScrollView } from "react-native-gesture-handler";
+
+export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
     const { styles, theme } = useAppTheme();
     const {
         selectedPeriod,
@@ -19,19 +22,8 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
         mealColors,
     } = statsHook;
 
-    const { setIsMenuVisible, statsSection, setStatsSection } = navBarHook;
-
-    useFocusEffect(
-        useCallback(() => {
-            // Open menu when screen is focused
-            setIsMenuVisible(true);
-
-            // Close menu when screen is unfocused (cleanup)
-            return () => {
-                setIsMenuVisible(false);
-            };
-        }, [setIsMenuVisible])
-    );
+    // Local state for stats section - show all by default
+    const [statsSection, setStatsSection] = useState<'all' | 'summary' | 'carbs' | 'glucose'>('all');
 
     const gUnit = () => {
         return appData?.settings.glucose === 'mmol' ? ('mmol/L') : ('mg/Dl');
@@ -89,121 +81,91 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
     const { GlucoseChart, CarbsBarChart } = useGraphs(appData, statsHook);
 
     const renderStats = () => {
+        // Show all sections or specific section based on statsSection
+        const showSummary = statsSection === 'summary' || statsSection === 'all';
+        const showGlucose = statsSection === 'glucose' || statsSection === 'all';
+        const showCarbs = statsSection === 'carbs' || statsSection === 'all';
 
-        if (statsSection === 'glucose') {
-            return (
-
-                <ViewSet
-                    title="Glucose"
-                    icon="water"
-                    content={
-                        <View style={{ height: 300, width: '100%' }}>
-                            <GlucoseChart />
-                        </View>
-                    }
-                />
-
-
-            );
-        } else if (statsSection === 'carbs') {
-            return (
-                <ViewSet
-                    title="Carbohydrates"
-                    icon="water"
-                    footer={
-                        <View>
-
-                        </View>
-                    }
-                    content={
-                        <View style={{ height: 300, width: '100%' }}>
-                            <CarbsBarChart />
-                        </View>
-                    }
-                />
-
-            );
-        } else if (statsSection === 'summary') {
-            return (
-                <>
-                    <ViewSet
-                        title={`Summary ${periodText()}`}
-                        icon={"chart-pie"}
-                        content={
-                            <View style={{ flexDirection: 'row', gap: 8 }}>
-                                <View style={{ flex: 1 }}>
-                                    {summaryRow(/* title */ "Median Glucose", /* icon */ "water-outline", /* value */ `${medianGlucose.toFixed(1)} ${gUnit()}`)}
-                                    {summaryRow(/* title */ "Total Meals", /* icon */ "food-outline", /* value */ summaryStats.totalMeals.toString())}
+        return (
+            <>
+                {showSummary && (
+                    <>
+                        <ViewSet
+                            title={`Summary ${periodText()}`}
+                            icon={"chart-pie"}
+                            content={
+                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                                    <View style={{ flex: 1 }}>
+                                        {summaryRow(/* title */ "Median Glucose", /* icon */ "water-outline", /* value */ `${medianGlucose.toFixed(1)} ${gUnit()}`)}
+                                        {summaryRow(/* title */ "Total Meals", /* icon */ "food-outline", /* value */ summaryStats.totalMeals.toString())}
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        {summaryRow(/* title */ "Total Insulin", /* icon */ "needle", /* value */ `${summaryStats.totalInsulin.toFixed(1)} u`)}
+                                        {summaryRow(/* title */ "Total Carbs", /* icon */ "bread-slice-outline", /* value */ `${summaryStats.totalCarbs.toFixed(1)} g`)}
+                                    </View>
                                 </View>
-                                <View style={{ flex: 1 }}>
-                                    {summaryRow(/* title */ "Total Insulin", /* icon */ "needle", /* value */ `${summaryStats.totalInsulin.toFixed(1)} u`)}
-                                    {summaryRow(/* title */ "Total Carbs", /* icon */ "bread-slice-outline", /* value */ `${summaryStats.totalCarbs.toFixed(1)} g`)}
-                                </View>
-
-
-
-                            </View>
-                        } />
-                    <ViewSet
-                        title="Meal Break Down"
-                        icon="food"
-                        footer={
-                            <></>
-                        }
-                        content={
-
-                            <View style={{ flexDirection: 'row', gap: 8 }}>
-                                <View style={{ flex: 1 }}>
-                                    {mealBox(
-                                        /* Title */ "Breakfast",
-                                        /* Icon */ "food-croissant",
-                                        /* Values */[
+                            } />
+                        <ViewSet
+                            title="Meal Break Down"
+                            icon="food"
+                            footer={<></>}
+                            content={
+                                <View style={{ flexDirection: 'row', gap: 8 }}>
+                                    <View style={{ flex: 1 }}>
+                                        {mealBox("Breakfast", "food-croissant", [
                                             `Meals: ${summaryStats.carbsByMeal.breakfast || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal.breakfast || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal.breakfast || 0}g`
-                                        ],
-                                        /* Background */ mealColors.breakfast
-                                    )}
-
-                                    {mealBox(
-                                        /* Title */ "Lunch",
-                                        /* Icon */ "food-hot-dog",
-                                        /* Values */[
+                                        ], mealColors.breakfast)}
+                                        {mealBox("Lunch", "food-hot-dog", [
                                             `Meals: ${summaryStats.carbsByMeal.lunch || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal.lunch || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal.lunch || 0}g`
-                                        ],
-                                        /* Background */ mealColors.lunch
-                                    )}
-                                </View>
-                                <View style={{ flex: 1 }}>
-                                    {mealBox(
-                                        /* Title */ "Dinner",
-                                        /* Icon */ "food",
-                                        /* Values */[
+                                        ], mealColors.lunch)}
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        {mealBox("Dinner", "food", [
                                             `Meals: ${summaryStats.carbsByMeal.dinner || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal.dinner || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal.dinner || 0}g`
-                                        ],
-                                        /* Background */ mealColors.dinner
-                                    )}
-
-                                    {mealBox(
-                                        /* Title */ "Snack",
-                                        /* Icon */ "apple",
-                                        /* Values */[
+                                        ], mealColors.dinner)}
+                                        {mealBox("Snack", "apple", [
                                             `Meals: ${summaryStats.carbsByMeal.snack || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal.snack || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal.snack || 0}g`
-                                        ],
-                                        /* Background */ mealColors.snack
-                                    )}
+                                        ], mealColors.snack)}
+                                    </View>
                                 </View>
+                            } />
+                    </>
+                )}
+
+                {showGlucose && (
+                    <ViewSet
+                        title="Glucose"
+                        icon="water"
+                        content={
+                            <View style={{ height: 300, width: '100%' }}>
+                                <GlucoseChart />
                             </View>
-                        } />
-                </>
-            );
-        }
+                        }
+                    />
+                )}
+
+                {showCarbs && (
+                    <ViewSet
+                        title="Carbohydrates"
+                        icon="water"
+                        footer={<View />}
+                        content={
+                            <View style={{ height: 300, width: '100%' }}>
+                                <CarbsBarChart />
+                            </View>
+                        }
+                    />
+                )}
+            </>
+        );
     };
 
     const handlePeriodChange = (value: string) => {
@@ -267,18 +229,18 @@ export function StatisticsScreen({ appData, statsHook, navBarHook }: NavData & H
                         label: '30 Days',
                         style: {
 
-                            backgroundColor: selectedPeriod === 30 ? theme.colors.primary : theme.colors.primaryContainer,
+                            backgroundColor: selectedPeriod === 30 ? theme.colors.secondary : theme.colors.primaryContainer,
                             borderRadius: 0,
-                            borderColor: selectedPeriod === 30 ? theme.colors.customDarkGreen : theme.colors.customDarkTeal,
+                            borderColor: selectedPeriod === 30 ? theme.colors.outline : theme.colors.inverseSurface,
 
                         },
                     },
                 ]}
             />
-            <View style={{ flex: 1}}>
+            <ScrollView style={{ flex: 1}}>
                 {renderStats()}
 
-            </View>
+            </ScrollView>
 
         </View>
     );

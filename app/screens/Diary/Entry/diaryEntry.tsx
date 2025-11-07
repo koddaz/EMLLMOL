@@ -229,7 +229,7 @@ export function PhotoScroll({ diaryData }: { diaryData: DiaryData | undefined })
                   width: 6,
                   height: 6,
                   borderRadius: 3,
-                  backgroundColor: index === currentImageIndex ? 'white' : 'rgba(255,255,255,0.5)',
+                  backgroundColor: index === currentImageIndex ? theme.colors.onPrimary : theme.colors.backdrop.replace('0.4', '0.6'),
                   marginHorizontal: 2,
                 }}
               />

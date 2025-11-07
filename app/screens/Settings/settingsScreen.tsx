@@ -21,7 +21,8 @@ export function useAsync(appData: AppData, setAppData: (data: AppData) => void) 
         try {
             // Convert camelCase to lowercase for AsyncStorage keys
             const storageKey = key === 'clockFormat' ? 'clockformat' :
-                key === 'dateFormat' ? 'dateformat' : key;
+                key === 'dateFormat' ? 'dateformat' :
+                key === 'themeMode' ? 'themeMode' : key;
             await AsyncStorage.setItem(storageKey, newValue);
             console.log(`Saved ${storageKey}: ${newValue}`);
         } catch (error) {
@@ -33,7 +34,8 @@ export function useAsync(appData: AppData, setAppData: (data: AppData) => void) 
         try {
             // Convert camelCase to lowercase for AsyncStorage keys
             const storageKey = key === 'clockFormat' ? 'clockformat' :
-                key === 'dateFormat' ? 'dateformat' : key;
+                key === 'dateFormat' ? 'dateformat' :
+                key === 'themeMode' ? 'themeMode' : key;
             const loaded = await AsyncStorage.getItem(storageKey);
             const value = loaded !== null ? loaded : "";
             setValue(value);
@@ -211,8 +213,7 @@ export function SettingsScreen({
     appData,
     setAppData,
     authHook,
-    navBarHook
-}: NavData & HookData & { navBarHook: any }) {
+}: NavData & HookData) {
     const { theme, styles } = useAppTheme();
     const [editMode, setEditMode] = useState(false);
 
@@ -224,11 +225,13 @@ export function SettingsScreen({
     const [glucose, setGlucose] = useState(appData?.settings.glucose);
     const [clockFormat, setClockFormat] = useState(appData?.settings.clockFormat);
     const [dateFormat, setDateFormat] = useState(appData?.settings.dateFormat);
+    const [themeMode, setThemeMode] = useState(appData?.settings.themeMode || 'light');
 
     const { changeSettings } = useAsync(appData!, setAppData!)
 
     const [editSection, setEditSection] = useState<'password' | 'email' | 'none'>('none')
-    const { settingsSection, setSettingsSection } = navBarHook;
+    // Local state for settings section - show all sections by default
+    const [settingsSection, setSettingsSection] = useState<'all' | 'app' | 'profile'>('all');
 
     // Unified notification state
     const [notification, setNotification] = useState<{
@@ -254,8 +257,6 @@ export function SettingsScreen({
         error
     } = authHook;
 
-    const { setIsMenuVisible } = navBarHook;
-
     // Helper functions for notifications
     const showNotification = (type: 'success' | 'error' | 'delete', title: string, message: string, onConfirm?: () => void) => {
         setNotification({
@@ -279,18 +280,6 @@ export function SettingsScreen({
         }
         // Never show password/email errors in portal - only in inline display
     }, [showSuccess, success, setShowSuccess]);
-
-    useFocusEffect(
-        useCallback(() => {
-            // Open menu when screen is focused
-            setIsMenuVisible(true);
-
-            // Close menu when screen is unfocused (cleanup)
-            return () => {
-                setIsMenuVisible(false);
-            };
-        }, [setIsMenuVisible])
-    );
 
     const handleDeleteAccount = async () => {
         hideNotification();
@@ -348,7 +337,7 @@ export function SettingsScreen({
                 showsVerticalScrollIndicator={false}
             >
                 {/* ACCOUNT SETTINGS */}
-                {settingsSection === 'profile' && (
+                {(settingsSection === 'profile' || settingsSection === 'all') && (
                     <ViewSet
                         title="Account"
                         icon="account"
@@ -467,7 +456,7 @@ export function SettingsScreen({
                         } />
                 )}
 
-                {settingsSection === 'app' && (
+                {(settingsSection === 'app' || settingsSection === 'all') && (
                     <ViewSet
                         title="App Settings"
                         icon="cog-outline"
@@ -476,6 +465,8 @@ export function SettingsScreen({
                         iconColor={theme.colors.onPrimaryContainer}
                         content={
                             <View style={{ backgroundColor: theme.colors.surface, padding: 8 }}>
+                                {renderRadioButtons('Theme Mode', 'light', 'dark', themeMode!, 'themeMode', setThemeMode)}
+                                <Divider style={{ marginVertical: 4 }} />
                                 {renderRadioButtons('Glucose Unit', 'mmol', 'mgdl', glucose!, 'glucose', setGlucose)}
                                 <Divider style={{ marginVertical: 4 }} />
                                 {renderRadioButtons('Weight Unit', 'kg', 'lbs', weight!, 'weight', setWeight)}

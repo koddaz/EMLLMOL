@@ -1,18 +1,21 @@
 import { useState, useCallback, useMemo } from "react";
 import { DiaryData } from "@/app/constants/interface/diaryData";
+import { useAppTheme } from "@/app/constants/UI/theme";
 
 export function useStatistics(diaryEntries?: DiaryData[]) {
   // State management
   const [selectedPeriod, setSelectedPeriod] = useState(7);
   const [selectedMealTypes, setSelectedMealTypes] = useState(['breakfast', 'lunch', 'dinner', 'snack']);
 
+  // Get theme for meal colors
+  const { theme } = useAppTheme();
 
-  // Meal type colors
+  // Meal type colors from theme
   const mealColors = {
-    breakfast: '#ff9500', // Orange
-    lunch: '#34c759',     // Green
-    dinner: '#007aff',    // Blue
-    snack: '#ff3b30'      // Red
+    breakfast: theme.colors.mealBreakfast,
+    lunch: theme.colors.mealLunch,
+    dinner: theme.colors.mealDinner,
+    snack: theme.colors.mealSnack
   };
 
   // Generate date array

@@ -490,7 +490,7 @@ export function ConfirmScreen(
                                 }}
                             />
                         </View>
-                        <View style={[authStyles.actionContainer, { backgroundColor: 'rgba(255, 255, 255, 0.1)', }]}>
+                        <View style={[authStyles.actionContainer, { backgroundColor: theme.colors.surfaceVariant, opacity: 0.9 }]}>
                             <View style={{ flexDirection: 'row' }}>
                                 <Button
                                     mode="text"

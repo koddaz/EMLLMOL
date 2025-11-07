@@ -17,8 +17,7 @@ export function DiaryScreen({
   dbHook,
   calendarHook,
   cameraHook,
-  navBarHook,
-}: NavData & HookData & { navBarHook: any }) {
+}: NavData & HookData) {
 
   const { theme, styles } = useAppTheme();
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
