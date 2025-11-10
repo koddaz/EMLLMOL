@@ -9,6 +9,8 @@ import DiaryCalendar from "./Calendar/diaryCalendar";
 import { DiaryEntry } from "./Entry/diaryEntry";
 import { DiaryList } from "./List/diaryList";
 
+import { useHomeData } from "@/app/hooks/useHomeData";
+
 export function DiaryScreen({
   navigation,
   appData,
@@ -21,6 +23,13 @@ export function DiaryScreen({
   const [selectedDiaryData, setSelectedDiaryData] = useState<DiaryData | null>(null);
   const currentDate = calendarHook.formatDate(new Date())
   const selectedDate = calendarHook.formatDate(new Date(calendarHook.selectedDate))
+
+  // Get stats for selected date
+  const selectedDateEntries = dbHook.diaryEntries.filter((entry: DiaryData) => {
+    const entryDate = calendarHook.formatDate(new Date(entry.created_at));
+    return entryDate === selectedDate;
+  });
+  const homeData = useHomeData(selectedDateEntries);
 
 
   // Refresh entries when screen comes into focus
@@ -36,7 +45,7 @@ export function DiaryScreen({
       backgroundColor: theme.colors.background,
     },
     contentContainer: {
-      paddingHorizontal: 24,
+      paddingHorizontal: 16,
     },
     calendarContainer: {
       marginBottom: 16,
@@ -45,19 +54,18 @@ export function DiaryScreen({
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 16,
+      paddingHorizontal: 8,
     },
     listContainer: {
       flex: 1,
-      marginTop: 16,
+      marginTop: 8,
     },
   });
 
   return (
     <View style={localStyles.container}>
       {/* Title Section */}
-      <Surface style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
+      <Surface style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
           <View style={{ flex: 1 }}>
             <Text variant="headlineMedium" style={{
@@ -124,6 +132,7 @@ export function DiaryScreen({
             />
           </View>
         </Surface>
+
       </View>
       <View style={localStyles.listContainer}>
         {appData && (

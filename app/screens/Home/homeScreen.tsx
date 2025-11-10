@@ -7,6 +7,7 @@ import { useHomeData } from '@/app/hooks/useHomeData';
 import { DailyCarbsCard } from './components/DailyCarbsCard';
 import { BloodGlucoseCard } from './components/BloodGlucoseCard';
 import { TodaysMealsCard } from './components/TodaysMealsCard';
+import { DiaryStatsCard } from './components/DiaryStatsCard';
 
 export function HomeScreen({ appData, dbHook }: NavData & HookData) {
   const { theme } = useAppTheme();
@@ -31,7 +32,7 @@ export function HomeScreen({ appData, dbHook }: NavData & HookData) {
       backgroundColor: theme.colors.background,
     },
     welcomeSection: {
-      paddingHorizontal: 24,
+      paddingHorizontal: 16,
       paddingTop: 24,
       paddingBottom: 16,
     },
@@ -66,7 +67,7 @@ export function HomeScreen({ appData, dbHook }: NavData & HookData) {
 
   return (
     <View style={styles.container}>
-      <ScrollView 
+      <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 100 }}
       >
@@ -79,13 +80,15 @@ export function HomeScreen({ appData, dbHook }: NavData & HookData) {
                 fontWeight: '700',
                 marginBottom: 2,
               }}>
-                Welcome Back!
+                {appData?.isFirstLogin ? 'Welcome!' : 'Welcome Back!'}
               </Text>
               <Text variant="bodyLarge" style={{
                 color: theme.colors.onSurfaceVariant,
                 marginBottom: 4,
               }}>
-                Your diabetes management dashboard
+                {appData?.isFirstLogin
+                  ? "Let's get started with your diabetes management journey"
+                  : 'Your diabetes management dashboard'}
               </Text>
               <Text variant="bodyLarge" style={{
                 color: theme.colors.onSurfaceVariant,
@@ -101,14 +104,11 @@ export function HomeScreen({ appData, dbHook }: NavData & HookData) {
 
         {/* Cards Container */}
         <View style={styles.cardsContainer}>
-          {/* Daily Carbs Card */}
-          <DailyCarbsCard totalCarbs={homeData.totalCarbsToday} />
-
-          {/* Blood Glucose Card */}
-          <BloodGlucoseCard
-            latestGlucose={homeData.latestGlucose}
+          <DiaryStatsCard
+            latestGlucose={homeData.latestGlucose?.value || 0}
             avgGlucose={homeData.avgGlucoseToday}
-            glucoseUnit={glucoseUnit}
+            totalCarbs={homeData.totalCarbsToday}
+            glucoseUnit={appData?.settings?.glucose === 'mmol' ? 'mmol/L' : 'mg/dL'}
           />
 
           {/* Today's Meals Card */}

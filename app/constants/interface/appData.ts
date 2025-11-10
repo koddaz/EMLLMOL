@@ -18,4 +18,5 @@ export interface AppData {
   };
   diaryEntries: any[];
   isEntriesLoaded: boolean;
+  isFirstLogin?: boolean;
 }

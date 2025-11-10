@@ -48,6 +48,24 @@ export default function Index() {
         try {
           await authHook.getProfile();
           console.log('✅ Profile fetched successfully');
+
+          // Check if this is first login
+          const isFirstLogin = await authHook.checkFirstLogin();
+          console.log('🔍 First login check:', isFirstLogin);
+
+          // Update appData with first login status
+          setAppData((prev: AppData | null) => {
+            if (!prev) return null;
+            return {
+              ...prev,
+              isFirstLogin
+            };
+          });
+
+          // Mark welcome as seen for future logins
+          if (isFirstLogin) {
+            await authHook.markWelcomeSeen();
+          }
         } catch (error) {
           console.error('❌ Failed to fetch profile:', error);
         }

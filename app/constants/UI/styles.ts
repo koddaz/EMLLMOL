@@ -550,12 +550,7 @@ export const customStyles = (theme: MD3Theme) => StyleSheet.create({
     bgErrorContainer: {
         backgroundColor: theme.colors.errorContainer,
     },
-    bgSuccess: {
-        backgroundColor: theme.colors.success,
-    },
-    bgWarning: {
-        backgroundColor: theme.colors.warning,
-    },
+
     bgTransparent: {
         backgroundColor: 'transparent',
     },

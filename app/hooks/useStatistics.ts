@@ -12,7 +12,7 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
 
   // Meal type colors from theme
   const mealColors = {
-    breakfast: theme.colors.mealBreakfast,
+    breakfast: theme.colors?.mealBreakfast,
     lunch: theme.colors.mealLunch,
     dinner: theme.colors.mealDinner,
     snack: theme.colors.mealSnack
@@ -218,7 +218,8 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
         totalCarbs: 0,
         totalInsulin: 0,
         carbsByMeal: { breakfast: 0, lunch: 0, dinner: 0, snack: 0 },
-        insulinByMeal: { breakfast: 0, lunch: 0, dinner: 0, snack: 0 }
+        insulinByMeal: { breakfast: 0, lunch: 0, dinner: 0, snack: 0 },
+        mealCount: { breakfast: 0, lunch: 0, dinner: 0, snack: 0 }
       };
     }
 
@@ -237,12 +238,14 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
 
     const carbsByMeal = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
     const insulinByMeal = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+     const mealCount = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
 
     filteredEntries.forEach(entry => {
       const mealType = entry.meal_type as keyof typeof carbsByMeal;
       if (mealType && carbsByMeal.hasOwnProperty(mealType)) {
         carbsByMeal[mealType] += entry.carbs || 0;
         insulinByMeal[mealType] += entry.insulin || 0;
+        mealCount[mealType] += 1;
       }
     });
 
@@ -251,7 +254,8 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
       totalCarbs,
       totalInsulin,
       carbsByMeal,
-      insulinByMeal
+      insulinByMeal,
+      mealCount
     };
   }, [diaryEntries, selectedPeriod]);
 

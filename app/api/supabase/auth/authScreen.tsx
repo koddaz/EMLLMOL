@@ -11,10 +11,6 @@ import { useAppTheme } from "@/app/constants/UI/theme";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { CustomTextInput } from "@/app/components/textInput";
 
-
-
-
-
 export default function AuthScreen() {
     const theme = useTheme();
     const styles = customStyles(theme);
@@ -22,7 +18,6 @@ export default function AuthScreen() {
 
     const [isSignIn, setIsSignIn] = useState(true);
     const [showConfirmationMessage, setShowConfirmationMessage] = useState(false);
-
 
     const [showTerms, setShowTerms] = useState(false);
     const [showInformation, setShowInformation] = useState(false);
@@ -37,95 +32,106 @@ export default function AuthScreen() {
     }
 
     if (showInformation) {
-        return (
-
-            <InformationScreen onClose={() => setShowInformation(false)} />
-
-        );
+        return <InformationScreen onClose={() => setShowInformation(false)} />;
     }
 
     if (showConfirmationMessage) {
         return (
-            <ConfirmScreen setShowConfirmationMessage={setShowConfirmationMessage} />
+            <ConfirmScreen setShowConfirmationMessage={setShowConfirmationMessage} authHook={authHook} />
         )
     }
 
-
     return (
+        <View style={{ flex: 1, marginTop: insets.top, backgroundColor: theme.colors.background }}>
+            {/* Modern Header */}
+            <Surface style={{ paddingHorizontal: 24, paddingTop: 32, paddingBottom: 16 }} elevation={0}>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                    <View style={{ flex: 1 }}>
+                        <Text variant="headlineLarge" style={{
+                            color: theme.colors.onBackground,
+                            fontWeight: '700',
+                            marginBottom: 4,
+                        }}>
+                            emmi-Sense
+                        </Text>
+                        <Text variant="bodyLarge" style={{
+                            color: theme.colors.onSurfaceVariant,
+                        }}>
+                            Your Personal Diabetes Diary
+                        </Text>
+                    </View>
+                    <Surface style={{
+                        width: 64,
+                        height: 64,
+                        borderRadius: 32,
+                        backgroundColor: theme.colors.primaryContainer,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        elevation: 2
+                    }}>
+                        <Icon source="heart-pulse" size={32} color={theme.colors.primary} />
+                    </Surface>
+                </View>
+            </Surface>
 
-        <View style={{ flex: 1, marginTop: insets.top, backgroundColor: theme.colors.surface }}>
-            <View style={{ flexDirection: 'row', gap: 16, alignItems: 'center', paddingHorizontal: 16, paddingVertical: 8, backgroundColor: theme.colors.primary }}>
-                <Image
-                    style={{ width: 75, height: 75, }}
-                    source={require('../../../../assets/images/logo-head.gif')}
-                    resizeMode="contain"
-                />
-                <Text variant="headlineMedium">emmi-Sense</Text>
-            </View>
-            <View style={{ flex: 1, padding: 16 }}>
-
+            <View style={{ flex: 1, paddingHorizontal: 16 }}>
                 {isSignIn ? (
                     <SignInScreen setIsSignIn={setIsSignIn} authHook={authHook} />
                 ) : (
                     <SignUpScreen setIsSignIn={setIsSignIn} setShowConfirmationMessage={setShowConfirmationMessage} authHook={authHook} />
                 )}
-
             </View>
-
-
-
-
 
             {/* Error Message */}
             {error && (
-                <Surface style={[styles.box, { backgroundColor: theme.colors.errorContainer }]}>
-                    <MaterialCommunityIcons
-                        name="alert-circle"
-                        size={20}
-                        color={theme.colors.error}
-                    />
-                    <Text style={[styles.box, { color: theme.colors.error }]}>
+                <View style={{
+                    margin: 16,
+                    backgroundColor: theme.colors.errorContainer,
+                    padding: 16,
+                    borderRadius: 12,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 12
+                }}>
+                    <Icon source="alert-circle" size={24} color={theme.colors.error} />
+                    <Text style={{ color: theme.colors.error, flex: 1 }}>
                         {error}
                     </Text>
-                </Surface>
+                </View>
             )}
-
         </View>
-
     );
 }
-
 
 export function SignUpScreen(
     { setIsSignIn, setShowConfirmationMessage, authHook }: { setIsSignIn: any, setShowConfirmationMessage: any, authHook: any }
 ) {
-
     const { styles, theme } = useAppTheme()
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     // Create refs for navigation
     const emailRef = useRef<any>(null);
     const passwordRef = useRef<any>(null);
     const confirmPasswordRef = useRef<any>(null);
 
-    const { signUp, error, setError } = authHook
+    const { signUp, error, setError, isLoading } = authHook
 
     const handleSignUp = () => {
         if (password != confirmPassword) {
-            setError("Passwords does not match.")
+            setError("Passwords do not match.")
         } else {
             try {
                 signUp(email, password)
                 setShowConfirmationMessage(true)
-
             } catch (error: any) {
-                setError(`Error ${error} occured.`)
+                setError(`Error ${error} occurred.`)
             }
         }
     }
-
 
     return (
         <KeyboardAvoidingView
@@ -136,31 +142,23 @@ export function SignUpScreen(
         >
             <ScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ gap: 8, paddingBottom: 150, flexGrow: 1 }}
+                contentContainerStyle={{ gap: 16, paddingBottom: 32, paddingTop: 8 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
-                automaticallyAdjustKeyboardInsets={true}
             >
-                <View style={{ backgroundColor: theme.colors.surfaceVariant, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                    <Text variant='titleLarge'>Welcome to emmi-Sense </Text>
-                    <Text variant='titleMedium'>- Your Personal Diabetes Diary</Text>
-                    <Text variant='bodyLarge' style={{ textAlign: 'justify' }}>
-                        Track your blood glucose, carbs intake, and insulin use all in one place. Monitor patterns, gain insights, and take control of your diabetes management one entry at a time.
+                {/* Welcome Section */}
+                <View style={{ marginBottom: 8 }}>
+                    <Text variant='headlineMedium' style={{ fontWeight: '700', color: theme.colors.onBackground, marginBottom: 4 }}>
+                        Create Account
                     </Text>
-
+                    <Text variant='bodyLarge' style={{ color: theme.colors.onSurfaceVariant }}>
+                        Track your blood glucose, carbs, and insulin all in one place
+                    </Text>
                 </View>
-                {error && (
-                    <View style={{ backgroundColor: theme.colors.error, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                        <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
-                    </View>
-                )}
+
+                {/* Form Card */}
                 <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
-                    <Card.Title 
-                        title="Sign Up"
-                        left={(props) => <Icon {...props} source="clipboard-account-outline" size={24} color={theme.colors.primary} />}
-                    />
-                    <Card.Content style={{ gap: 8 }}>
+                    <Card.Content style={{ gap: 16, paddingVertical: 20 }}>
                         <TextInput
                             value={email}
                             onChangeText={setEmail}
@@ -179,64 +177,74 @@ export function SignUpScreen(
                             mode="outlined"
                             onChangeText={setPassword}
                             label="Password"
-                            placeholder="Enter your passowrd"
-                            secureTextEntry={true}
+                            placeholder="At least 6 characters"
+                            secureTextEntry={!showPassword}
                             left={<TextInput.Icon icon="lock" />}
+                            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
                             returnKeyType="next"
                             ref={passwordRef}
-                            onSubmitEditing={() => confirmPasswordRef.current.focus()}
+                            onSubmitEditing={() => confirmPasswordRef.current?.focus()}
                         />
                         <TextInput
                             value={confirmPassword}
                             mode="outlined"
                             onChangeText={setConfirmPassword}
                             label="Confirm Password"
-                            error={password != confirmPassword}
+                            error={password !== confirmPassword && confirmPassword.length > 0}
                             placeholder="Confirm your password"
-                            secureTextEntry={true}
+                            secureTextEntry={!showConfirmPassword}
                             left={<TextInput.Icon icon="lock" />}
+                            right={<TextInput.Icon icon={showConfirmPassword ? "eye-off" : "eye"} onPress={() => setShowConfirmPassword(!showConfirmPassword)} />}
                             returnKeyType="done"
                             ref={confirmPasswordRef}
-                            onSubmitEditing={() => confirmPasswordRef.current?.blur()}
+                            onSubmitEditing={handleSignUp}
                         />
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1 }} />
-                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignUp}>Sign Up</Button>
-                        </View>
-                    </Card.Content>
-                    <Card.Actions style={{ justifyContent: 'flex-end' }}>
+
                         <Button
-                            mode="text"
-                            onPress={() => {
-                                setIsSignIn(true);
-                                setError(null);
-                            }}
+                            mode="contained"
+                            buttonColor={theme.colors.primary}
+                            textColor={theme.colors.onPrimary}
+                            style={{ borderRadius: 8, marginTop: 8 }}
+                            onPress={handleSignUp}
+                            loading={isLoading}
+                            disabled={isLoading}
                         >
-                            Already have an account? Sign In
+                            Sign Up
                         </Button>
-                    </Card.Actions>
+                    </Card.Content>
                 </Card>
+
+                {/* Switch to Sign In */}
+                <View style={{ alignItems: 'center', marginTop: 8 }}>
+                    <Button
+                        mode="text"
+                        onPress={() => {
+                            setIsSignIn(true);
+                            setError(null);
+                        }}
+                        textColor={theme.colors.primary}
+                    >
+                        Already have an account? Sign In
+                    </Button>
+                </View>
             </ScrollView>
         </KeyboardAvoidingView>
     )
-
 }
 
 export function SignInScreen(
     { setIsSignIn, authHook }: { setIsSignIn: any, authHook: any }
-
 ) {
     const { styles, theme } = useAppTheme()
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
+    const [showPassword, setShowPassword] = useState(false);
 
     // Create refs for navigation
     const emailRef = useRef<any>(null);
     const passwordRef = useRef<any>(null);
 
-
-    const { signIn, error, setError } = authHook
+    const { signIn, error, setError, isLoading } = authHook
 
     const handleSignIn = () => {
         try {
@@ -255,32 +263,23 @@ export function SignInScreen(
         >
             <ScrollView
                 style={{ flex: 1 }}
-                contentContainerStyle={{ gap: 8, paddingBottom: 150, flexGrow: 1 }}
+                contentContainerStyle={{ gap: 16, paddingBottom: 32, paddingTop: 8 }}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled={true}
-                automaticallyAdjustKeyboardInsets={true}
             >
-                <View style={{ backgroundColor: theme.colors.surfaceVariant, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                    <Text variant='titleLarge'>Welcome back! </Text>
-                    <Text variant='titleMedium'>- Your Personal Diabetes Diary</Text>
-                    <Text variant='bodyLarge' style={{ textAlign: 'justify' }}>
-                        Track your blood glucose, carbs intake, and insulin use all in one place. Monitor patterns, gain insights, and take control of your diabetes management one entry at a time.
+                {/* Welcome Section */}
+                <View style={{ marginBottom: 8 }}>
+                    <Text variant='headlineMedium' style={{ fontWeight: '700', color: theme.colors.onBackground, marginBottom: 4 }}>
+                        Welcome Back
                     </Text>
-
+                    <Text variant='bodyLarge' style={{ color: theme.colors.onSurfaceVariant }}>
+                        Sign in to continue tracking your diabetes management
+                    </Text>
                 </View>
 
-                {error && (
-                    <View style={{ backgroundColor: theme.colors.error, padding: 12, gap: 8, borderRadius: 8, borderWidth: 0.5, borderColor: theme.colors.outline }}>
-                        <Text variant={"bodyLarge"} style={{ color: theme.colors.onError }}>{error}</Text>
-                    </View>
-                )}
+                {/* Form Card */}
                 <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
-                    <Card.Title 
-                        title="Sign In"
-                        left={(props) => <Icon {...props} source="clipboard-account-outline" size={24} color={theme.colors.primary} />}
-                    />
-                    <Card.Content style={{ gap: 8 }}>
+                    <Card.Content style={{ gap: 16, paddingVertical: 20 }}>
                         <TextInput
                             value={email}
                             onChangeText={setEmail}
@@ -299,230 +298,120 @@ export function SignInScreen(
                             mode="outlined"
                             onChangeText={setPassword}
                             label="Password"
-                            placeholder="Enter your passowrd"
-                            secureTextEntry={true}
+                            placeholder="Enter your password"
+                            secureTextEntry={!showPassword}
                             left={<TextInput.Icon icon="lock" />}
-                            returnKeyType="next"
+                            right={<TextInput.Icon icon={showPassword ? "eye-off" : "eye"} onPress={() => setShowPassword(!showPassword)} />}
+                            returnKeyType="done"
                             ref={passwordRef}
-                            onSubmitEditing={() => passwordRef.current.blur()}
+                            onSubmitEditing={handleSignIn}
                         />
-                        <View style={{ flexDirection: 'row' }}>
-                            <View style={{ flex: 1 }} />
-                            <Button mode="contained" buttonColor={theme.colors.primaryContainer} textColor={theme.colors.onPrimaryContainer} style={{ borderRadius: 8, flex: 1 }} onPress={handleSignIn}>Sign In</Button>
-                        </View>
-                    </Card.Content>
-                    <Card.Actions style={{ justifyContent: 'flex-end' }}>
+
                         <Button
-                            mode="text"
-                            onPress={() => {
-                                setIsSignIn(false);
-                                setError(null);
-                            }}
+                            mode="contained"
+                            buttonColor={theme.colors.primary}
+                            textColor={theme.colors.onPrimary}
+                            style={{ borderRadius: 8, marginTop: 8 }}
+                            onPress={handleSignIn}
+                            loading={isLoading}
+                            disabled={isLoading}
                         >
-                            Don't have an account? Sign Up
+                            Sign In
                         </Button>
-                    </Card.Actions>
+                    </Card.Content>
                 </Card>
+
+                {/* Switch to Sign Up */}
+                <View style={{ alignItems: 'center', marginTop: 8 }}>
+                    <Button
+                        mode="text"
+                        onPress={() => {
+                            setIsSignIn(false);
+                            setError(null);
+                        }}
+                        textColor={theme.colors.primary}
+                    >
+                        Don't have an account? Sign Up
+                    </Button>
+                </View>
             </ScrollView>
         </KeyboardAvoidingView>
     );
 }
 
 export function ConfirmScreen(
-    { setShowConfirmationMessage }: { setShowConfirmationMessage: any }
+    { setShowConfirmationMessage, authHook }: { setShowConfirmationMessage: any, authHook: any }
 ) {
-
     const { theme, styles } = useAppTheme()
+    const [isResending, setIsResending] = useState(false);
+
+    const handleResend = async () => {
+        setIsResending(true);
+        try {
+            // Call the resend confirmation from authHook
+            await authHook.resendConfirmation();
+            // Show success message or keep modal open
+        } catch (error) {
+            console.error('Failed to resend confirmation:', error);
+        } finally {
+            setIsResending(false);
+        }
+    };
 
     return (
-        <View style={[styles.background, { flex: 1, padding: 16, justifyContent: 'center' }]}>
+        <View style={[styles.background, { flex: 1, padding: 24, justifyContent: 'center' }]}>
+            <View style={{ gap: 24 }}>
+                <Card mode="elevated" elevation={3} style={{ borderRadius: 16 }}>
+                    <Card.Content style={{ gap: 16, paddingVertical: 32 }}>
+                        <View style={{ alignItems: 'center', marginBottom: 8 }}>
+                            <View style={{
+                                width: 80,
+                                height: 80,
+                                borderRadius: 40,
+                                backgroundColor: theme.colors.primaryContainer,
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                marginBottom: 16
+                            }}>
+                                <Icon source="email-check" size={48} color={theme.colors.primary} />
+                            </View>
+                            <Text variant="headlineMedium" style={{ fontWeight: '700', color: theme.colors.onSurface, marginBottom: 8 }}>
+                                Check Your Email
+                            </Text>
+                        </View>
 
-            <View style={{ gap: 16 }}>
-                <Card mode="elevated" elevation={2} style={{ marginVertical: 0 }}>
-                    <Card.Title 
-                        title="Check Your Email"
-                        left={(props) => <Icon {...props} source="email-search-outline" size={24} color={theme.colors.primary} />}
-                    />
-                    <Card.Content style={{ gap: 8 }}>
-                        <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
-                            We have sent you an e-mail with a confirmation link.
+                        <Text variant="bodyLarge" style={{ textAlign: 'center', color: theme.colors.onSurfaceVariant }}>
+                            We've sent you an email with a confirmation link.
                         </Text>
-                        <Text variant="bodyMedium" style={{ textAlign: 'justify' }}>
+                        <Text variant="bodyLarge" style={{ textAlign: 'center', color: theme.colors.onSurfaceVariant }}>
                             Please check your email and click the link to start using the app.
                         </Text>
                     </Card.Content>
                 </Card>
-                <View style={styles.row}>
-                    <View style={{ flex: 1 }} />
-                    <View style={{ flex: 1, gap: 8 }} >
-                        <Button contentStyle={{
-                            justifyContent: 'flex-start'
-                        }} icon={"email"} mode="contained-tonal" buttonColor={theme.colors.primary} textColor={theme.colors.onPrimary} style={{ borderRadius: 8 }} onPress={() => { setShowConfirmationMessage(false) }}>
-                            Resend confirmation
-                        </Button>
-                        <Button contentStyle={{
-                            justifyContent: 'flex-start'
-                        }} icon={"chevron-left"} mode="contained-tonal" buttonColor={theme.colors.errorContainer} textColor={theme.colors.onErrorContainer} style={{ borderRadius: 8 }} onPress={() => { setShowConfirmationMessage(false) }}>
-                            Back
-                        </Button>
-                    </View>
+
+                <View style={{ gap: 12 }}>
+                    <Button
+                        icon="email"
+                        mode="contained"
+                        buttonColor={theme.colors.primary}
+                        textColor={theme.colors.onPrimary}
+                        style={{ borderRadius: 8 }}
+                        onPress={handleResend}
+                        loading={isResending}
+                        disabled={isResending}
+                    >
+                        Resend Confirmation
+                    </Button>
+                    <Button
+                        icon="chevron-left"
+                        mode="outlined"
+                        style={{ borderRadius: 8 }}
+                        onPress={() => setShowConfirmationMessage(false)}
+                    >
+                        Back
+                    </Button>
                 </View>
             </View>
         </View>
     );
 }
-
-
-
-
-
-/* 
-
-            {showConfirmationMessage ? (
-                <View style={authStyles.confirmationContainer}>
-                    <MaterialCommunityIcons
-                        name="email-check"
-                        size={48}
-                        color={theme.colors.onPrimary}
-                        style={authStyles.confirmationIcon}
-                    />
-                    <Text variant="headlineSmall" style={[authStyles.confirmationTitle, { color: theme.colors.onPrimary }]}>
-                        Check Your Email
-                    </Text>
-                    <Text variant="bodyLarge" style={[authStyles.confirmationText, { color: theme.colors.onPrimary }]}>
-                        Please check your email and click the confirmation link to activate your account.
-                    </Text>
-                    <Button
-                        mode="contained"
-                        onPress={() => {
-                            setShowConfirmationMessage(false);
-                            setError(null);
-                        }}
-                        style={[authStyles.button, { backgroundColor: theme.colors.secondary }]}
-                        labelStyle={{ color: theme.colors.onSecondary }}
-                        icon="arrow-left"
-                    >
-                        Back to Sign In
-                    </Button>
-                </View>
-            ) : (
-                <>
-                   
-                    <View style={[authStyles.formContainer, { borderColor: theme.colors.outline }]}>
-                        <View style={[authStyles.formHeader, { backgroundColor: theme.colors.secondary }]}>
-                            <MaterialCommunityIcons
-                                name={isSignIn ? "login" : "account-plus"}
-                                size={28}
-                                color={theme.colors.onSecondary}
-                                style={authStyles.formIcon}
-                            />
-                            <Text variant="headlineMedium" style={[authStyles.formTitle, { color: theme.colors.onSecondary }]}>
-                                {isSignIn ? 'Welcome Back' : 'Create Account'}
-                            </Text>
-                            <Text variant="bodyMedium" style={[authStyles.formSubtitle, { color: theme.colors.onSecondary }]}>
-                                {isSignIn
-                                    ? 'Enter your credentials to access your dashboard'
-                                    : 'Join us to start tracking your health journey'
-                                }
-                            </Text>
-                        </View>
-                        <View style={authStyles.inputContainer}>
-                            <TextInput
-                                label="Email"
-                                value={email}
-                                outlineColor={theme.colors.onPrimary}
-                                activeOutlineColor={theme.colors.onPrimary}
-                                textColor={theme.colors.onPrimary}
-                                onChangeText={setEmail}
-                                style={[authStyles.textInput, { backgroundColor: 'transparent' }]}
-                                contentStyle={{ color: theme.colors.onPrimary }}
-                                mode="outlined"
-                                autoCapitalize="none"
-                                autoComplete="email"
-                                keyboardType="email-address"
-                                left={<TextInput.Icon icon="email" color={theme.colors.onPrimary} />}
-                                theme={{
-                                    colors: {
-                                        onSurfaceVariant: theme.colors.onPrimary,
-                                        outline: theme.colors.onPrimary,
-                                    }
-                                }}
-                            />
-
-                            <TextInput
-                                label="Password"
-                                value={password}
-                                outlineColor={theme.colors.onPrimary}
-                                activeOutlineColor={theme.colors.onPrimary}
-                                textColor={theme.colors.onPrimary}
-                                onChangeText={setPassword}
-                                style={[authStyles.textInput, { backgroundColor: 'transparent' }]}
-                                contentStyle={{ color: theme.colors.onPrimary }}
-                                mode="outlined"
-                                secureTextEntry
-                                autoCapitalize="none"
-                                autoComplete="password"
-                                left={<TextInput.Icon icon="lock" color={theme.colors.onPrimary} />}
-                                theme={{
-                                    colors: {
-                                        onSurfaceVariant: theme.colors.onPrimary,
-                                        outline: theme.colors.onPrimary,
-                                    }
-                                }}
-                            />
-                        </View>
-                        <View style={[authStyles.actionContainer, { backgroundColor: theme.colors.surfaceVariant, opacity: 0.9 }]}>
-                            <View style={{ flexDirection: 'row' }}>
-                                <Button
-                                    mode="text"
-                                    onPress={() => {
-                                        setIsSignIn(!isSignIn);
-                                        setError(null);
-                                    }}
-                                    style={authStyles.switchButton}
-                                    labelStyle={{ color: theme.colors.onPrimary }}
-                                >
-                                    {isSignIn ? 'Don\'t have an account? Sign Up' : 'Already have an account? Sign In'}
-                                </Button>
-
-                                <View style={{ flexDirection: 'row', flex: 1, justifyContent: 'flex-end', marginRight: 12 }}>
-                                    <IconButton
-                                        icon="help-circle-outline"
-                                        size={24}
-                                        iconColor={theme.colors.onPrimary}
-                                        onPress={() => setShowInformation(true)}
-                                        style={authStyles.iconButton}
-                                    />
-                                    <IconButton
-                                        icon="file-document-outline"
-                                        size={24}
-                                        iconColor={theme.colors.onPrimary}
-                                        onPress={() => setShowTerms(true)}
-                                        style={authStyles.iconButton}
-                                    />
-                                </View>
-                            </View>
-                            <Button
-                                mode="contained"
-                                onPress={async () => {
-                                    setIsLoading(true);
-                                    if (isSignIn) {
-                                        await signIn(email, password);
-                                    } else {
-                                        await signUp(email, password);
-                                        setShowConfirmationMessage(true);
-                                    }
-                                    setIsLoading(false);
-                                }}
-                                loading={isLoading}
-                                style={[authStyles.button, { backgroundColor: theme.colors.secondary }]}
-                                labelStyle={{ color: theme.colors.onSecondary }}
-                                icon={isSignIn ? "login" : "account-plus"}
-                                disabled={!email || !password}
-                            >
-                                {isSignIn ? 'Sign In' : 'Sign Up'}
-                            </Button>
-                        </View>
-                    </View>
-                </>
-            )} */

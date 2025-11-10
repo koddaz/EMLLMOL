@@ -336,7 +336,7 @@ export function SettingsScreen({
                 showsVerticalScrollIndicator={false}
             >
                 {/* Title Section */}
-                <Surface style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
+                <Surface style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                         <View style={{ flex: 1 }}>
                             <Text variant="headlineMedium" style={{

@@ -42,7 +42,7 @@ export interface HookData {
 
 export function RootNavigation({
      appData, setAppData, currentScreen, authHook
-}: NavData & { authHook: any }) {
+}: NavData & { authHook: HookData }) {
      const { styles, theme } = useAppTheme()
 
      // Always call hooks unconditionally (Rules of Hooks)
@@ -66,13 +66,13 @@ export function RootNavigation({
 
                     {currentScreen !== "home" ? (
                          <Appbar.Action icon="chevron-left" style={styles.iconButton} iconColor={theme.colors.onBackground} onPress={() => { navigation.goBack() }} />
-                    ) : 
-                    (
-                         <Appbar.Action icon="cog" style={styles.iconButton} iconColor={theme.colors.onBackground} onPress={() => { navigation.navigate("settings") }} />
-                    )
+                    ) :
+                         (
+                              <Appbar.Action icon="cog" style={styles.iconButton} iconColor={theme.colors.onBackground} onPress={() => { navigation.navigate("settings") }} />
+                         )
                     }
 
-                    
+
 
                     {/* Logo always centered */}
                     <Appbar.Content
@@ -110,7 +110,7 @@ export function RootNavigation({
                     header: () => MainTopBar(),
                     tabBarActiveTintColor: theme.colors.secondary,
                     tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-                    tabBarStyle: {
+                    tabBarStyle: currentScreen === 'camera' ? { display: 'none' } : {
                          backgroundColor: theme.colors.primaryContainer,
                          borderTopColor: theme.colors.primaryContainer,
                          borderTopWidth: 0,
@@ -200,10 +200,9 @@ export function RootNavigation({
                               }}
                          >
                               {(props) =>
-                                   <StackNavigation
+                                   <DiaryScreen
                                         {...props}
                                         appData={appData}
-                                        setAppData={setAppData}
                                         dbHook={dbHook}
                                         calendarHook={calendarHook}
                                         cameraHook={cameraHook}
@@ -268,6 +267,24 @@ export function RootNavigation({
                                    />
                               )}
                          </root.Screen>
+
+                         {/* Camera Screen - Hidden from tab bar, accessible from input screens */}
+                         <root.Screen
+                              name="camera"
+                              options={{
+                                   tabBarButton: () => null,
+                                   tabBarItemStyle: { display: 'none' },
+                              }}
+                         >
+                              {(props) => (
+                                   <CameraScreen
+                                        {...props}
+                                        appData={appData}
+                                        cameraHook={cameraHook}
+                                        dbHook={dbHook}
+                                   />
+                              )}
+                         </root.Screen>
                     </>
                )}
 
@@ -275,58 +292,6 @@ export function RootNavigation({
      )
 }
 
-export function StackNavigation(
-     { appData, dbHook, calendarHook, cameraHook }: HookData & NavData
 
-) {
-
-
-     return (
-
-          <stack.Navigator
-               screenOptions={{
-                    headerShown: false,
-               }}
-          >
-               <stack.Screen
-                    name={"main"}>
-                    {(navigation) => (
-                         <DiaryScreen
-                              {...navigation}
-                              appData={appData}
-                              dbHook={dbHook}
-                              calendarHook={calendarHook}
-                              cameraHook={cameraHook}
-                         />
-                    )}
-               </stack.Screen>
-
-               <stack.Screen name={"input"}>
-                    {(navigation) => (
-                         <InputScreen
-                              {...navigation}
-                              appData={appData}
-                              dbHook={dbHook}
-                              calendarHook={calendarHook}
-                              cameraHook={cameraHook} />
-                    )}
-               </stack.Screen>
-
-               <stack.Screen
-                    name={'camera'}>
-                    {(navigation) => (
-                         <CameraScreen
-                              {...navigation}
-                              cameraHook={cameraHook}
-                              dbHook={dbHook}
-                              appData={appData}
-                         />
-                    )}
-               </stack.Screen>
-          </stack.Navigator>
-
-     );
-
-}
 
 

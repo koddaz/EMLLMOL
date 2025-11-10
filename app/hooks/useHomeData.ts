@@ -13,7 +13,7 @@ export interface HomeData {
     name: string;
     time: string;
     carbs: number;
-    calories: number;
+    glucose: number;
     mealType: string;
   }>;
 }
@@ -80,15 +80,12 @@ export function useHomeData(diaryEntries: DiaryData[]): HomeData {
         };
         const mealName = mealNames[entry.meal_type] || 'Meal';
 
-        // Estimate calories (4 cal per gram of carbs as baseline)
-        const estimatedCalories = Math.round((entry.carbs || 0) * 4);
-
         return {
           id: entry.id || '',
           name: entry.note || mealName,
           time: timeString,
           carbs: entry.carbs || 0,
-          calories: estimatedCalories,
+          glucose: entry.glucose || 0,
           mealType: entry.meal_type
         };
       })

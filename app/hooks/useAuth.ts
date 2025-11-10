@@ -630,6 +630,27 @@ export function useAuth(
         }
     };
 
+    // Check if this is user's first login
+    const checkFirstLogin = async (): Promise<boolean> => {
+        try {
+            const hasSeenWelcome = await AsyncStorage.getItem('has_seen_welcome');
+            return hasSeenWelcome === null; // true if key doesn't exist (first login)
+        } catch (error) {
+            console.error('Error checking first login:', error);
+            return false; // Default to not first login on error
+        }
+    };
+
+    // Mark that user has seen the welcome message
+    const markWelcomeSeen = async (): Promise<void> => {
+        try {
+            await AsyncStorage.setItem('has_seen_welcome', 'true');
+            console.log('✅ Welcome seen flag set');
+        } catch (error) {
+            console.error('Error setting welcome seen flag:', error);
+        }
+    };
+
     return {
         error,
         isLoading,
@@ -674,6 +695,10 @@ export function useAuth(
         // Confirmation -> Email
         emailConfirmed,
         setEmailConfirmed,
-        checkConfirmationEmail
+        checkConfirmationEmail,
+
+        // First login detection
+        checkFirstLogin,
+        markWelcomeSeen
     };
 }

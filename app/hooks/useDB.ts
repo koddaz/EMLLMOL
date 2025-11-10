@@ -1,7 +1,7 @@
 import { supabase } from "@/app/api/supabase/supabase";
 import { AppData } from "@/app/constants/interface/appData";
 import { DiaryData } from "@/app/constants/interface/diaryData";
-import { useCallback, useState, useMemo } from "react";
+import { useCallback, useState, useMemo, useEffect } from "react";
 
 export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetStateAction<AppData | null>>) {
   const [isLoading, setIsLoading] = useState(false);
@@ -62,6 +62,13 @@ export function useDB(appData?: AppData, setAppData?: React.Dispatch<React.SetSt
   const [glucose, setGlucose] = useState(
       appData?.settings.glucose === "mmol" ? 5.6 : 100
     );
+
+  // Update glucose default value when settings change
+  useEffect(() => {
+    const defaultValue = appData?.settings.glucose === "mmol" ? 5.6 : 100;
+    setGlucose(defaultValue);
+  }, [appData?.settings.glucose]);
+
   const [carbs, setCarbs] = useState("");
   const [insulin, setInsulin] = useState("");
   const [note, setNote] = useState("");

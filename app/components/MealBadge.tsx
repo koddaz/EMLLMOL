@@ -6,7 +6,7 @@ import { useAppTheme } from '@/app/constants/UI/theme';
 interface MealBadgeProps {
   value: number;
   unit: string;
-  variant: 'carbs' | 'calories';
+  variant: 'carbs' | 'glucose';
 }
 
 export function MealBadge({ value, unit, variant }: MealBadgeProps) {
@@ -17,12 +17,12 @@ export function MealBadge({ value, unit, variant }: MealBadgeProps) {
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 12,
-      backgroundColor: variant === 'carbs' ? theme.colors.secondaryContainer : theme.colors.surfaceVariant,
+      backgroundColor: variant === 'carbs' ? theme.colors.secondaryContainer : theme.colors.primaryContainer,
     },
     text: {
       fontSize: 12,
       fontWeight: '500',
-      color: variant === 'carbs' ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant,
+      color: variant === 'carbs' ? theme.colors.onSecondaryContainer : theme.colors.onPrimaryContainer,
     }
   });
 

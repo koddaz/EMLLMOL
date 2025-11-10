@@ -4,18 +4,127 @@ import { HookData, NavData } from '@/app/navigation/rootNav';
 import React, { useRef, useState } from 'react';
 import { Dimensions, FlatList, Image, KeyboardAvoidingView, Platform, ScrollView, View, StyleSheet } from 'react-native';
 import { Button, Icon, IconButton, Text, TextInput, Card, Surface, Modal, Portal } from 'react-native-paper';
-import { CameraScreen, ImageRow } from '../../Camera/cameraScreen';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ButtonPicker } from './components/buttonPicker';
 import { GlucosePicker } from './components/decimalPicker';
 import { DiaryEntryContent } from '../Entry/diaryEntry';
+
+function InputPhotoScroll({ photoURIs, onAddPhoto }: { photoURIs: string[], onAddPhoto: () => void }) {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [containerWidth, setContainerWidth] = useState(0);
+  const { theme, styles } = useAppTheme();
+
+  // Prepare data: if no images, show placeholder with camera button
+  const images = photoURIs.length === 0
+    ? [{ uri: null, isPlaceholder: true }]
+    : photoURIs.map(uri => ({ uri, isPlaceholder: false }));
+
+  const renderImageItem = ({ item, index }: { item: { uri: string | null, isPlaceholder: boolean }, index: number }) => {
+    if (item.isPlaceholder) {
+      return (
+        <View style={{ height: 200, borderWidth: 1, borderRadius: 8, width: containerWidth, justifyContent: 'center', alignItems: 'center', borderColor: theme.colors.outline, backgroundColor: theme.colors.surfaceVariant }}>
+          <IconButton
+            icon="camera"
+            mode="contained"
+            size={48}
+            iconColor={theme.colors.onPrimary}
+            containerColor={theme.colors.primary}
+            onPress={onAddPhoto}
+          />
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant, marginTop: 8 }}>
+            Add photos
+          </Text>
+        </View>
+      );
+    }
+
+    return (
+      <View style={{ width: containerWidth, borderWidth: 1, borderRadius: 8, overflow: 'hidden', borderColor: theme.colors.outline, position: 'relative' }}>
+        <Image
+          source={{ uri: item.uri || undefined }}
+          style={{ height: 200, width: containerWidth }}
+          resizeMode="cover"
+        />
+        {/* Camera button overlay */}
+        <IconButton
+          icon="camera-plus"
+          mode="contained"
+          size={24}
+          iconColor={theme.colors.onPrimary}
+          containerColor={theme.colors.primary}
+          style={{ position: 'absolute', bottom: 8, right: 8 }}
+          onPress={onAddPhoto}
+        />
+      </View>
+    );
+  };
+
+  return (
+    <View
+      style={{ height: 200, position: 'relative', marginHorizontal: 16, marginVertical: 16 }}
+      onLayout={(event) => {
+        const { width } = event.nativeEvent.layout;
+        setContainerWidth(width);
+      }}
+    >
+      {containerWidth > 0 && (
+        <FlatList
+          data={images}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          renderItem={renderImageItem}
+          keyExtractor={(item, index) => index.toString()}
+          onMomentumScrollEnd={(event) => {
+            const index = Math.round(event.nativeEvent.contentOffset.x / containerWidth);
+            setCurrentImageIndex(index);
+          }}
+        />
+      )}
+
+      {/* Only show indicators if there are real images */}
+      {images.length > 1 && !images[0].isPlaceholder && (
+        <>
+          {/* Image indicator dots */}
+          <View style={[styles.imageOverlay, {
+            bottom: 8,
+            left: 8,
+            flexDirection: 'row'
+          }]}>
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  width: 6,
+                  height: 6,
+                  borderRadius: 3,
+                  backgroundColor: index === currentImageIndex ? theme.colors.onPrimary : 'rgba(255, 255, 255, 0.6)',
+                  marginHorizontal: 2,
+                }}
+              />
+            ))}
+          </View>
+
+          {/* Image counter */}
+          <View style={[styles.imageOverlay, {
+            top: 8,
+            right: 8,
+          }]}>
+            <Text style={{ color: 'white', fontSize: 12, fontWeight: 'bold' }}>
+              {currentImageIndex + 1} / {images.length}
+            </Text>
+          </View>
+        </>
+      )}
+    </View>
+  );
+}
 
 export function InputScreen({
   dbHook, cameraHook, calendarHook, appData, diaryData, navigation
 }: HookData & NavData) {
 
   const { theme, styles } = useAppTheme();
-
-  const { showCamera, toggleCamera } = cameraHook
 
   const {
     // Input Data
@@ -57,30 +166,7 @@ export function InputScreen({
   const carbsRef = useRef<any>(null);
   const insulinRef = useRef<any>(null);
 
-  const getMealIcon = (mealType: string) => {
-    switch (mealType?.toLowerCase()) {
-      case 'breakfast': return 'coffee';
-      case 'lunch': return 'food';
-      case 'dinner': return 'food-variant';
-      case 'snack': return 'food-apple';
-      default: return 'silverware';
-    }
-  };
-
-  // Calculate calories (approximate: 1g carb = 4 kcal)
-  const calculateCalories = () => {
-    const carbsNum = parseFloat(carbs) || 0;
-    return Math.round(carbsNum * 4);
-  };
-
-  if (showCamera) {
-    return (
-      <View style={{ position: 'absolute', top: 0, bottom: 0, right: 0, left: 0 }}>
-        <CameraScreen appData={appData} cameraHook={cameraHook} navigation={navigation} />
-      </View>
-    );
-  }
-
+  
   return (
     <KeyboardAvoidingView
       style={styles.background}
@@ -93,7 +179,7 @@ export function InputScreen({
         showsVerticalScrollIndicator={false}
       >
         {/* Header Section */}
-        <Surface style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 8 }} elevation={0}>
+        <Surface style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8 }} elevation={0}>
           <Text variant="headlineMedium" style={{
             color: theme.colors.onBackground,
             fontWeight: '700',
@@ -108,41 +194,15 @@ export function InputScreen({
           </Text>
         </Surface>
 
-        {/* Visual Preview Section with Camera */}
-        <View style={{ paddingHorizontal: 24, paddingVertical: 16, alignItems: 'center' }}>
-          <View style={{ position: 'relative' }}>
-            <Surface style={{
-              width: 160,
-              height: 160,
-              borderRadius: 80,
-              backgroundColor: theme.colors.secondaryContainer,
-              justifyContent: 'center',
-              alignItems: 'center',
-              elevation: 2,
-            }}>
-              {photoURIs.length > 0 ? (
-                <Image source={{ uri: photoURIs[0] }} style={{ width: 160, height: 160, borderRadius: 80 }} />
-              ) : (
-                <Icon source="food" size={64} color={theme.colors.secondary} />
-              )}
-            </Surface>
-            <IconButton
-              icon="camera"
-              mode="contained"
-              size={24}
-              iconColor={theme.colors.onPrimary}
-              containerColor={theme.colors.primary}
-              style={{ position: 'absolute', bottom: 0, right: 0 }}
-              onPress={toggleCamera}
-            />
-          </View>
-        </View>
+        {/* Photo Gallery Section */}
+        <InputPhotoScroll
+          photoURIs={photoURIs}
+          onAddPhoto={() => navigation?.navigate('camera')}
+        />
 
         {/* Metrics Row */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 24, gap: 12, paddingVertical: 8 }}
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16}}
         >
           {/* Glucose Metric */}
           <Surface style={{
@@ -201,26 +261,10 @@ export function InputScreen({
             </Text>
             <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Insulin</Text>
           </Surface>
-
-          {/* Calories Metric */}
-          <Surface style={{
-            width: 100,
-            padding: 16,
-            borderRadius: 12,
-            backgroundColor: theme.colors.surface,
-            elevation: 2,
-            alignItems: 'center',
-          }}>
-            <Text variant="headlineMedium" style={{ fontWeight: 'bold', color: theme.colors.onSurface }}>
-              {calculateCalories()}
-            </Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>kcal</Text>
-            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>Calories</Text>
-          </Surface>
-        </ScrollView>
+        </View>
 
         {/* Input Fields Section */}
-        <View style={{ paddingHorizontal: 24, paddingTop: 16, gap: 16 }}>
+        <View style={{ paddingHorizontal: 16, paddingTop: 16, gap: 16 }}>
           {/* Glucose Input - Tap to open modal */}
           <View>
             <Text variant="labelMedium" style={{ marginBottom: 8, color: theme.colors.onSurfaceVariant }}>
@@ -242,7 +286,7 @@ export function InputScreen({
                 <Icon source="diabetes" size={24} color={theme.colors.primary} />
                 <View>
                   <Text variant="headlineMedium" style={{ fontWeight: 'bold', color: theme.colors.onSurface }}>
-                    {glucose || '0'}
+                    {glucose || (appData?.settings.glucose === 'mmol' ? '5.6' : '100')}
                   </Text>
                   <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
                     {appData?.settings.glucose === 'mmol' ? 'mmol/L' : 'mg/dL'}
@@ -313,12 +357,14 @@ export function InputScreen({
               Meal Type
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              {foodOptions.map((option) => (
+              {foodOptions.map((option : any) => (
                 <Button
                   key={option}
                   mode={foodType === option ? "contained" : "outlined"}
                   onPress={() => setFoodType(option)}
                   style={{ flex: 1, borderRadius: 8 }}
+                  contentStyle={{ paddingVertical: 2 }}
+                  labelStyle={{ fontSize: 12 }}
                   buttonColor={foodType === option ? theme.colors.secondary : 'transparent'}
                   textColor={foodType === option ? theme.colors.onSecondary : theme.colors.onSurface}
                 >
@@ -334,12 +380,14 @@ export function InputScreen({
               Activity Level
             </Text>
             <View style={{ flexDirection: 'row', gap: 8 }}>
-              {activityOptions.map((option) => (
+              {activityOptions.map((option : any) => (
                 <Button
                   key={option}
                   mode={activity === option ? "contained" : "outlined"}
                   onPress={() => setActivity(option)}
                   style={{ flex: 1, borderRadius: 8 }}
+                  contentStyle={{ paddingVertical: 2 }}
+                  labelStyle={{ fontSize: 12 }}
                   buttonColor={activity === option ? theme.colors.secondary : 'transparent'}
                   textColor={activity === option ? theme.colors.onSecondary : theme.colors.onSurface}
                 >

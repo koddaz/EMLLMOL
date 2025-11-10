@@ -16,6 +16,7 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
         medianGlucose,
         summaryStats,
         mealColors,
+        
     } = statsHook;
 
     // Local state for stats section - show all by default
@@ -133,26 +134,26 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                                 <View style={{ flexDirection: 'row', gap: 8 }}>
                                     <View style={{ flex: 1 }}>
                                         {mealBox("Breakfast", "food-croissant", [
-                                            `Meals: ${summaryStats.carbsByMeal.breakfast || 0}`,
-                                            `Insulin: ${summaryStats.insulinByMeal.breakfast || 0}u`,
-                                            `Carbs: ${summaryStats.carbsByMeal.breakfast || 0}g`
+                                            `Meals: ${summaryStats.mealCount?.breakfast || 0}`,
+                                            `Insulin: ${summaryStats.insulinByMeal?.breakfast || 0}u`,
+                                            `Carbs: ${summaryStats.carbsByMeal?.breakfast || 0}g`
                                         ], mealColors.breakfast)}
                                         {mealBox("Lunch", "food-hot-dog", [
-                                            `Meals: ${summaryStats.carbsByMeal.lunch || 0}`,
-                                            `Insulin: ${summaryStats.insulinByMeal.lunch || 0}u`,
-                                            `Carbs: ${summaryStats.carbsByMeal.lunch || 0}g`
+                                            `Meals: ${summaryStats.mealCount?.lunch || 0}`,
+                                            `Insulin: ${summaryStats.insulinByMeal?.lunch || 0}u`,
+                                            `Carbs: ${summaryStats.carbsByMeal?.lunch || 0}g`
                                         ], mealColors.lunch)}
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         {mealBox("Dinner", "food", [
-                                            `Meals: ${summaryStats.carbsByMeal.dinner || 0}`,
-                                            `Insulin: ${summaryStats.insulinByMeal.dinner || 0}u`,
-                                            `Carbs: ${summaryStats.carbsByMeal.dinner || 0}g`
+                                            `Meals: ${summaryStats.mealType?.dinner || 0}`,
+                                            `Insulin: ${summaryStats.insulinByMeal?.dinner || 0}u`,
+                                            `Carbs: ${summaryStats.carbsByMeal?.dinner || 0}g`
                                         ], mealColors.dinner)}
                                         {mealBox("Snack", "apple", [
-                                            `Meals: ${summaryStats.carbsByMeal.snack || 0}`,
-                                            `Insulin: ${summaryStats.insulinByMeal.snack || 0}u`,
-                                            `Carbs: ${summaryStats.carbsByMeal.snack || 0}g`
+                                            `Meals: ${summaryStats.mealType?.snack || 0}`,
+                                            `Insulin: ${summaryStats.insulinByMeal?.snack || 0}u`,
+                                            `Carbs: ${summaryStats.carbsByMeal?.snack || 0}g`
                                         ], mealColors.snack)}
                                     </View>
                                 </View>
@@ -200,76 +201,65 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
     return (
         <View style={localStyles.container}>
             {/* Title Section */}
-            <Surface style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
+            <Surface style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 16 }} elevation={0}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                     <View style={{ flex: 1 }}>
-                        <Text variant="headlineMedium" style={{ 
+                        <Text variant="headlineMedium" style={{
                             color: theme.colors.onBackground,
                             fontWeight: '700',
                             marginBottom: 4,
                         }}>
-                            Glucose
+                            Statistics
+                        </Text>
+                        <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant, marginBottom: 16 }}>
+                            Track your glucose trends over time
                         </Text>
                     </View>
                     <Surface style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: theme.colors.primaryContainer, justifyContent: 'center', alignItems: 'center', elevation: 2 }} elevation={2}>
                         <Icon source="heart-pulse" size={28} color={theme.colors.primary} />
                     </Surface>
                 </View>
-            </Surface>
 
-            <View style={localStyles.buttonsContainer}>
-                <Button
-                    mode={selectedPeriod === 1 ? "contained" : "outlined"}
-                    onPress={() => handlePeriodChange('1')}
-                    style={{
-                        flex: 1,
-                        borderRadius: 8,
-                    }}
-                    buttonColor={selectedPeriod === 1 ? theme.colors.secondary : 'transparent'}
-                    textColor={selectedPeriod === 1 ? theme.colors.onSecondary : theme.colors.onSurface}
-                >
-                    Today
-                </Button>
-                <Button
-                    mode={selectedPeriod === 7 ? "contained" : "outlined"}
-                    onPress={() => handlePeriodChange('7')}
-                    style={{
-                        flex: 1,
-                        borderRadius: 8,
-                        marginLeft: 8,
-                    }}
-                    buttonColor={selectedPeriod === 7 ? theme.colors.secondary : 'transparent'}
-                    textColor={selectedPeriod === 7 ? theme.colors.onSecondary : theme.colors.onSurface}
-                >
-                    7 Days
-                </Button>
-                <Button
-                    mode={selectedPeriod === 14 ? "contained" : "outlined"}
-                    onPress={() => handlePeriodChange('14')}
-                    style={{
-                        flex: 1,
-                        borderRadius: 8,
-                        marginLeft: 8,
-                    }}
-                    buttonColor={selectedPeriod === 14 ? theme.colors.secondary : 'transparent'}
-                    textColor={selectedPeriod === 14 ? theme.colors.onSecondary : theme.colors.onSurface}
-                >
-                    14 Days
-                </Button>
-                <Button
-                    mode={selectedPeriod === 30 ? "contained" : "outlined"}
-                    onPress={() => handlePeriodChange('30')}
-                    style={{
-                        flex: 1,
-                        borderRadius: 8,
-                        marginLeft: 8,
-                    }}
-                    buttonColor={selectedPeriod === 30 ? theme.colors.secondary : 'transparent'}
-                    textColor={selectedPeriod === 30 ? theme.colors.onSecondary : theme.colors.onSurface}
-                >
-                    30 Days
-                </Button>
-            </View>
+                {/* Period Selection Buttons */}
+                <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <Button
+                        mode={selectedPeriod === 1 ? "contained" : "outlined"}
+                        onPress={() => handlePeriodChange('1')}
+                        style={{ flex: 1, borderRadius: 8 }}
+                        buttonColor={selectedPeriod === 1 ? theme.colors.secondary : 'transparent'}
+                        textColor={selectedPeriod === 1 ? theme.colors.onSecondary : theme.colors.onSurface}
+                    >
+                        Today
+                    </Button>
+                    <Button
+                        mode={selectedPeriod === 7 ? "contained" : "outlined"}
+                        onPress={() => handlePeriodChange('7')}
+                        style={{ flex: 1, borderRadius: 8 }}
+                        buttonColor={selectedPeriod === 7 ? theme.colors.secondary : 'transparent'}
+                        textColor={selectedPeriod === 7 ? theme.colors.onSecondary : theme.colors.onSurface}
+                    >
+                        7 Days
+                    </Button>
+                    <Button
+                        mode={selectedPeriod === 14 ? "contained" : "outlined"}
+                        onPress={() => handlePeriodChange('14')}
+                        style={{ flex: 1, borderRadius: 8 }}
+                        buttonColor={selectedPeriod === 14 ? theme.colors.secondary : 'transparent'}
+                        textColor={selectedPeriod === 14 ? theme.colors.onSecondary : theme.colors.onSurface}
+                    >
+                        14 Days
+                    </Button>
+                    <Button
+                        mode={selectedPeriod === 30 ? "contained" : "outlined"}
+                        onPress={() => handlePeriodChange('30')}
+                        style={{ flex: 1, borderRadius: 8 }}
+                        buttonColor={selectedPeriod === 30 ? theme.colors.secondary : 'transparent'}
+                        textColor={selectedPeriod === 30 ? theme.colors.onSecondary : theme.colors.onSurface}
+                    >
+                        30 Days
+                    </Button>
+                </View>
+            </Surface>
             <ScrollView 
                 style={{ flex: 1 }}
                 contentContainerStyle={{ paddingBottom: 100 }}

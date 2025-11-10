@@ -9,7 +9,7 @@ interface Meal {
   name: string;
   time: string;
   carbs: number;
-  calories: number;
+  glucose: number;
   mealType: string;
 }
 
@@ -77,7 +77,7 @@ export function TodaysMealsCard({ meals }: TodaysMealsCardProps) {
 
           <View style={styles.badgesContainer}>
             <MealBadge value={Math.round(item.carbs)} unit="g carbs" variant="carbs" />
-            <MealBadge value={item.calories} unit=" cal" variant="calories" />
+            <MealBadge value={item.glucose} unit=" mmol/L" variant="glucose" />
           </View>
         </View>
         {!isLast && <Divider style={{ marginVertical: 4 }} />}

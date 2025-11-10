@@ -20,6 +20,7 @@ export function useCamera(appData: AppData | null) {
 
   const cameraRef = useRef<CameraView>(null);
   const [flash, setFlash] = useState<"on" | "off" | "auto">("off");
+  const [facing, setFacing] = useState<"front" | "back">("back");
   const [zoom, setZoom] = useState(0);
   const [photoURIs, setPhotoURIs] = useState<string[]>([]);
 
@@ -86,7 +87,12 @@ export function useCamera(appData: AppData | null) {
 
     console.log('📷 Permission granted - rendering CameraView');
     return (
-      <CameraView style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0 }} flash={flash} ref={cameraRef} />
+      <CameraView
+        style={{position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, zIndex: 20 }}
+        flash={flash}
+        facing={facing}
+        ref={cameraRef}
+      />
     );
   }
 
@@ -106,10 +112,13 @@ export function useCamera(appData: AppData | null) {
         base64: false,
         skipProcessing: false,
       });
-      console.log('✅ Photo captured:', photo.uri);
+      console.log('✅ Photo captured (temp URI):', photo.uri);
 
       if (photo && photo.uri) {
-        setPhotoURIs(prevURIs => [...prevURIs, photo.uri]);
+        // Save photo locally to permanent storage
+        const permanentUri = await savePhotoLocally(photo.uri);
+        console.log('✅ Photo saved to permanent storage:', permanentUri);
+        setPhotoURIs(prevURIs => [...prevURIs, permanentUri]);
       }
       return photo;
     } catch (error) {
@@ -145,13 +154,13 @@ export function useCamera(appData: AppData | null) {
   const getFlashIconColor = () => {
     switch (flash) {
       case "on":
-        return theme.colors.flash;
+        return "#FFC107"; // Amber/yellow for flash on
       case "off":
-        return theme.colors.flashOff;
+        return "#FFFFFF"; // White for flash off
       case "auto":
-        return theme.colors.flashAuto;
+        return theme.colors.secondary; // Secondary color for auto mode
       default:
-        return theme.colors.onSurfaceVariant;
+        return "#FFFFFF";
     }
   };
   // Cycle through flash modes
@@ -163,6 +172,11 @@ export function useCamera(appData: AppData | null) {
     } else {
       setFlash("off");
     }
+  };
+
+  // Flip camera between front and back
+  const flipCamera = () => {
+    setFacing(current => current === "back" ? "front" : "back");
   };
 
   return useMemo(() => ({
@@ -177,11 +191,13 @@ export function useCamera(appData: AppData | null) {
     setPhotoURIs,
     photoURIs,
 
-    // Functions to toggle flash
+    // Functions to toggle flash and camera
     cycleFlash,
     flash,
     getFlashIcon,
     getFlashIconColor,
+    flipCamera,
+    facing,
 
     // Local storage functions
     savePhotoLocally,
@@ -199,6 +215,8 @@ export function useCamera(appData: AppData | null) {
     flash,
     getFlashIcon,
     getFlashIconColor,
+    flipCamera,
+    facing,
     savePhotoLocally,
     createDiaryPhotosDirectory,
   ]);
