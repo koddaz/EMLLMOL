@@ -146,12 +146,12 @@ export function StatisticsScreen({ appData, statsHook }: NavData & HookData) {
                                     </View>
                                     <View style={{ flex: 1 }}>
                                         {mealBox("Dinner", "food", [
-                                            `Meals: ${summaryStats.mealType?.dinner || 0}`,
+                                            `Meals: ${summaryStats.mealCount?.dinner || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal?.dinner || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal?.dinner || 0}g`
                                         ], mealColors.dinner)}
                                         {mealBox("Snack", "apple", [
-                                            `Meals: ${summaryStats.mealType?.snack || 0}`,
+                                            `Meals: ${summaryStats.mealCount?.snack || 0}`,
                                             `Insulin: ${summaryStats.insulinByMeal?.snack || 0}u`,
                                             `Carbs: ${summaryStats.carbsByMeal?.snack || 0}g`
                                         ], mealColors.snack)}

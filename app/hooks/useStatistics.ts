@@ -120,9 +120,9 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
       .filter(entry => {
         const entryDate = new Date(entry.created_at);
         return entry.glucose &&
-               entry.glucose > 0 &&
-               entryDate >= startDate &&
-               entryDate <= endDate;
+          entry.glucose > 0 &&
+          entryDate >= startDate &&
+          entryDate <= endDate;
       })
       .map(entry => entry.glucose)
       .sort((a, b) => a - b);
@@ -149,7 +149,7 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
       entries.forEach((entry) => {
         const entryDate = new Date(entry.created_at);
         if (entry.glucose && entry.glucose > 0 &&
-            entryDate >= startOfDay && entryDate < endOfDay) {
+          entryDate >= startOfDay && entryDate < endOfDay) {
           const hour = entryDate.getHours();
           if (!hourlyData[hour]) hourlyData[hour] = [];
           hourlyData[hour].push(entry.glucose);
@@ -238,7 +238,7 @@ export function useStatistics(diaryEntries?: DiaryData[]) {
 
     const carbsByMeal = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
     const insulinByMeal = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
-     const mealCount = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
+    const mealCount = { breakfast: 0, lunch: 0, dinner: 0, snack: 0 };
 
     filteredEntries.forEach(entry => {
       const mealType = entry.meal_type as keyof typeof carbsByMeal;
